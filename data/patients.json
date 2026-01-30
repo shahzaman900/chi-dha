@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "name": "Robert Davis",
+    "age": 75,
+    "ewsScore": 11,
+    "status": "CRITICAL",
+    "trend": "Escalating"
+  },
+  {
+    "id": "2",
+    "name": "John Miller",
+    "age": 68,
+    "ewsScore": 7,
+    "status": "High Risk",
+    "trend": "Rising"
+  },
+  {
+    "id": "3",
+    "name": "Ahmed Hassan",
+    "age": 81,
+    "ewsScore": 6,
+    "status": "Medium Risk",
+    "trend": "Trending Up"
+  },
+  {
+    "id": "4",
+    "name": "Sarah Chen",
+    "age": 72,
+    "ewsScore": 3,
+    "status": "Stable",
+    "trend": "Stable"
+  },
+  {
+    "id": "5",
+    "name": "Maria Garcia",
+    "age": 65,
+    "ewsScore": 2,
+    "status": "Healthy",
+    "trend": "Stable"
+  }
+]
