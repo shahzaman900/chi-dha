@@ -1,0 +1,70 @@
+[
+  {
+    "patientId": "1",
+    "profile": {
+      "name": "Robert Davis",
+      "age": 75,
+      "conditions": ["COPD", "HTN", "Diabetes"],
+      "living": "Lives alone",
+      "history": "Monitored for 6 months",
+      "status": "Previously stable vitals"
+    },
+    "ews": {
+      "score": 11,
+      "status": "CRITICAL",
+      "color": "red"
+    },
+    "metrics": {
+      "hr": { "value": 124, "change": "+25" },
+      "rr": { "value": 28, "change": "+8" },
+      "spo2": { "value": 88, "change": "-5" },
+      "bp": { "value": "150/95", "change": "+15" }
+    },
+    "timeline": [
+      { "time": "4:45 AM", "event": "Vitals show rapid deterioration", "type": "info" },
+      { "time": "4:47 AM", "event": "EWS computed: 11 (CRITICAL)", "type": "critical" },
+      { "time": "4:49 AM", "event": "AI system initiates alert protocol", "type": "system" },
+      { "time": "4:50 AM", "event": "System dials patient phone", "type": "system" },
+      { "time": "4:52 AM", "event": "Patient: disoriented, can't respond", "type": "info" },
+      { "time": "4:53 AM", "event": "Emergency contact notified", "type": "system" },
+      { "time": "4:55 AM", "event": "911 EMERGENCY CALL PLACED", "type": "critical-action" }
+    ],
+    "diagnosis": [
+      { "name": "Acute Heart Failure Exacerbation", "probability": 45, "color": "red" },
+      { "name": "Hypertensive Crisis", "probability": 25, "color": "orange" },
+      { "name": "Infection/Sepsis", "probability": 20, "color": "yellow" },
+      { "name": "Medication Non-compliance", "probability": 10, "color": "yellow-light" }
+    ]
+  },
+  {
+    "patientId": "2",
+    "profile": {
+      "name": "John Miller",
+      "age": 68,
+      "conditions": ["Heart failure", "Hypertension"],
+      "living": "With wife",
+      "history": "Monitored for 8 months",
+      "status": "Warning signs detected"
+    },
+    "ews": {
+      "score": 7,
+      "status": "HIGH RISK",
+      "color": "orange"
+    },
+    "metrics": {
+      "hr": { "value": 102, "change": "+18" },
+      "bp": { "value": "148/92", "change": "+12" },
+      "weight": { "value": "180.5 lbs", "change": "+2.5 lbs" },
+      "edema": { "value": "Increasing", "change": "" }
+    },
+    "timeline": [
+       { "time": "Day 1", "event": "HR 95, BP 140/88, Weight 178 lbs", "type": "info" },
+       { "time": "Day 2", "event": "HR 99, BP 145/90, Weight 179.5 lbs", "type": "info" },
+       { "time": "Day 3 (TODAY)", "event": "HR 102, BP 148/92, Weight 180.5 lbs", "type": "warning" }
+    ],
+    "diagnosis": [
+       { "name": "Heart Failure Decompensation", "probability": 60, "color": "orange" },
+       { "name": "Fluid Overload", "probability": 30, "color": "yellow" }
+    ]
+  }
+]

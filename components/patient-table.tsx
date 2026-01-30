@@ -12,9 +12,20 @@ import {
 import { usePatientStore } from "@/store/patient-store"
 import { Button } from "./ui/button"
 import { ChevronLeft, ChevronRight, Siren, AlertTriangle, Check } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { PhrDisplay } from "@/components/phr-display"
 
 export function PatientTable() {
-  const { patients } = usePatientStore()
+  const { patients, selectedPatientId, setSelectedPatientId, isPhrOpen, setIsPhrOpen } = usePatientStore()
+
+  const handleRowClick = (id: string) => {
+    setSelectedPatientId(id === selectedPatientId ? null : id)
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -39,8 +50,8 @@ export function PatientTable() {
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-card text-card-foreground p-0">
-      <div className="rounded-md border border-border/50">
+    <div className="flex-1 flex flex-col overflow-hidden bg-card text-card-foreground p-0 w-full h-full">
+      <div className="flex-1 overflow-auto rounded-md border border-border/50">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow className="hover:bg-muted/50 border-border/50">
@@ -54,10 +65,27 @@ export function PatientTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {patients.map((patient) => (
-              <TableRow key={patient.id} className="hover:bg-muted/10 border-border/40">
+            {patients.map((patient: any, index: number) => {
+              const isSelected = selectedPatientId === patient.id;
+              
+              return (
+              <TableRow 
+                key={patient.id} 
+                onClick={() => handleRowClick(patient.id)}
+                className={`
+                    border-border/40 transition-colors cursor-pointer
+                    ${isSelected 
+                        ? "bg-blue-900/30 hover:bg-blue-900/40 border-l-4 border-l-blue-500" 
+                        : index % 2 === 1 ? "bg-muted/5" : "bg-transparent"
+                    }
+                    ${!isSelected && "hover:bg-muted/40"}
+                `}
+              >
                 <TableCell className="px-4 py-3">
-                  <Checkbox />
+                  <Checkbox 
+                    checked={isSelected}
+                    onCheckedChange={() => handleRowClick(patient.id)}
+                  />
                 </TableCell>
                 <TableCell className="font-medium">{patient.name} ({patient.age})</TableCell>
                 <TableCell className="font-bold">{patient.ewsScore}</TableCell>
@@ -74,7 +102,7 @@ export function PatientTable() {
                     </div>
                 </TableCell>
               </TableRow>
-            ))}
+            )})}
           </TableBody>
         </Table>
       </div>
@@ -98,6 +126,16 @@ export function PatientTable() {
                  </div>
             </div>
        </div>
+       
+       {/* PHR Modal */}
+       <Dialog open={isPhrOpen} onOpenChange={setIsPhrOpen}>
+            <DialogContent showCloseButton={false} className="w-[95vw] max-w-[95vw] h-[85vh] bg-slate-900 border-slate-700 p-0 overflow-hidden rounded-xl">
+                 <DialogHeader className="hidden">
+                      <DialogTitle>PHR Dashboard</DialogTitle>
+                 </DialogHeader>
+                 {selectedPatientId && <PhrDisplay patientId={selectedPatientId} />}
+            </DialogContent>
+       </Dialog>
     </div>
   )
 }

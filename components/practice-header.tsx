@@ -1,9 +1,20 @@
-import { Plus, RotateCw, Archive } from "lucide-react"
+"use client"
+
+import { Plus, RotateCw, Archive, FileText } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { usePatientStore } from "@/store/patient-store"
 
 export function PracticeHeader() {
+  const { selectedPatientId, setIsPhrOpen } = usePatientStore()
+
+  const handleViewPhr = () => {
+    if (selectedPatientId) {
+      setIsPhrOpen(true)
+    }
+  }
+
   return (
     <div className="flex items-center justify-between p-4 bg-muted/20 border-b">
       <div className="flex items-center gap-4">
@@ -21,6 +32,14 @@ export function PracticeHeader() {
         <Button size="icon" variant="secondary" className="h-9 w-9 bg-blue-500 hover:bg-blue-600 text-white">
            <RotateCw className="h-5 w-5" />
         </Button>
+        {selectedPatientId && (
+          <Button 
+            onClick={handleViewPhr} 
+            className="bg-blue-700 hover:bg-blue-800 text-white gap-2 transition-all ml-2"
+          >
+            <FileText className="h-4 w-4" /> View PHR
+          </Button>
+        )}
       </div>
     </div>
   )
