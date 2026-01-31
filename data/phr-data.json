@@ -21,14 +21,18 @@
       "bp": { "value": "150/95", "change": "+15" }
     },
     "timeline": [
-      { "time": "4:45 AM", "event": "Vitals show rapid deterioration", "type": "info" },
-      { "time": "4:47 AM", "event": "EWS computed: 11 (CRITICAL)", "type": "critical" },
-      { "time": "4:49 AM", "event": "AI system initiates alert protocol", "type": "system" },
-      { "time": "4:50 AM", "event": "System dials patient phone", "type": "system" },
-      { "time": "4:52 AM", "event": "Patient: disoriented, can't respond", "type": "info" },
-      { "time": "4:53 AM", "event": "Emergency contact notified", "type": "system" },
-      { "time": "4:55 AM", "event": "911 EMERGENCY CALL PLACED", "type": "critical-action" }
+      { "time": "Jan 31, 2026 4:45 AM", "event": "Vitals show rapid deterioration", "type": "info" },
+      { "time": "Jan 31, 2026 4:47 AM", "event": "EWS computed: 11 (CRITICAL)", "type": "critical" },
+      { "time": "Jan 31, 2026 4:49 AM", "event": "AI system initiates alert protocol", "type": "system" },
+      { "time": "Jan 31, 2026 4:50 AM", "event": "System dials patient phone", "type": "system" },
+      { "time": "Jan 31, 2026 4:52 AM", "event": "Patient: disoriented, can't respond", "type": "info" },
+      { "time": "Jan 31, 2026 4:53 AM", "event": "Emergency contact notified", "type": "system" },
+      { "time": "Jan 31, 2026 4:55 AM", "event": "911 EMERGENCY CALL PLACED", "type": "critical-action" }
     ],
+    "diagnosisMetadata": {
+      "title": "AI Differential Diagnosis",
+      "subtitle": "Based on vital trends & historical data"
+    },
     "diagnosis": [
       { "name": "Acute Heart Failure Exacerbation", "probability": 45, "color": "red" },
       { "name": "Hypertensive Crisis", "probability": 25, "color": "orange" },
@@ -62,9 +66,56 @@
        { "time": "Day 2", "event": "HR 99, BP 145/90, Weight 179.5 lbs", "type": "info" },
        { "time": "Day 3 (TODAY)", "event": "HR 102, BP 148/92, Weight 180.5 lbs", "type": "warning" }
     ],
+    "diagnosisMetadata": {
+       "title": "Differential Diagnosis - Updated Probabilities",
+       "subtitle": "AI Analysis: Based on vital data + patient responses"
+    },
     "diagnosis": [
-       { "name": "Heart Failure Decompensation", "probability": 60, "color": "orange" },
-       { "name": "Fluid Overload", "probability": 30, "color": "yellow" }
+       { "name": "Acute Heart Failure Exacerbation", "probability": 68, "color": "red" },
+       { "name": "Hypertensive Crisis", "probability": 18, "color": "orange" },
+       { "name": "Infection/Sepsis", "probability": 8, "color": "orange-light" },
+       { "name": "Medication Non-compliance", "probability": 6, "color": "yellow" }
+    ]
+  },
+  {
+    "patientId": "3",
+    "profile": {
+      "name": "Ahmad Hassan",
+      "age": 32,
+      "conditions": ["Previously healthy"],
+      "living": "With family",
+      "history": "No significant medical history",
+      "status": "Acute onset of symptoms"
+    },
+    "ews": {
+      "score": 12,
+      "status": "CRITICAL",
+      "color": "red"
+    },
+    "metrics": {
+      "Fever": { "value": "102.4°F", "change": "" },
+      "Neck Stiffness": { "value": "Severe", "change": "" },
+      "Headache": { "value": "Severe", "change": "" },
+      "Mental Status": { "value": "Altered", "change": "" }
+    },
+    "timeline": [
+      { "time": "Morning", "event": "Initial symptom onset - dull headache", "type": "critical-action" },
+      { "time": "Mid-Morning", "event": "Headache worsening, feeling 'wiped out'", "type": "critical-action" },
+      { "time": "Check Start", "event": "Patient uses Symptom Checker: AI assessment begins", "type": "system" },
+      { "time": "Step 2", "event": "Fever detected 102.4°F - System escalates concern", "type": "system" },
+      { "time": "Step 3", "event": "Neck stiffness: Nuchal rigidity detected", "type": "warning" },
+      { "time": "Step 4-5", "event": "Altered mental status: Classic Triad complete", "type": "critical" },
+      { "time": "ALERT", "event": "CRITICAL: Emergency response triggered - 911 Recommended", "type": "critical" }
+    ],
+    "diagnosisMetadata": {
+      "title": "Diagnostic Probability Report",
+      "subtitle": "CRITICAL ALERT: High probability of serious inflammatory condition"
+    },
+    "diagnosis": [
+      { "name": "Meningitis (Bacterial or Viral)", "probability": 85, "color": "red" },
+      { "name": "Encephalitis", "probability": 10, "color": "orange" },
+      { "name": "Severe Systemic Infection (Sepsis)", "probability": 4, "color": "orange-light" },
+      { "name": "Migraine with Fever", "probability": 1, "color": "yellow" }
     ]
   }
 ]

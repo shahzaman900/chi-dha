@@ -18,6 +18,10 @@ export interface PhrData {
   };
   metrics: Record<string, { value: string | number; change: string }>;
   timeline: Array<{ time: string; event: string; type: string }>;
+  diagnosisMetadata?: {
+    title: string;
+    subtitle: string;
+  };
   diagnosis: Array<{ name: string; probability: number; color: string }>;
 }
 

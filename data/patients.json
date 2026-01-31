@@ -5,7 +5,8 @@
     "age": 75,
     "ewsScore": 11,
     "status": "CRITICAL",
-    "trend": "Escalating"
+    "trend": "Escalating",
+    "initiatedBy": "System"
   },
   {
     "id": "2",
@@ -13,15 +14,17 @@
     "age": 68,
     "ewsScore": 7,
     "status": "High Risk",
-    "trend": "Rising"
+    "trend": "Rising",
+    "initiatedBy": "Nurse"
   },
   {
     "id": "3",
-    "name": "Ahmed Hassan",
-    "age": 81,
+    "name": "Ahmad Hassan",
+    "age": 32,
     "ewsScore": 6,
     "status": "Medium Risk",
-    "trend": "Trending Up"
+    "trend": "Trending Up",
+    "initiatedBy": "Patient"
   },
   {
     "id": "4",

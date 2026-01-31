@@ -61,6 +61,7 @@ export function PatientTable() {
               <TableHead className="text-slate-400 font-medium">Patient</TableHead>
               <TableHead className="text-slate-400 font-medium">EWS Score</TableHead>
               <TableHead className="text-slate-400 font-medium">Status</TableHead>
+              <TableHead className="text-slate-400 font-medium">Initiated By</TableHead>
               <TableHead className="text-slate-400 font-medium">Trend</TableHead>
             </TableRow>
           </TableHeader>
@@ -95,6 +96,9 @@ export function PatientTable() {
                         {getStatusIcon(patient.status)}
                         {patient.status}
                     </div>
+                </TableCell>
+                <TableCell>
+                    <span className="text-slate-300 font-medium">{patient.initiatedBy || "-"}</span>
                 </TableCell>
                 <TableCell>
                     <div className="flex items-center font-medium text-slate-300">

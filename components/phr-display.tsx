@@ -7,11 +7,15 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { usePatientStore } from "@/store/patient-store"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { PhrModalDetails } from "./phr-modal-details"
 
 export function PhrDisplay({ patientId }: { patientId: string }) {
   const { getPhrByPatientId } = usePhrStore()
   const { setIsPhrOpen } = usePatientStore()
   const patient = getPhrByPatientId(patientId)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   if (!patient) {
       return (
@@ -34,7 +38,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
   }
 
   return (
-    <div className="flex flex-col bg-slate-900 text-slate-100 h-full">
+    <div className="flex overflow-auto flex-col bg-slate-900 text-slate-100 h-full">
       {/* Header */}
       <div className={`flex items-center justify-between px-6 py-4 ${statusColor}`}>
         <div className="flex items-center gap-4">
@@ -119,21 +123,21 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
         <div className="lg:col-span-1 space-y-6">
           <Card className={`bg-slate-800 border ${borderColor} h-full`}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-orange-400">AI Differential Diagnosis</CardTitle>
-              <p className="text-xs text-slate-500">Based on vital trends & historical data</p>
+              <CardTitle className="text-lg text-orange-400">{patient.diagnosisMetadata?.title || "AI Differential Diagnosis"}</CardTitle>
+              <p className="text-xs text-slate-500">{patient.diagnosisMetadata?.subtitle || "Based on vital trends & historical data"}</p>
             </CardHeader>
-            <CardContent className="space-y-5">
+            <CardContent className="space-y-5 overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
               {patient.diagnosis.map((diag, i) => (
                 <div key={i}>
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-medium text-slate-200 text-sm">{diag.name}</span>
-                    <span className={`font-bold text-sm ${diag.color === 'red' ? 'text-red-400' : diag.color === 'orange' ? 'text-orange-400' : 'text-yellow-400'}`}>
+                    <span className={`font-bold text-sm ${diag.color === 'red' ? 'text-red-400' : diag.color === 'orange' ? 'text-orange-400' : diag.color === 'orange-light' ? 'text-orange-400' : 'text-yellow-400'}`}>
                       {diag.probability}%
                     </span>
                   </div>
                   <div className="h-3 w-full bg-slate-700 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full rounded-full transition-all ${diag.color === 'red' ? 'bg-gradient-to-r from-red-600 to-red-400' : diag.color === 'orange' ? 'bg-gradient-to-r from-orange-600 to-orange-400' : 'bg-gradient-to-r from-yellow-600 to-yellow-400'}`} 
+                      className={`h-full rounded-full transition-all ${diag.color === 'red' ? 'bg-gradient-to-r from-red-600 to-red-400' : diag.color === 'orange' ? 'bg-gradient-to-r from-orange-600 to-orange-400' : diag.color === 'orange-light' ? 'bg-gradient-to-r from-orange-400 to-amber-400' : 'bg-gradient-to-r from-yellow-600 to-yellow-400'}`} 
                       style={{ width: `${diag.probability}%` }}
                     ></div>
                   </div>
@@ -164,6 +168,16 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                     <div className={`text-sm ${event.type === 'critical' || event.type === 'critical-action' ? 'text-red-400 font-semibold' : 'text-slate-300'}`}>
                       {event.event}
                     </div>
+                    {event.time === "Day 3 (TODAY)" && (
+                      <Button 
+                        variant="link" 
+                        size="sm" 
+                        className="text-cyan-400 p-0 h-auto mt-1 hover:text-cyan-300"
+                        onClick={() => setIsDetailsOpen(true)}
+                      >
+                        View Details
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -171,6 +185,14 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
           </Card>
         </div>
       </div>
+    <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="sm:max-w-[1400px] h-[90vh] bg-slate-900 border-slate-700 text-slate-100 overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-cyan-400">{patient.timeline.find(t => t.time.includes("Day 3") || t.time.includes("ALERT"))?.time || "Event Details"}</DialogTitle>
+          </DialogHeader>
+          <PhrModalDetails patient={patient} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
