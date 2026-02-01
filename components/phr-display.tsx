@@ -51,7 +51,6 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">{patient.profile.name}</h1>
-            <p className="text-white/80 text-sm">{patient.profile.age} years old • {patient.profile.conditions.join(", ")}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -86,6 +85,16 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
               <CardTitle className={`text-lg ${textAccent}`}>Patient Profile</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Age</span>
+                <span className="text-slate-100 font-medium">{patient.profile.age} years old</span>
+              </div>
+              <Separator className="bg-slate-700" />
+              <div className="flex justify-between items-start">
+                 <span className="text-slate-400">Conditions</span>
+                 <span className="text-slate-100 font-medium text-right max-w-[180px]">{patient.profile.conditions.join(", ")}</span>
+               </div>
+               <Separator className="bg-slate-700" />
               <div className="flex justify-between">
                 <span className="text-slate-400">Living</span>
                 <span className="text-slate-100 font-medium">{patient.profile.living}</span>

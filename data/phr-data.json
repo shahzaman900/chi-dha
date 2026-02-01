@@ -21,11 +21,11 @@
       "bp": { "value": "150/95", "change": "+15" }
     },
     "timeline": [
-      { "time": "Jan 31, 2026 4:45 AM", "event": "Vitals show rapid deterioration", "type": "info" },
+      { "time": "Jan 31, 2026 4:45 AM", "event": "Vitals showed rapid deterioration", "type": "info" },
       { "time": "Jan 31, 2026 4:47 AM", "event": "EWS computed: 11 (CRITICAL)", "type": "critical" },
-      { "time": "Jan 31, 2026 4:49 AM", "event": "AI calls, no response (patient disoriented)", "type": "system" },
-      { "time": "Jan 31, 2026 4:51 AM", "event": "AI escalates case to Nurse", "type": "system" },
-      { "time": "Jan 31, 2026 4:55 AM", "event": "Nurse escalates case and EMERGENCY services dispatched", "type": "critical-action" }
+      { "time": "Jan 31, 2026 4:49 AM", "event": "AI called, no response (patient disoriented)", "type": "system" },
+      { "time": "Jan 31, 2026 4:51 AM", "event": "AI escalated case to Nurse", "type": "system" },
+      { "time": "Jan 31, 2026 4:55 AM", "event": "Nurse escalated case and EMERGENCY services dispatched", "type": "critical-action" }
     ],
     "treatmentPlan": {
         "actions": [
