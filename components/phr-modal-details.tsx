@@ -9,64 +9,133 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
     const [showDiagnosisDetails, setShowDiagnosisDetails] = useState(false);
     if (patient.patientId === '1') {
         return (
-            <div className="bg-slate-950 p-6 rounded-lg h-full overflow-y-auto custom-scrollbar">
-                <div className="mb-6">
-                    <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                        <div className="bg-red-500/20 p-2 rounded-lg">
-                            <Activity className="h-6 w-6 text-red-500" />
-                        </div>
-                        Treatment Plan Execution
-                    </h2>
-                    <p className="text-slate-400 text-sm mt-1 ml-12">Critial Escalation Protocol Active</p>
+            <div className="bg-slate-950 p-6 rounded-lg h-full overflow-y-auto custom-scrollbar flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-bold text-red-400 flex items-center gap-2">
+                            <div className="bg-red-500/20 p-2 rounded-lg">
+                                <AlertTriangle className="h-6 w-6 text-red-500" />
+                            </div>
+                            CRITICAL: Emergency Protocol Activation
+                        </h2>
+                        <p className="text-slate-400 text-sm mt-1 ml-12">AI -&gt; ER Diversion Protocol Active</p>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Column 1: Approved Treatment Actions */}
-                    <Card className="bg-slate-900 border border-slate-800">
-                        <CardHeader className="bg-slate-800/50 border-b border-slate-800 pb-3">
-                            <CardTitle className="text-base text-cyan-400 font-bold uppercase tracking-wide">Approved Treatment Actions</CardTitle>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                    {/* Column 1: Immediate ER Transport */}
+                    <Card className="bg-red-950/10 border border-red-900/40 flex flex-col">
+                        <CardHeader className="bg-red-900/20 border-b border-red-900/40 py-4">
+                            <CardTitle className="text-sm text-red-400 font-bold uppercase tracking-wide flex items-center gap-2">
+                                <Siren className="h-4 w-4" /> IMMEDIATE ER TRANSPORT
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-4 space-y-4">
-                            {patient.treatmentPlan?.actions.map((action, i) => (
-                                <div key={i} className="flex gap-3">
-                                    <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500 shrink-0"></div>
-                                    <p className="text-slate-300 text-sm leading-relaxed">{action}</p>
+                        <CardContent className="pt-6 space-y-6 flex-1">
+                            <div className="p-4 bg-red-900/10 rounded-lg border border-red-900/30">
+                                <div className="text-red-100 font-bold text-lg mb-1">Ambulance Dispatched</div>
+                                <div className="text-red-400 text-sm">ETA: 8 Minutes</div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex gap-3 items-center">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                                    <p className="text-slate-300 text-sm">Immediate ER Transport (Ambulance Dispatched)</p>
                                 </div>
-                            ))}
+                                <div className="flex gap-3 items-center">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                                    <p className="text-slate-300 text-sm">Notify Emergency Contact</p>
+                                </div>
+                                <div className="flex gap-3 items-center">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                                    <p className="text-slate-300 text-sm">Pre-Arrival Notification to ER Triage</p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
-                    {/* Column 2: Lab Dispatch Workflow */}
-                    <Card className="bg-slate-900 border border-slate-800">
-                        <CardHeader className="bg-slate-800/50 border-b border-slate-800 pb-3">
-                            <CardTitle className="text-base text-orange-400 font-bold uppercase tracking-wide">Lab Dispatch Workflow</CardTitle>
+                    {/* Column 2: ER Triage Notification */}
+                    <Card className="bg-slate-900 border border-slate-800 flex flex-col">
+                        <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-4">
+                            <CardTitle className="text-sm text-orange-400 font-bold uppercase tracking-wide">ER TRIAGE NOTIFICATION</CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-4 space-y-4">
-                            {patient.treatmentPlan?.labDispatch.map((step, i) => (
-                                <div key={i} className="flex gap-3">
+                        <CardContent className="pt-6 space-y-6 flex-1">
+                             <div className="flex items-center gap-3 p-4 bg-slate-800 rounded-lg border border-slate-700">
+                                <div className="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30">
+                                    <Check className="h-5 w-5 text-green-500" />
+                                </div>
+                                <div>
+                                    <div className="text-xs text-slate-400 mb-0.5">City General ER Notified</div>
+                                    <div className="text-slate-100 font-bold text-lg">COPD Exacerbation</div>
+                                </div>
+                            </div>
+
+                            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-800 space-y-3">
+                                <div className="flex gap-3 items-start">
                                     <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
-                                    <p className="text-slate-300 text-sm leading-relaxed">{step}</p>
+                                    <p className="text-slate-200 text-lg">Supplemental Oxygen</p>
                                 </div>
-                            ))}
+                                <div className="flex gap-3 items-start">
+                                    <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+                                    <p className="text-slate-200 text-lg">Intravenous (IV) Steroids</p>
+                                </div>
+                                <div className="flex gap-3 items-start">
+                                    <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+                                    <p className="text-slate-200 text-lg">Non-Invasive Ventilation (NIV)</p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
-                    {/* Column 3: Nurse Dispatch Workflow */}
-                    <Card className="bg-slate-900 border border-slate-800">
-                        <CardHeader className="bg-slate-800/50 border-b border-slate-800 pb-3">
-                            <CardTitle className="text-base text-emerald-400 font-bold uppercase tracking-wide">Nurse Dispatch Workflow</CardTitle>
+                    {/* Column 3: Clinical Handoff Data */}
+                    <Card className="bg-slate-900 border border-slate-800 flex flex-col">
+                        <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-4">
+                            <CardTitle className="text-sm text-cyan-400 font-bold uppercase tracking-wide">CLINICAL HANDOFF DATA</CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-4 space-y-4">
-                            {patient.treatmentPlan?.nurseDispatch.map((step, i) => (
-                                <div key={i} className="flex gap-3">
-                                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                                    <p className="text-slate-300 text-sm leading-relaxed">{step}</p>
+                        <CardContent className="pt-6 space-y-6 flex-1">
+                            <div>
+                                <div className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-2">TRANSMITTED VITALS</div>
+                                <div className="grid grid-cols-2 gap-2 mb-4">
+                                    <div className="bg-slate-800 p-2 rounded border border-slate-700">
+                                        <div className="text-slate-400 text-[10px]">HR</div>
+                                        <div className="font-mono font-bold text-red-400">124 BPM</div>
+                                    </div>
+                                    <div className="bg-slate-800 p-2 rounded border border-slate-700">
+                                        <div className="text-slate-400 text-[10px]">RR</div>
+                                        <div className="font-mono font-bold text-red-400">28/min</div>
+                                    </div>
+                                    <div className="bg-slate-800 p-2 rounded border border-slate-700">
+                                        <div className="text-slate-400 text-[10px]">SPO2</div>
+                                        <div className="font-mono font-bold text-red-400">88%</div>
+                                    </div>
+                                    <div className="bg-slate-800 p-2 rounded border border-slate-700">
+                                        <div className="text-slate-400 text-[10px]">BP</div>
+                                        <div className="font-mono font-bold text-red-400">150/95</div>
+                                    </div>
                                 </div>
-                            ))}
+                            </div>
+
+                            <Separator className="bg-slate-800" />
+
+                            <div className="space-y-4">
+                                <div className="flex gap-3 items-center">
+                                    <CheckCircle2 className="h-4 w-4 text-cyan-500 shrink-0" />
+                                    <p className="text-slate-300 text-sm">Monitor Vitals en route</p>
+                                </div>
+                                <div className="flex gap-3 items-center">
+                                    <CheckCircle2 className="h-4 w-4 text-cyan-500 shrink-0" />
+                                    <div className="text-slate-300 text-sm flex items-center gap-1">
+                                        <span className="font-bold text-white text-lg">Supplemental Oxygen</span>
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 items-center">
+                                    <CheckCircle2 className="h-4 w-4 text-cyan-500 shrink-0" />
+                                    <p className="text-slate-300 text-sm">Neuro Checks q15min</p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
             </div>
+
         )
     }
 
