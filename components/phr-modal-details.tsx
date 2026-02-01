@@ -196,7 +196,7 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                         </div>
                                         <div className="flex justify-end">
                                             <div className="bg-[#155dfc] text-white p-3 rounded-lg rounded-tr-none max-w-[80%] text-sm shadow-md">
-                                                <p className="font-bold text-emerald-200 text-xs mb-1 text-right">John Miller</p>
+                                                <p className="font-bold text-emerald-200 text-xs mb-1 text-right">Robert Johnson</p>
                                                 {step.patient}
                                             </div>
                                         </div>

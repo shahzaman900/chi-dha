@@ -92,7 +92,7 @@
   {
     "patientId": "2",
     "profile": {
-      "name": "John Miller",
+      "name": "Robert Johnson",
       "age": 68,
       "conditions": ["Heart failure", "Hypertension"],
       "living": "With wife",
@@ -270,6 +270,15 @@
                         "Fluid restriction: 2L/day",
                         "Schedule dietary consult"
                     ]
+                },
+                {
+                    "name": "4. Daily Monitoring:",
+                    "items": [
+                        "Weight: Same time, same scale",
+                        "Blood pressure: AM & PM",
+                        "Symptoms: SOB, edema, fatigue",
+                        "Alert if weight ↑2 lbs in 24hrs"
+                    ]
                 }
             ]
         },
@@ -312,7 +321,7 @@
 
     "patientId": "3",
     "profile": {
-      "name": "Emily Johnson",
+      "name": "Kylie James",
       "age": 32,
       "conditions": ["None (Healthy)"],
       "living": "Single, Apartment",

@@ -12,7 +12,7 @@
   },
   {
     "id": "2",
-    "name": "John Miller",
+    "name": "Robert Johnson",
     "age": 68,
     "ewsScore": 7,
     "status": "High Risk",
@@ -21,7 +21,7 @@
   },
   {
     "id": "3",
-    "name": "Emily Johnson",
+    "name": "Kylie James",
     "age": 32,
     "ewsScore": 9,
     "status": "CRITICAL",
