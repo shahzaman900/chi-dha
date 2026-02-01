@@ -21,11 +21,11 @@
   },
   {
     "id": "3",
-    "name": "Ahmad Hassan",
+    "name": "Emily Johnson",
     "age": 32,
-    "ewsScore": 6,
-    "status": "Medium Risk",
-    "trend": "Trending Up",
+    "ewsScore": 9,
+    "status": "CRITICAL",
+    "trend": "Rapid Decline",
     "initiatedBy": "Patient"
   },
   {

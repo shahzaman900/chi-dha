@@ -188,7 +188,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                     </div>
 
                     {/* View Details Button for specific events */}
-                    {(event.time.includes("Day 3") || event.event.includes("Symptom Checker") || event.event.includes("EMERGENCY services dispatched") || event.event.includes("Nurse Sarah") || event.event.includes("AI Assessment")) && (
+                    {(event.time.includes("Day 3") || event.event.includes("Symptom Checker") || event.event.includes("EMERGENCY services dispatched") || event.event.includes("Nurse Sarah") || event.event.includes("AI Assessment") || event.event.includes("Nurse Escalation")) && (
                         <div className="mt-2">
                             <Button 
                                 variant="ghost" 
@@ -197,7 +197,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                                 onClick={() => {
                                     if (event.event.includes("AI Assessment")) {
                                         setActiveModal({ isOpen: true, view: 'assessment' })
-                                    } else if (event.event.includes("Nurse Sarah") || event.event.includes("EMERGENCY")) {
+                                    } else if (event.event.includes("Nurse Sarah") || event.event.includes("EMERGENCY") || event.event.includes("Nurse Escalation")) {
                                         setActiveModal({ isOpen: true, view: 'treatment' })
                                     } else {
                                         setActiveModal({ isOpen: true, view: 'default' })

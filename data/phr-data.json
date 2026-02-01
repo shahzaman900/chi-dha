@@ -175,82 +175,118 @@
     ]
   },
   {
+
     "patientId": "3",
     "profile": {
-      "name": "Ahmad Hassan",
+      "name": "Emily Johnson",
       "age": 32,
-      "conditions": ["Previously healthy"],
-      "living": "With family",
-      "history": "No significant medical history",
-      "status": "Acute onset of symptoms"
+      "conditions": ["None (Healthy)"],
+      "living": "Single, Apartment",
+      "history": "No major surgeries",
+      "status": "Critical - ER Transport"
     },
     "ews": {
-      "score": 12,
+      "score": 9,
       "status": "CRITICAL",
       "color": "red"
     },
     "metrics": {
-      "Fever": { "value": "102.4°F", "change": "" },
-      "Neck Stiffness": { "value": "Severe", "change": "" },
-      "Headache": { "value": "Severe", "change": "" },
-      "Mental Status": { "value": "Altered", "change": "" }
+      "hr": { "value": "115", "change": "+25%" },
+      "rr": { "value": "22", "change": "+40%" },
+      "spo2": { "value": "96%", "change": "-2%" },
+      "bp": { "value": "135/85", "change": "+10%" },
+      "temp": { "value": "102.3°F", "change": "High" }
     },
     "timeline": [
-      { "time": "Jan 31, 2026 11:45 AM", "event": "Patient uses Symptom Checker: AI assessment begins", "type": "system" },
-      { "time": "Jan 31, 2026 11:50 AM", "event": "Fever detected 102.4°F - System escalates concern", "type": "system" },
-      { "time": "Jan 31, 2026 11:50 AM", "event": "CRITICAL: Emergency response triggered - 911 Recommended", "type": "critical" }
+      { "time": "Jan 31, 2026 7:30 AM", "event": "Patient reports severe headache (8/10), fever", "type": "warning" },
+      { "time": "Jan 31, 2026 9:15 AM", "event": "AI Assessment: Meningitis Risk Detected", "type": "system" },
+      { "time": "Jan 31, 2026 9:16 AM", "event": "AI initiates Symptom Check (Red Flag: Nuchal Rigidity)", "type": "system" },
+      { "time": "Jan 31, 2026 9:20 AM", "event": "Nurse Escalation: Immediate ER Referral", "type": "critical" }
     ],
     "diagnosisMetadata": {
-      "title": "Diagnostic Probability Report",
-      "subtitle": "CRITICAL ALERT: High probability of serious inflammatory condition"
+        "title": "Differential Diagnosis - Updated Probabilities",
+        "subtitle": "AI Analysis: Critical Neurological Flags Detected"
     },
+    "initialDiagnosis": [
+        { "name": "Viral Syndrome / Flu", "probability": 45, "color": "orange" },
+        { "name": "Migraine", "probability": 35, "color": "orange" },
+        { "name": "Meningitis", "probability": 15, "color": "orange-light" },
+        { "name": "Dehydration", "probability": 5, "color": "yellow" }
+    ],
     "diagnosis": [
-      { "name": "Meningitis (Bacterial or Viral)", "probability": 85, "color": "red" },
-      { "name": "Encephalitis", "probability": 10, "color": "orange" },
-      { "name": "Severe Systemic Infection (Sepsis)", "probability": 4, "color": "orange-light" },
-      { "name": "Migraine with Fever", "probability": 1, "color": "yellow" }
+        { "name": "Meningitis (Bacterial/Viral)", "probability": 92, "color": "red" },
+        { "name": "Severe Migraine", "probability": 5, "color": "yellow" },
+        { "name": "Influenza", "probability": 3, "color": "green" }
     ],
     "symptomCheckerTranscript": [
-      {
-        "step": "Step 1 - Initial Presentation",
-        "system": "Welcome to the Symptom Checker. To start, how would you describe the onset of your headache?",
-        "patient": "It started this morning as a dull ache, but it's getting much worse. I feel really wiped out.",
-        "alert": "Progressive worsening noted",
-        "alertType": "warning",
-        "alertDesc": "Proceeding to systemic symptom assessment"
-      },
-      {
-        "step": "Step 2 - Fever & Systemic Symptoms",
-        "system": "I'm sorry you're feeling unwell. Are you currently running a fever, or do you have chills or body aches?",
-        "patient": "Yes, I just checked. I have a fever of 102.4°F (39.1°C). My whole body feels heavy and sore.",
-        "alert": "High fever detected (102.4°F)",
-        "alertType": "critical",
-        "alertDesc": "Systemic symptoms present - escalating concern"
-      },
-      {
-        "step": "Step 3 - Physical Maneuvers (Neck Stiffness)",
-        "system": "This is important: Try to chin-tuck (touch your chin to your chest). Are you able to do this comfortably, or is your neck very stiff or painful?",
-        "patient": "I can't do it. My neck is incredibly stiff, and trying to move it makes the pain in my head shoot up.",
-        "alert": "CRITICAL: Nuchal rigidity detected",
-        "alertType": "critical",
-        "alertDesc": "Classic meningitis sign - emergency protocol activated"
-      },
-      {
-        "step": "Step 4 - Sensory & Skin Check",
-        "system": "Are you experiencing sensitivity to bright lights? Also, do you notice any new rashes or small purple/red spots on your skin?",
-        "patient": "The light is blinding me; I'm wearing sunglasses indoors. I don't see a rash yet, but I feel slightly confused and dizzy.",
-        "alert": "Severe photophobia + confusion",
-        "alertType": "critical",
-        "alertDesc": "Altered mental status - critical finding"
-      },
-      {
-        "step": "Step 5 - Mental Status",
-        "system": "Are you finding it difficult to concentrate, or do you feel unusually drowsy or 'foggy'?",
-        "patient": "Yes, it's getting hard to focus on these questions. I just want to sleep, but the pain is too sharp.",
-        "alert": "Altered mental status confirmed",
-        "alertType": "critical",
-        "alertDesc": "Classic Triad complete - Emergency alert triggered"
-      }
-    ]
+        {
+            "step": "Triage Initiation",
+            "system": "Welcome to the Virtual Health Symptom Checker. What brings you here today?",
+            "patient": "I've been feeling really sick. I have a fever and my head is killing me."
+        },
+        {
+            "step": "Symptom Onset",
+            "system": "When did your symptoms start?",
+            "patient": "The headache started yesterday morning, but the fever came on last night."
+        },
+        {
+            "step": "Pain Assessment",
+            "system": "On a scale of 1 to 10, how would you rate your current headache?",
+            "patient": "I'd say it's about an 8. It's really bad, especially behind my eyes and at the base of my skull."
+        },
+        {
+            "step": "Neurological Check",
+            "system": "Have you noticed any stiffness in your neck or difficulty moving your head?",
+            "patient": "Yes, actually. My neck feels really stiff.",
+            "alert": "Initial Red Flag: Nuchal Rigidity Reported",
+            "alertType": "warning",
+            "alertDesc": "Patient reports subjective neck stiffness."
+        },
+        {
+            "step": "Physical Exam (Maneuvers)",
+            "system": "Can you try to tuck your chin in and touch your chest with it?",
+            "patient": "No, it hurts to look down or touch my chin to my chest.",
+            "alert": "CRITICAL SIGN: Positive Meningeal Sign",
+            "alertType": "critical",
+            "alertDesc": "Inability to flex neck suggests meningitis."
+        },
+        {
+            "step": "Red Flag Screening",
+            "system": "Have you experienced: Confusion? Sensitivity to light? Nausea/Vomiting? Rash?",
+            "patient": "Yes to light sensitivity - bright lights bother me. Vomited once this morning. No rash."
+        },
+        {
+            "step": "Vitals Check",
+            "system": "What is your current temperature?",
+            "patient": "I checked about an hour ago and it was 102.3°F."
+        },
+        {
+            "step": "Exposure History",
+            "system": "Sick contacts or travel?",
+            "patient": "No travel. Coworker had flu last week."
+        },
+        {
+            "step": "Final Assessment",
+            "system": "Do you have any chronic medical conditions?",
+            "patient": "No, I'm generally healthy."
+        }
+    ],
+    "treatmentPlan": {
+        "actions": [
+            "Immediate ER Transport (Ambulance Dispatched)",
+            "Notify Emergency Contact",
+            "Pre-Arrival Notification to ER Triage"
+        ],
+        "labDispatch": [
+             "Lumbar Puncture (Stat upon arrival)",
+             "Blood Cultures x2",
+             "CBC, CMP, Inflammatory Markers"
+        ],
+        "nurseDispatch": [
+             "Monitor Vitals en route",
+             "Droplet Precautions Initiated",
+             "Neuro Checks q15min"
+        ]
+    }
   }
 ]
