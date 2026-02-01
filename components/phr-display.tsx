@@ -20,6 +20,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
   const { setIsPhrOpen } = usePatientStore()
   const [activeModal, setActiveModal] = useState<{ isOpen: boolean; view: 'assessment' | 'treatment' | 'default' }>({ isOpen: false, view: 'default' })
   const [showDetailedDiagnosis, setShowDetailedDiagnosis] = useState(false)
+  const [showTreatmentDetails, setShowTreatmentDetails] = useState(false)
 
   if (!patient) {
       return (
@@ -233,6 +234,18 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                             </Button>
                         </div>
                     )}
+                    {patient.patientId === '2' && event.event.includes("Case escalated") && (
+                         <div className="mt-2">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 px-4 text-xs font-medium border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950 hover:text-cyan-300 bg-slate-800/50 rounded-md"
+                                onClick={() => setShowTreatmentDetails(true)}
+                            >
+                                View Detailed
+                            </Button>
+                        </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -317,6 +330,82 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+        </div>
+    )}
+    
+    {patient.patientId === '2' && showTreatmentDetails && patient.treatmentDetails && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200 backdrop-blur-sm">
+            <div className="bg-slate-900 w-full max-w-5xl rounded-xl overflow-hidden shadow-2xl flex flex-col border border-slate-800 max-h-[90vh]">
+                <div className="flex items-center justify-between p-6 border-b border-slate-800 bg-slate-900">
+                    <h2 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
+                        {patient.treatmentDetails.title}
+                    </h2>
+                    <button 
+                        onClick={() => setShowTreatmentDetails(false)}
+                        className="h-8 w-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 transition-colors"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-950 grid grid-cols-1 md:grid-cols-2 gap-6 custom-scrollbar">
+                    {/* Left Column: Immediate Interventions */}
+                    <div className="border border-green-500/30 rounded-lg overflow-hidden flex flex-col">
+                        <div className="bg-green-500/10 p-4 border-b border-green-500/30">
+                            <h3 className="text-green-400 font-bold text-lg uppercase tracking-wide">
+                                {patient.treatmentDetails.immediateInterventions.title}
+                            </h3>
+                            <p className="text-green-500/70 text-sm mt-1">
+                                {patient.treatmentDetails.immediateInterventions.subtitle}
+                            </p>
+                        </div>
+                        <div className="p-6 space-y-6 flex-1 bg-slate-900/50">
+                            {patient.treatmentDetails.immediateInterventions.sections.map((section, idx) => (
+                                <div key={idx}>
+                                    <h4 className="text-cyan-400 font-bold mb-2 text-sm">{section.name}</h4>
+                                    <ul className="space-y-2">
+                                        {section.items.map((item, i) => (
+                                            <li key={i} className="flex items-start gap-2 text-slate-300 text-sm">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-slate-500 mt-1.5 shrink-0"></div>
+                                                {item}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Column: Monitoring & Follow-up */}
+                    <div className="border border-cyan-500/30 rounded-lg overflow-hidden flex flex-col">
+                        <div className="bg-cyan-500/10 p-4 border-b border-cyan-500/30">
+                            <h3 className="text-cyan-400 font-bold text-lg uppercase tracking-wide">
+                                {patient.treatmentDetails.monitoring.title}
+                            </h3>
+                            <p className="text-cyan-500/70 text-sm mt-1">
+                                {patient.treatmentDetails.monitoring.subtitle}
+                            </p>
+                        </div>
+                        <div className="p-6 space-y-6 flex-1 bg-slate-900/50">
+                            {patient.treatmentDetails.monitoring.sections.map((section, idx) => (
+                                <div key={idx}>
+                                    <h4 className={`font-bold mb-2 text-sm ${section.name.includes("Red Flags") ? "text-red-400" : "text-cyan-400"}`}>
+                                        {section.name}
+                                    </h4>
+                                    <ul className="space-y-2">
+                                        {section.items.map((item, i) => (
+                                            <li key={i} className="flex items-start gap-2 text-slate-300 text-sm">
+                                                <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${section.name.includes("Red Flags") ? "bg-red-500" : "bg-slate-500"}`}></div>
+                                                {item}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

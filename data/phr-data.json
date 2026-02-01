@@ -241,7 +241,72 @@
        { "name": "Unspecified paroxysmal ventricular tachycardia", "probability": 10, "color": "yellow" },
        { "name": "pulmonary edema", "probability": 7, "color": "yellow" },
        { "name": "Acute kidney failure, unspecified", "probability": 3, "color": "yellow" }
-    ]
+    ],
+    "treatmentDetails": {
+        "title": "Evidence-Based Treatment for Acute Heart Failure Exacerbation",
+        "immediateInterventions": {
+            "title": "IMMEDIATE INTERVENTIONS",
+            "subtitle": "Start within 24 hours",
+            "sections": [
+                {
+                    "name": "1. Diuretic Management:",
+                    "items": [
+                        "Increase Furosemide: 40mg -> 80mg daily",
+                        "Add Potassium supplement: 20 mEq daily",
+                        "Monitor electrolytes (K+, Na+, Mg2+)"
+                    ]
+                },
+                {
+                    "name": "2. Blood Pressure Control:",
+                    "items": [
+                        "Continue current ACE inhibitor",
+                        "Monitor BP daily (target: <140/90)"
+                    ]
+                },
+                {
+                    "name": "3. Dietary Modifications:",
+                    "items": [
+                        "Sodium restriction: <2g /day",
+                        "Fluid restriction: 2L/day",
+                        "Schedule dietary consult"
+                    ]
+                }
+            ]
+        },
+        "monitoring": {
+            "title": "MONITORING & FOLLOW-UP",
+            "subtitle": "Ongoing assessment",
+            "sections": [
+                {
+                    "name": "Daily Monitoring:",
+                    "items": [
+                        "Weight: Same time, same scale",
+                        "Blood pressure: AM & PM",
+                        "Symptoms: SOB, edema, fatigue",
+                        "Alert if weight ↑2 lbs in 24hrs"
+                    ]
+                },
+                {
+                    "name": "Follow-up Schedule:",
+                    "items": [
+                        "Nurse call: 48 hours",
+                        "Reassess vitals: 24 hours",
+                        "Doctor review: 72 hours",
+                        "Adjust plan based on response"
+                    ]
+                },
+                {
+                    "name": "Red Flags (Seek Immediate Care):",
+                    "items": [
+                        "Severe SOB",
+                        "Chest pain",
+                        "HR >120 bpm",
+                        "Confusion/dizziness"
+                    ]
+                }
+            ]
+        }
+    }
   },
   {
 

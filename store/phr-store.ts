@@ -52,6 +52,19 @@ export interface PhrData {
     positiveFactors: string[];
     negativeFactors: string[];
   }>;
+  treatmentDetails?: {
+    title: string;
+    immediateInterventions: {
+      title: string;
+      subtitle: string;
+      sections: { name: string; items: string[] }[];
+    };
+    monitoring: {
+      title: string;
+      subtitle: string;
+      sections: { name: string; items: string[] }[];
+    };
+  };
 }
 
 interface PhrStore {
