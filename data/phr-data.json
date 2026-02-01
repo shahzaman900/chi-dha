@@ -114,8 +114,8 @@
        { "time": "Jan 29, 2026", "event": "HR 95, BP 140/88", "type": "info" },
        { "time": "Jan 30, 2026", "event": "HR 99, BP 145/90", "type": "info" },
        { "time": "Jan 31, 2026 9:00 AM", "event": "HR 102, BP 148/92, Weight +2.5 lbs", "type": "warning" },
-       { "time": "Jan 31, 2026 9:15 AM", "event": "AI Assessment: Early Heart Failure Exacerbation", "type": "system" },
        { "time": "Jan 31, 2026 9:16 AM", "event": "AI initiated call to patient (Symptom Check)", "type": "system" },
+       { "time": "Jan 31, 2026 9:15 AM", "event": "AI Assessment: Early Heart Failure Exacerbation", "type": "system" },
        { "time": "Jan 31, 2026 9:20 AM", "event": "Case escalated to physician", "type": "critical-action" }
     ],
     "treatmentPlan": {
