@@ -52,7 +52,7 @@
       "subtitle": "Based on vital trends & historical data"
     },
     "diagnosis": [
-      { "name": "Acute exacerbation of unspecified chronic obstructive pulmonary disease", "probability": 65, "color": "orange" },
+      { "name": "Acute exacerbation of unspecified chronic obstructive pulmonary disease", "probability": 65, "color": "red" },
       { "name": "Pneumonia, unspecified organism", "probability": 30, "color": "orange" },
       { "name": "Acute heart failure, unspecified", "probability": 15, "color": "orange-light" },
       { "name": "Pulmonary embolism without acute cor pulmonale", "probability": 10, "color": "yellow" },
