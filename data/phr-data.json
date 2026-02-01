@@ -303,15 +303,6 @@
                         "Doctor review: 72 hours",
                         "Adjust plan based on response"
                     ]
-                },
-                {
-                    "name": "Red Flags (Seek Immediate Care):",
-                    "items": [
-                        "Severe SOB",
-                        "Chest pain",
-                        "HR >120 bpm",
-                        "Confusion/dizziness"
-                    ]
                 }
             ]
         }
