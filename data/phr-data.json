@@ -2,7 +2,7 @@
   {
     "patientId": "1",
     "profile": {
-      "name": "Robert Davis",
+      "name": "William Davis",
       "age": 75,
       "conditions": ["COPD", "HTN", "Diabetes"],
       "living": "Lives alone",
@@ -305,7 +305,24 @@
                     ]
                 }
             ]
-        }
+        },
+        "nurseDispatch": {
+            "title": "NURSE DISPATCH",
+                "items": [
+                    "Nurse Melissa Morgan assigned",
+                    "Home Visit scheduled at patient home on Feb 2nd 2026, 1:00 PM",
+                    "Educate and ensure treatment plan adherence",
+                    "Follow up with primary care physician scheduled for Feb 7th 2026, 9:30 AM"
+                ]
+            },
+            "labDispatch": {
+                "title": "LAB DISPATCH",
+                "items": [
+                    "Lab tech Jacob Mosby assigned",
+                    "Sampling scheduled at patient home on Feb 1st 2026 02:00 PM",
+                    "Labs Ordered: Serum Electrolytes, NT-proBNP"
+                ]
+            }
     }
   },
   {

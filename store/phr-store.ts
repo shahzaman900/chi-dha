@@ -64,6 +64,14 @@ export interface PhrData {
       subtitle: string;
       sections: { name: string; items: string[] }[];
     };
+    nurseDispatch?: {
+      title: string;
+      items: string[];
+    };
+    labDispatch?: {
+      title: string;
+      items: string[];
+    };
   };
 }
 

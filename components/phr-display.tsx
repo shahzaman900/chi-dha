@@ -361,7 +361,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                                 {patient.treatmentDetails.immediateInterventions.subtitle}
                             </p>
                         </div>
-                        <div className="p-6 space-y-6 flex-1 bg-slate-900/50">
+                        <div className="p-6 space-y-6 flex-1 bg-slate-900/50 max-h-[300px] overflow-y-auto custom-scrollbar">
                             {patient.treatmentDetails.immediateInterventions.sections.map((section, idx) => (
                                 <div key={idx}>
                                     <h4 className="text-cyan-400 font-bold mb-2 text-sm">{section.name}</h4>
@@ -388,7 +388,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                                 {patient.treatmentDetails.monitoring.subtitle}
                             </p>
                         </div>
-                        <div className="p-6 space-y-6 flex-1 bg-slate-900/50">
+                        <div className="p-6 space-y-6 flex-1 bg-slate-900/50 max-h-[300px] overflow-y-auto custom-scrollbar">
                             {patient.treatmentDetails.monitoring.sections.map((section, idx) => (
                                 <div key={idx}>
                                     <h4 className={`font-bold mb-2 text-sm ${section.name.includes("Red Flags") ? "text-red-400" : "text-cyan-400"}`}>
@@ -406,6 +406,48 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                             ))}
                         </div>
                     </div>
+
+                    {/* Nurse Dispatch */}
+                    {patient.treatmentDetails.nurseDispatch && (
+                        <div className="border border-violet-500/30 rounded-lg overflow-hidden flex flex-col">
+                            <div className="bg-violet-500/10 p-4 border-b border-violet-500/30">
+                                <h3 className="text-violet-400 font-bold text-lg uppercase tracking-wide">
+                                    {patient.treatmentDetails.nurseDispatch.title}
+                                </h3>
+                            </div>
+                            <div className="p-6 space-y-6 flex-1 bg-slate-900/50 max-h-[300px] overflow-y-auto custom-scrollbar">
+                                <ul className="space-y-4">
+                                    {patient.treatmentDetails.nurseDispatch.items.map((item: string, i: number) => (
+                                        <li key={i} className="flex items-start gap-3 text-slate-300 text-sm">
+                                            <div className="h-2 w-2 rounded-full bg-violet-500 mt-1.5 shrink-0"></div>
+                                            <span>{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Lab Dispatch */}
+                    {patient.treatmentDetails.labDispatch && (
+                        <div className="border border-amber-500/30 rounded-lg overflow-hidden flex flex-col">
+                            <div className="bg-amber-500/10 p-4 border-b border-amber-500/30">
+                                <h3 className="text-amber-400 font-bold text-lg uppercase tracking-wide">
+                                    {patient.treatmentDetails.labDispatch.title}
+                                </h3>
+                            </div>
+                            <div className="p-6 space-y-6 flex-1 bg-slate-900/50 max-h-[300px] overflow-y-auto custom-scrollbar">
+                                <ul className="space-y-4">
+                                    {patient.treatmentDetails.labDispatch.items.map((item: string, i: number) => (
+                                        <li key={i} className="flex items-start gap-3 text-slate-300 text-sm">
+                                            <div className="h-2 w-2 rounded-full bg-amber-500 mt-1.5 shrink-0"></div>
+                                            <span>{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
