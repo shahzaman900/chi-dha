@@ -193,7 +193,7 @@
        "subtitle": "AI Analysis: Based on vital data + patient responses"
     },
      "diagnosis": [
-       { "name": "Acute on chronic systolic (congestive) heart failure", "probability": 50, "color": "red" },
+       { "name": "Acute on chronic systolic (congestive) heart failure", "probability": 70, "color": "red" },
        { "name": "Acute on chronic diastolic (congestive) heart failure", "probability": 30, "color": "orange" },
        { "name": "Fluid overload, unspecified", "probability": 10, "color": "orange-light" },
        { "name": "Acute kidney failure, unspecified", "probability": 5, "color": "yellow" },
@@ -202,7 +202,7 @@
     "diagnosisDetails": [
         {
             "name": "Acute on chronic systolic (congestive) heart failure",
-            "probability": 50,
+            "probability": 70,
             "description": "Patient presents with classic signs and symptoms of acute heart failure decompensation on a likely chronic background, including increased heart rate and blood pressure, significant weight gain, mild shortness of breath on exertion, increased bilateral ankle swelling, and orthopnea, further exacerbated by recent high salt intake.",
             "positiveFactors": ["weight gain 2.5lbs 3days", "ankle swelling increased", "SOB on exertion mild", "orthopnea sleeping propped up", "HR increased 102bpm", "BP increased 148/92", "salty food intake recent"],
             "negativeFactors": ["no chest pain"]
