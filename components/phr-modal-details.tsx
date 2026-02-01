@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator"
 
 import { PhrData } from "@/store/phr-store"
 
-export function PhrModalDetails({ patient }: { patient: PhrData }) {
+export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrData, view?: 'assessment' | 'treatment' | 'default' }) {
   if (patient.patientId === '1') {
       return (
         <div className="bg-slate-950 p-6 rounded-lg h-full overflow-y-auto custom-scrollbar">
@@ -64,6 +64,135 @@ export function PhrModalDetails({ patient }: { patient: PhrData }) {
                     </CardContent>
                 </Card>
              </div>
+        </div>
+      )
+  }
+
+
+  if (patient.patientId === '2') {
+      return (
+        <div className="bg-slate-950 p-6 rounded-lg h-full overflow-y-auto custom-scrollbar flex flex-col gap-6">
+             {/* Header */}
+             <div>
+                <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+                    <div className="bg-orange-500/20 p-2 rounded-lg">
+                        <Activity className="h-6 w-6 text-orange-500" />
+                    </div>
+                    {view === 'assessment' ? 'AI Assessment & Analysis' : 'Early Warning Intervention & Triage'}
+                </h2>
+                <p className="text-slate-400 text-sm mt-1 ml-12">
+                    {view === 'assessment' ? 'Symptom Check & Differential Diagnosis' : 'AI -> Nurse Escalation Protocol Active'}
+                </p>
+             </div>
+
+             {/* Content based on View */}
+             {view === 'assessment' ? (
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[800px]">
+                    {/* Col 1: Initial Diagnosis (Pre-Q&A) */}
+                    <Card className="bg-slate-900 border border-slate-800 flex flex-col h-full">
+                        <CardHeader className="pb-2 bg-slate-800/50 border-b border-slate-800">
+                             <CardTitle className="text-lg text-orange-400">Initial Differential Diagnosis</CardTitle>
+                             <p className="text-xs text-slate-500 font-medium">AI Analysis: Pre-Q&A</p>
+                        </CardHeader>
+                        <CardContent className="pt-4 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+                           {patient.initialDiagnosis?.map((d, i) => (
+                               <DiagnosisBar key={i} name={d.name} percentage={d.probability} color={d.color} description="" />
+                           ))}
+                        </CardContent>
+                    </Card>
+                    
+                    {/* Col 2: Q&A Chat */}
+                    <div className="flex-1 bg-[##fafafa] rounded-xl border border-slate-800 flex flex-col overflow-hidden h-full">
+                        <div className="bg-[#202c33] p-3 flex items-center gap-3 border-b border-slate-800">
+                            <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center">
+                                <Bot className="h-6 w-6 text-emerald-400" />
+                            </div>
+                            <div>
+                                <p className="text-slate-200 font-bold text-sm">CHI Monitoring Agent</p>
+                                <p className="text-slate-500 text-xs">Automated Symptom Check</p>
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900 bg-repeat opacity-90 custom-scrollbar">
+                            {patient.symptomCheckerTranscript?.map((step: any, i: number) => (
+                                <div key={i} className="space-y-4">
+                                    <div className="flex justify-start">
+                                        <div className="bg-[#202c33] text-slate-200 p-3 rounded-lg rounded-tl-none max-w-[80%] text-sm shadow-md">
+                                            <p className="font-bold text-emerald-400 text-xs mb-1">System</p>
+                                            {step.system}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <div className="bg-[#155dfc] text-white p-3 rounded-lg rounded-tr-none max-w-[80%] text-sm shadow-md">
+                                            <p className="font-bold text-emerald-200 text-xs mb-1 text-right">John Miller</p>
+                                            {step.patient}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Col 3: Updated Diagnosis (Post-Q&A) */}
+                    <Card className="bg-slate-900 border border-slate-800 flex flex-col h-full">
+                        <CardHeader className="pb-2 bg-slate-800/50 border-b border-slate-800">
+                             <CardTitle className="text-lg text-red-500">Updated Probabilities</CardTitle>
+                             <p className="text-xs text-slate-500 font-medium">Post-Q&A Analysis</p>
+                        </CardHeader>
+                        <CardContent className="pt-4 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+                           {patient.diagnosis.map((d: any, i: number) => (
+                               <DiagnosisBar key={i} name={d.name} percentage={d.probability} color={d.color} description="" />
+                           ))}
+                        </CardContent>
+                    </Card>
+                 </div>
+             ) : (
+                 <div className="flex flex-col lg:flex-row gap-6 h-[800px]">
+                    {/* Treatment Plan: Approved Actions */}
+                    <Card className="bg-slate-900 border border-slate-800 flex-1">
+                        <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
+                            <CardTitle className="text-sm text-cyan-400 font-bold uppercase tracking-wide">Approved Treatment Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-3 space-y-3">
+                            {patient.treatmentPlan?.actions.map((action: string, i: number) => (
+                                 <div key={i} className="flex gap-3">
+                                    <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500 shrink-0"></div>
+                                    <p className="text-slate-300 text-sm">{action}</p>
+                                 </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    {/* Lab Dispatch */}
+                    <Card className="bg-slate-900 border border-slate-800 flex-1">
+                        <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
+                            <CardTitle className="text-sm text-orange-400 font-bold uppercase tracking-wide">Lab Dispatch Workflow</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-3 space-y-3">
+                             {patient.treatmentPlan?.labDispatch.map((step: string, i: number) => (
+                                 <div key={i} className="flex gap-3">
+                                    <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+                                    <p className="text-slate-300 text-sm">{step}</p>
+                                 </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    {/* Medication Delivery */}
+                    <Card className="bg-slate-900 border border-slate-800 flex-1">
+                        <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
+                            <CardTitle className="text-sm text-emerald-400 font-bold uppercase tracking-wide">Medication Delivery Workflow</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-3 space-y-3">
+                             {patient.treatmentPlan?.nurseDispatch.map((step: string, i: number) => (
+                                 <div key={i} className="flex gap-3">
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                                    <p className="text-slate-300 text-sm">{step}</p>
+                                 </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                 </div>
+             )}
         </div>
       )
   }

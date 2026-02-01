@@ -39,6 +39,11 @@ export interface PhrData {
     nurseDispatch: string[];
   };
   diagnosis: Array<{ name: string; probability: number; color: string }>;
+  initialDiagnosis?: Array<{
+    name: string;
+    probability: number;
+    color: string;
+  }>;
 }
 
 interface PhrStore {

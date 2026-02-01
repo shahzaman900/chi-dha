@@ -80,19 +80,98 @@
       "edema": { "value": "Increasing", "change": "" }
     },
     "timeline": [
-       { "time": "Day 1", "event": "HR 95, BP 140/88, Weight 178 lbs", "type": "info" },
-       { "time": "Day 2", "event": "HR 99, BP 145/90, Weight 179.5 lbs", "type": "info" },
-       { "time": "Day 3 (TODAY)", "event": "HR 102, BP 148/92, Weight 180.5 lbs", "type": "warning" }
+       { "time": "Jan 29, 2026", "event": "HR 95, BP 140/88", "type": "info" },
+       { "time": "Jan 30, 2026", "event": "HR 99, BP 145/90", "type": "info" },
+       { "time": "Jan 31, 2026 9:00 AM", "event": "HR 102, BP 148/92, Weight +2.5 lbs", "type": "warning" },
+       { "time": "Jan 31, 2026 9:15 AM", "event": "AI Assessment: Early Heart Failure Exacerbation", "type": "system" },
+       { "time": "Jan 31, 2026 9:16 AM", "event": "AI initiates call to patient (Symptom Check)", "type": "system" },
+       { "time": "Jan 31, 2026 9:20 AM", "event": "AI escalates to Nurse Sarah (Hybrid Call)", "type": "critical-action" }
+    ],
+    "treatmentPlan": {
+        "actions": [
+            "Medication Management (Increase Diuretics: Lasix 40mg -> 80mg, Add Potassium: K-Dur 20mEq)",
+            "Diagnostics & Tests (STAT Electrolytes, BNP, Scheduled within 24 hours)",
+            "Monitoring Adjustments (Daily Weight Monitoring, Twice Daily BP Checks, Telehealth follow-up in 48 hours)"
+        ],
+        "labDispatch": [
+            "Identify Patient Location (Home/Office)",
+            "Assign Nearest Phlebotomist",
+            "Confirm Dispatch Time (within 4 hours)",
+            "Sample Collection (Blood/Urine)",
+            "Drop-off at Local Lab Partner",
+            "Result Notification to MD & Case Manager"
+        ],
+        "nurseDispatch": [
+             "Verify Prescription",
+             "Check Pharmacy Inventory",
+             "Courier Assignment",
+             "In-Home Delivery",
+             "Education Material Provided",
+             "Log confirmation"
+        ]
+    },
+    "symptomCheckerTranscript": [
+        {
+            "step": "Introduction",
+            "system": "Good morning, this is your personal Monitoring agent calling from the Remote Monitoring Team at CHI. Am I speaking with Mr. Johnson?",
+            "patient": "Yes, this is he."
+        },
+        {
+            "step": "Vitals Review",
+            "system": "Hi Mr. Johnson! I'm reaching out because we've been monitoring your vitals remotely over the past few days... I see that your heart rate has been gradually increasing... and your blood pressure has also been trending upward... and your weight has gone up about two and a half pounds.",
+            "patient": "Hmm, I didn't realize it had gone up that much."
+        },
+        {
+            "step": "Symptom Assessment - SOB",
+            "system": "Have you been experiencing any shortness of breath lately?",
+            "patient": "A little bit, yeah. Mostly when I'm walking around or doing things - you know, on exertion. But not when I'm just sitting."
+        },
+        {
+            "step": "Symptom Assessment - Edema",
+            "system": "And what about your legs - have you noticed any increased swelling, particularly in your ankles or feet?",
+            "patient": "Actually, yes! My ankles have been looking puffier the last couple of days. I thought maybe I was just on my feet too much."
+        },
+        {
+            "step": "Risk Assessment",
+            "system": "Have you had any recent infections or been running a fever? ... Have you been taking all your medications as prescribed?",
+            "patient": "No fever... Yes, absolutely. I take them every day."
+        },
+        {
+            "step": "Dietary Check",
+            "system": "Let me ask you about your diet - have there been any recent changes? Maybe eaten out more than usual, or had any particularly salty foods?",
+            "patient": "Oh! Well, actually... yeah. I went to a family gathering over the weekend and had some pretty salty food - you know, chips, deli meats, that sort of thing. Could that be it?"
+        },
+        {
+            "step": "Sleep Assessment",
+            "system": "One more question - how has your sleep been? Any trouble breathing when you're lying flat?",
+            "patient": "I've actually been sleeping propped up on a couple of pillows the last few nights. I just feel more comfortable that way."
+        },
+        {
+            "step": "Assessment & Escalation",
+            "system": "Based on what you're telling me... it looks like you might be experiencing some early fluid overload... I'm going to bring in Nurse Sarah. She's been listening to our call.",
+            "patient": "Oh... is this serious? ... Yes, thank you for calling."
+        },
+        {
+            "step": "Nurse Intervention",
+            "system": "Nurse Sarah: Hello Mr. Johnson... I'm going to send a message to Dr. Patel about possibly adjusting your diuretic medication temporarily.",
+            "patient": "Will do. Thank you, Sarah."
+        }
     ],
     "diagnosisMetadata": {
        "title": "Differential Diagnosis - Updated Probabilities",
        "subtitle": "AI Analysis: Based on vital data + patient responses"
     },
     "diagnosis": [
-       { "name": "Acute Heart Failure Exacerbation", "probability": 68, "color": "red" },
+       { "name": "Heart Failure Exacerbation", "probability": 68, "color": "red" },
        { "name": "Hypertensive Crisis", "probability": 18, "color": "orange" },
        { "name": "Infection/Sepsis", "probability": 8, "color": "orange-light" },
        { "name": "Medication Non-compliance", "probability": 6, "color": "yellow" }
+    ],
+    "initialDiagnosis": [
+       { "name": "Heart Failure Exacerbation", "probability": 45, "color": "red" },
+       { "name": "Hypertensive Crisis", "probability": 25, "color": "orange" },
+       { "name": "Infection/Sepsis", "probability": 20, "color": "orange-light" },
+       { "name": "Medication Non-compliance", "probability": 10, "color": "yellow" }
     ]
   },
   {

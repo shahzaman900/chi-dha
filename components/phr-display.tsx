@@ -1,6 +1,6 @@
 "use client"
 
-import { usePhrStore } from "@/store/phr-store"
+import { usePhrStore, PhrData } from "@/store/phr-store"
 import { Siren, AlertTriangle, Heart, Activity, Wind, Droplets, User, Clock, X } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -11,11 +11,13 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { PhrModalDetails } from "./phr-modal-details"
 
+
+
 export function PhrDisplay({ patientId }: { patientId: string }) {
   const { getPhrByPatientId } = usePhrStore()
-  const { setIsPhrOpen } = usePatientStore()
   const patient = getPhrByPatientId(patientId)
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const { setIsPhrOpen } = usePatientStore()
+  const [activeModal, setActiveModal] = useState<{ isOpen: boolean; view: 'assessment' | 'treatment' | 'default' }>({ isOpen: false, view: 'default' })
 
   if (!patient) {
       return (
@@ -123,7 +125,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
       <div className="lg:col-span-1 h-full">
         <Card className={`bg-slate-800 border ${borderColor} h-full flex flex-col`}>
           <CardHeader className="pb-2 shrink-0">
-            <CardTitle className={`text-lg flex items-center gap-2 ${patientId === '3' ? 'text-orange-500' : 'text-orange-400'}`}>
+            <CardTitle className={`text-lg flex items-center gap-2 ${patient.profile.name === 'Patient 3' ? 'text-orange-500' : 'text-orange-400'}`}>
                <Activity className="h-5 w-5" /> 
                {patient.diagnosisMetadata?.title || "Differential Diagnosis"}
             </CardTitle>
@@ -186,13 +188,21 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                     </div>
 
                     {/* View Details Button for specific events */}
-                    {(event.time.includes("Day 3") || event.event.includes("Symptom Checker") || event.event.includes("EMERGENCY services dispatched")) && (
+                    {(event.time.includes("Day 3") || event.event.includes("Symptom Checker") || event.event.includes("EMERGENCY services dispatched") || event.event.includes("Nurse Sarah") || event.event.includes("AI Assessment")) && (
                         <div className="mt-2">
                             <Button 
                                 variant="ghost" 
                                 size="sm" 
                                 className="h-8 px-4 text-xs font-medium border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950 hover:text-cyan-300 bg-slate-800/50 rounded-md"
-                                onClick={() => setIsDetailsOpen(true)}
+                                onClick={() => {
+                                    if (event.event.includes("AI Assessment")) {
+                                        setActiveModal({ isOpen: true, view: 'assessment' })
+                                    } else if (event.event.includes("Nurse Sarah") || event.event.includes("EMERGENCY")) {
+                                        setActiveModal({ isOpen: true, view: 'treatment' })
+                                    } else {
+                                        setActiveModal({ isOpen: true, view: 'default' })
+                                    }
+                                }}
                             >
                                 View Details
                             </Button>
@@ -206,14 +216,11 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
         </Card>
       </div>
       </div>
-    <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[1400px] h-[90vh] bg-slate-900 border-slate-700 text-slate-100 overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-cyan-400">{patient.timeline.find(t => t.time.includes("Day 3") || t.time.includes("ALERT"))?.time || "Event Details"}</DialogTitle>
-          </DialogHeader>
-          <PhrModalDetails patient={patient} />
+    <Dialog open={activeModal.isOpen} onOpenChange={(open) => setActiveModal(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent className="max-w-[95vw] h-[90vh] p-0 border-slate-800 bg-slate-950">
+           <PhrModalDetails patient={patient} view={activeModal.view} />
         </DialogContent>
-      </Dialog>
+    </Dialog>
     </div>
   )
 }
