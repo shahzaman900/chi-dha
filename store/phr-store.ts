@@ -1,6 +1,16 @@
 import { create } from "zustand";
 import phrData from "@/data/phr-data.json";
 
+// Define the step type
+export interface SymptomCheckerStep {
+  step: string;
+  system: string;
+  patient: string;
+  alert?: string;
+  alertType?: "warning" | "critical";
+  alertDesc?: string;
+}
+
 export interface PhrData {
   patientId: string;
   profile: {
@@ -22,14 +32,12 @@ export interface PhrData {
     title: string;
     subtitle: string;
   };
-  symptomCheckerTranscript?: {
-    step: string;
-    system: string;
-    patient: string;
-    alert?: string;
-    alertType?: "warning" | "critical";
-    alertDesc?: string;
-  }[];
+  symptomCheckerTranscript?: SymptomCheckerStep[];
+  treatmentPlan?: {
+    actions: string[];
+    labDispatch: string[];
+    nurseDispatch: string[];
+  };
   diagnosis: Array<{ name: string; probability: number; color: string }>;
 }
 

@@ -186,7 +186,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                     </div>
 
                     {/* View Details Button for specific events */}
-                    {(event.time.includes("Day 3") || event.event.includes("Symptom Checker")) && (
+                    {(event.time.includes("Day 3") || event.event.includes("Symptom Checker") || event.event.includes("EMERGENCY services dispatched")) && (
                         <div className="mt-2">
                             <Button 
                                 variant="ghost" 

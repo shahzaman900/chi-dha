@@ -7,9 +7,10 @@ export interface Patient {
   age: number;
   ewsScore: number;
   status: string;
-  status: string;
   trend: string;
   initiatedBy?: string;
+  escalationStatus?: string;
+  escalatedBy?: string;
 }
 
 interface PatientStore {

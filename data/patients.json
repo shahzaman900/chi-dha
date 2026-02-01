@@ -6,7 +6,9 @@
     "ewsScore": 11,
     "status": "CRITICAL",
     "trend": "Escalating",
-    "initiatedBy": "System"
+    "initiatedBy": "System",
+    "escalationStatus": "Dispatched",
+    "escalatedBy": "Nurse"
   },
   {
     "id": "2",

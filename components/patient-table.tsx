@@ -62,6 +62,7 @@ export function PatientTable() {
               <TableHead className="text-slate-400 font-medium">EWS Score</TableHead>
               <TableHead className="text-slate-400 font-medium">Status</TableHead>
               <TableHead className="text-slate-400 font-medium">Initiated By</TableHead>
+              <TableHead className="text-slate-400 font-medium">Escalated By</TableHead>
               <TableHead className="text-slate-400 font-medium">Trend</TableHead>
             </TableRow>
           </TableHeader>
@@ -94,14 +95,23 @@ export function PatientTable() {
                 <TableCell>
                     <div className="flex items-center font-medium text-slate-200">
                         {getStatusIcon(patient.status)}
-                        {patient.status}
+                        <span className={
+                            patient.status === "CRITICAL" ? "text-red-400" :
+                            patient.status === "High Risk" ? "text-orange-400" :
+                            patient.status === "Medium Risk" ? "text-yellow-400" : "text-emerald-400"
+                        }>{patient.status}</span>
                     </div>
                 </TableCell>
-                <TableCell>
-                    <span className="text-slate-300 font-medium">{patient.initiatedBy || "-"}</span>
+                <TableCell className="text-slate-300">{patient.initiatedBy || "-"}</TableCell>
+                <TableCell className="text-slate-300">
+                    {patient.escalatedBy ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900/40 text-red-200 border border-red-800/50">
+                            {patient.escalatedBy}
+                        </span>
+                    ) : "-"}
                 </TableCell>
-                <TableCell>
-                    <div className="flex items-center font-medium text-slate-300">
+                <TableCell className="font-medium">
+                    <div className="flex items-center text-slate-300">
                         {getTrendIcon(patient.trend)}
                         {patient.trend}
                     </div>

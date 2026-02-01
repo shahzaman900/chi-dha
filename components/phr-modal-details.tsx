@@ -1,10 +1,73 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bot, CheckCircle2 } from "lucide-react"
+import { Bot, CheckCircle2, Activity } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 
 import { PhrData } from "@/store/phr-store"
 
 export function PhrModalDetails({ patient }: { patient: PhrData }) {
+  if (patient.patientId === '1') {
+      return (
+        <div className="bg-slate-950 p-6 rounded-lg h-full overflow-y-auto custom-scrollbar">
+             <div className="mb-6">
+                <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+                    <div className="bg-red-500/20 p-2 rounded-lg">
+                        <Activity className="h-6 w-6 text-red-500" />
+                    </div>
+                    Treatment Plan Execution
+                </h2>
+                <p className="text-slate-400 text-sm mt-1 ml-12">Critial Escalation Protocol Active</p>
+             </div>
+
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Column 1: Approved Treatment Actions */}
+                <Card className="bg-slate-900 border border-slate-800">
+                    <CardHeader className="bg-slate-800/50 border-b border-slate-800 pb-3">
+                        <CardTitle className="text-base text-cyan-400 font-bold uppercase tracking-wide">Approved Treatment Actions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                        {patient.treatmentPlan?.actions.map((action, i) => (
+                             <div key={i} className="flex gap-3">
+                                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500 shrink-0"></div>
+                                <p className="text-slate-300 text-sm leading-relaxed">{action}</p>
+                             </div>
+                        ))}
+                    </CardContent>
+                </Card>
+
+                {/* Column 2: Lab Dispatch Workflow */}
+                <Card className="bg-slate-900 border border-slate-800">
+                    <CardHeader className="bg-slate-800/50 border-b border-slate-800 pb-3">
+                        <CardTitle className="text-base text-orange-400 font-bold uppercase tracking-wide">Lab Dispatch Workflow</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                        {patient.treatmentPlan?.labDispatch.map((step, i) => (
+                             <div key={i} className="flex gap-3">
+                                <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+                                <p className="text-slate-300 text-sm leading-relaxed">{step}</p>
+                             </div>
+                        ))}
+                    </CardContent>
+                </Card>
+
+                {/* Column 3: Nurse Dispatch Workflow */}
+                 <Card className="bg-slate-900 border border-slate-800">
+                    <CardHeader className="bg-slate-800/50 border-b border-slate-800 pb-3">
+                        <CardTitle className="text-base text-emerald-400 font-bold uppercase tracking-wide">Nurse Dispatch Workflow</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                        {patient.treatmentPlan?.nurseDispatch.map((step, i) => (
+                             <div key={i} className="flex gap-3">
+                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                                <p className="text-slate-300 text-sm leading-relaxed">{step}</p>
+                             </div>
+                        ))}
+                    </CardContent>
+                </Card>
+             </div>
+        </div>
+      )
+  }
+
   if (patient.patientId === '3') {
     return (
       <div className="flex flex-col h-full bg-slate-950 p-6 rounded-lg">

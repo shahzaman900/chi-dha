@@ -23,21 +23,39 @@
     "timeline": [
       { "time": "Jan 31, 2026 4:45 AM", "event": "Vitals show rapid deterioration", "type": "info" },
       { "time": "Jan 31, 2026 4:47 AM", "event": "EWS computed: 11 (CRITICAL)", "type": "critical" },
-      { "time": "Jan 31, 2026 4:49 AM", "event": "AI system initiates alert protocol", "type": "system" },
-      { "time": "Jan 31, 2026 4:50 AM", "event": "System dials patient phone", "type": "system" },
-      { "time": "Jan 31, 2026 4:52 AM", "event": "Patient: disoriented, can't respond", "type": "info" },
-      { "time": "Jan 31, 2026 4:53 AM", "event": "Emergency contact notified", "type": "system" },
-      { "time": "Jan 31, 2026 4:55 AM", "event": "911 EMERGENCY CALL PLACED", "type": "critical-action" }
+      { "time": "Jan 31, 2026 4:49 AM", "event": "AI calls, no response (patient disoriented)", "type": "system" },
+      { "time": "Jan 31, 2026 4:51 AM", "event": "AI escalates case to Nurse", "type": "system" },
+      { "time": "Jan 31, 2026 4:55 AM", "event": "Nurse escalates case and EMERGENCY services dispatched", "type": "critical-action" }
     ],
+    "treatmentPlan": {
+        "actions": [
+            "Medication Management (Dose modification, New prescription added, Delivery/Confirmation)",
+            "Diagnostics & Tests (Lab tests ordered: BNP, electrolytes; Imaging: Ultrasound/X-ray)",
+            "Monitoring Adjustments (Intensified observation, Remote vitals review)"
+        ],
+        "labDispatch": [
+            "Lab Tech assigned automatically",
+            "Same day or scheduled 24-48 HR home visit",
+            "Lab test sampling at patient home",
+            "Results uploaded automatically for doctor review"
+        ],
+        "nurseDispatch": [
+             "Nurse assigned automatically",
+             "Same-day or scheduled 24-48hr home visit",
+             "Perform tests & administer treatment",
+             "Educate & ensure treatment plan adherence",
+             "Confirmation: Labs completed, Meds delivered, Patient acknowledged"
+        ]
+    },
     "diagnosisMetadata": {
       "title": "AI Differential Diagnosis",
       "subtitle": "Based on vital trends & historical data"
     },
     "diagnosis": [
-      { "name": "Acute Heart Failure Exacerbation", "probability": 45, "color": "red" },
-      { "name": "Hypertensive Crisis", "probability": 25, "color": "orange" },
-      { "name": "Infection/Sepsis", "probability": 20, "color": "yellow" },
-      { "name": "Medication Non-compliance", "probability": 10, "color": "yellow-light" }
+      { "name": "Congestive Heart Failure (Decompensated)", "probability": 85, "color": "red" },
+      { "name": "COPD Exacerbation", "probability": 45, "color": "red" },
+      { "name": "Pulmonary Edema", "probability": 30, "color": "orange" },
+      { "name": "Sepsis (Early signs)", "probability": 5, "color": "orange-light" }
     ]
   },
   {
