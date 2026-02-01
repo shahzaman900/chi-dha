@@ -52,7 +52,7 @@
       "subtitle": "Based on vital trends & historical data"
     },
     "diagnosis": [
-      { "name": "Acute exacerbation of unspecified chronic obstructive pulmonary disease", "probability": 40, "color": "orange" },
+      { "name": "Acute exacerbation of unspecified chronic obstructive pulmonary disease", "probability": 65, "color": "orange" },
       { "name": "Pneumonia, unspecified organism", "probability": 30, "color": "orange" },
       { "name": "Acute heart failure, unspecified", "probability": 15, "color": "orange-light" },
       { "name": "Pulmonary embolism without acute cor pulmonale", "probability": 10, "color": "yellow" },
@@ -61,7 +61,7 @@
     "diagnosisDetails": [
         {
             "name": "Acute exacerbation of unspecified chronic obstructive pulmonary disease",
-            "probability": 40,
+            "probability": 65,
             "description": "Patient has a history of COPD and presents with acute, progressive worsening of respiratory rate, heart rate, and oxygen saturation. This is a common and severe complication of COPD.",
             "positiveFactors": ["COPD history", "RR increasing", "SpO2 decreasing", "HR increasing", "Age 75 years"],
             "negativeFactors": []
