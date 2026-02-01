@@ -270,15 +270,6 @@
                         "Fluid restriction: 2L/day",
                         "Schedule dietary consult"
                     ]
-                },
-                {
-                    "name": "4. Daily Monitoring:",
-                    "items": [
-                        "Weight: Same time, same scale",
-                        "Blood pressure: AM & PM",
-                        "Symptoms: SOB, edema, fatigue",
-                        "Alert if weight ↑2 lbs in 24hrs"
-                    ]
                 }
             ]
         },
@@ -286,6 +277,15 @@
             "title": "MONITORING & FOLLOW-UP",
             "subtitle": "Ongoing assessment",
             "sections": [
+                {
+                    "name": "Daily Monitoring:",
+                    "items": [
+                        "Weight: Same time, same scale",
+                        "Blood pressure: AM & PM",
+                        "Symptoms: SOB, edema, fatigue",
+                        "Alert if weight ↑2 lbs in 24hrs"
+                    ]
+                },
                 {
                     "name": "Follow-up Schedule:",
                     "items": [
