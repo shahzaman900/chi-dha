@@ -268,8 +268,8 @@
     },
     "timeline": [
       { "time": "Jan 31, 2026 7:30 AM", "event": "Patient reports severe headache (8/10), fever", "type": "warning" },
+      { "time": "Jan 31, 2026 9:16 AM", "event": "Patient initiated AI symptom Check Assessment ", "type": "system" },
       { "time": "Jan 31, 2026 9:15 AM", "event": "AI Assessment: Meningitis Risk Detected", "type": "system" },
-      { "time": "Jan 31, 2026 9:16 AM", "event": "AI initiates Symptom Check (Red Flag: Nuchal Rigidity)", "type": "system" },
       { "time": "Jan 31, 2026 9:20 AM", "event": "Nurse Escalation: Immediate ER Referral", "type": "critical" }
     ],
     "diagnosisMetadata": {
