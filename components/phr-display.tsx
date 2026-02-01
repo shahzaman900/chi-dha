@@ -139,7 +139,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                         </p>
                     )}
                 </div>
-                {patient.patientId === '3' && (
+                {patient.diagnosisDetails && (
                     <Button 
                         variant="ghost" 
                         size="sm"
