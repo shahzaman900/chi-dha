@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { usePatientStore } from "@/store/patient-store"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { Maximize2 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { PhrModalDetails } from "./phr-modal-details"
 
@@ -18,6 +19,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
   const patient = getPhrByPatientId(patientId)
   const { setIsPhrOpen } = usePatientStore()
   const [activeModal, setActiveModal] = useState<{ isOpen: boolean; view: 'assessment' | 'treatment' | 'default' }>({ isOpen: false, view: 'default' })
+  const [showDetailedDiagnosis, setShowDetailedDiagnosis] = useState(false)
 
   if (!patient) {
       return (
@@ -125,15 +127,29 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
       <div className="lg:col-span-1 h-full">
         <Card className={`bg-slate-800 border ${borderColor} h-full flex flex-col`}>
           <CardHeader className="pb-2 shrink-0">
-            <CardTitle className={`text-lg flex items-center gap-2 ${patient.profile.name === 'Patient 3' ? 'text-orange-500' : 'text-orange-400'}`}>
-               <Activity className="h-5 w-5" /> 
-               {patient.diagnosisMetadata?.title || "Differential Diagnosis"}
-            </CardTitle>
-            {patient.diagnosisMetadata?.subtitle && (
-                <p className="text-xs text-slate-500 font-medium uppercase mt-1">
-                    {patient.diagnosisMetadata.subtitle}
-                </p>
-            )}
+             <div className="flex justify-between items-start">
+                <div>
+                    <CardTitle className={`text-lg flex items-center gap-2 ${patient.profile.name === 'Patient 3' ? 'text-orange-500' : 'text-orange-400'}`}>
+                    <Activity className="h-5 w-5" /> 
+                    {patient.diagnosisMetadata?.title || "Differential Diagnosis"}
+                    </CardTitle>
+                    {patient.diagnosisMetadata?.subtitle && (
+                        <p className="text-xs text-slate-500 font-medium uppercase mt-1">
+                            {patient.diagnosisMetadata.subtitle}
+                        </p>
+                    )}
+                </div>
+                {patient.patientId === '3' && (
+                    <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setShowDetailedDiagnosis(true)}
+                        className="h-7 px-2 text-[10px] font-bold uppercase tracking-wider border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/50 hover:text-cyan-300 gap-1.5 ml-2"
+                    >
+                        <Maximize2 className="h-3 w-3" /> View Detailed
+                    </Button>
+                )}
+             </div>
           </CardHeader>
           <CardContent className="space-y-6 pt-4 flex-1 overflow-y-auto max-h-[500px] custom-scrollbar">
             {patient.diagnosis.map((d: any, i: number) => (
@@ -221,6 +237,81 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
            <PhrModalDetails patient={patient} view={activeModal.view} />
         </DialogContent>
     </Dialog>
+
+    {showDetailedDiagnosis && patient.diagnosisDetails && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200 backdrop-blur-sm">
+            <div className="bg-slate-950 w-full max-w-4xl max-h-[90vh] rounded-xl overflow-hidden shadow-2xl flex flex-col border border-slate-800">
+                <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
+                    <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-cyan-400" />
+                        Differential Diagnosis
+                    </h2>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700">
+                            <Activity className="h-4 w-4 text-green-500 animate-pulse" />
+                            <span className="text-xs font-medium text-slate-400">Live Analysis</span>
+                        </div>
+                        <button 
+                            onClick={() => setShowDetailedDiagnosis(false)}
+                            className="h-8 w-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors border border-slate-700"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+                    </div>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-950 space-y-4 custom-scrollbar">
+                    {patient.diagnosisDetails.map((detail, idx) => (
+                        <div key={idx} className="bg-slate-900/50 border-l-4 border-l-yellow-500 rounded-r-lg shadow-sm p-5 relative overflow-hidden border-y border-r border-slate-800">
+                            <div className="flex justify-between items-start mb-3">
+                                <h3 className="text-lg font-bold text-yellow-400 tracking-wide">{detail.name}</h3>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-2xl font-bold text-yellow-400 leading-none">{detail.probability}%</span>
+                                        <span className="text-[10px] text-yellow-500/50 uppercase font-bold tracking-wider">Probability</span>
+                                    </div>
+                                    <div className="h-8 w-[1px] bg-slate-800"></div>
+                                    <div className="flex flex-col items-start">
+                                        <div className="text-lg font-bold text-slate-200 leading-none">{detail.risk}%</div>
+                                        <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Risk Score</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="absolute top-0 right-0 w-32 h-20 bg-gradient-to-br from-yellow-500/5 to-transparent pointer-events-none"></div>
+                            
+                            <p className="text-slate-300 text-sm mb-5 leading-relaxed">
+                                {detail.description}
+                            </p>
+                            
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {detail.positiveFactors.map((factor, i) => (
+                                    <span key={i} className="px-2.5 py-1 bg-green-500/10 text-green-400 text-xs font-bold rounded-md border border-green-500/20 flex items-center gap-1.5">
+                                        <span className="w-1 h-1 rounded-full bg-green-500"></span>
+                                        {factor}
+                                    </span>
+                                ))}
+                                {detail.negativeFactors.map((factor, i) => (
+                                    <span key={i} className="px-2.5 py-1 bg-red-500/10 text-red-400 text-xs font-bold rounded-md border border-red-500/20 flex items-center gap-1.5">
+                                        <span className="w-1 h-1 rounded-full bg-red-500"></span>
+                                        {factor}
+                                    </span>
+                                ))}
+                            </div>
+                            
+                            {/* Progress Bar Visual */}
+                            <div className="mt-2 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div 
+                                    className="h-full bg-yellow-500/80 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]" 
+                                    style={{ width: `${detail.probability}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )}
     </div>
   )
 }

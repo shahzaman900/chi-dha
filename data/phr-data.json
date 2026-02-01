@@ -52,10 +52,11 @@
       "subtitle": "Based on vital trends & historical data"
     },
     "diagnosis": [
-      { "name": "Congestive Heart Failure (Decompensated)", "probability": 85, "color": "red" },
-      { "name": "COPD Exacerbation", "probability": 45, "color": "red" },
-      { "name": "Pulmonary Edema", "probability": 30, "color": "orange" },
-      { "name": "Sepsis (Early signs)", "probability": 5, "color": "orange-light" }
+      { "name": "Chronic obstructive pulmonary disease with (acute) exacerbation", "probability": 40, "color": "orange" },
+      { "name": "Pneumonia, unspecified orfanism", "probability": 30, "color": "orange" },
+      { "name": "Acute systolic (congestive) heart failure", "probability": 15, "color": "orange-light" },
+      { "name": "Pulmonary embolism without acute cor pulmonale", "probability": 10, "color": "yellow" },
+      { "name": "Sepsis, unspecified orgnism", "probability": 5, "color": "yellow" }
     ]
   },
   {
@@ -162,16 +163,17 @@
        "subtitle": "AI Analysis: Based on vital data + patient responses"
     },
     "diagnosis": [
-       { "name": "Heart Failure Exacerbation", "probability": 68, "color": "red" },
-       { "name": "Hypertensive Crisis", "probability": 18, "color": "orange" },
-       { "name": "Infection/Sepsis", "probability": 8, "color": "orange-light" },
-       { "name": "Medication Non-compliance", "probability": 6, "color": "yellow" }
+       { "name": "Acute exacerbation chronic congestive heart failure", "probability": 70, "color": "red" },
+       { "name": "Unspecified paroxysmal ventricular tachycardia", "probability": 15, "color": "orange" },
+       { "name": "pulmonary edema", "probability": 10, "color": "orange-light" },
+       { "name": "Acute kidney failure, unspecified", "probability": 3, "color": "yellow" },
+       { "name": "Anemia, unspecified", "probability": 2, "color": "yellow" }
     ],
     "initialDiagnosis": [
-       { "name": "Heart Failure Exacerbation", "probability": 45, "color": "red" },
-       { "name": "Hypertensive Crisis", "probability": 25, "color": "orange" },
-       { "name": "Infection/Sepsis", "probability": 20, "color": "orange-light" },
-       { "name": "Medication Non-compliance", "probability": 10, "color": "yellow" }
+        { "name": "Acute exacerbation chronic congestive heart failure", "probability": 45, "color": "orange" },
+       { "name": "Unspecified paroxysmal ventricular tachycardia", "probability": 10, "color": "yellow" },
+       { "name": "pulmonary edema", "probability": 7, "color": "yellow" },
+       { "name": "Acute kidney failure, unspecified", "probability": 3, "color": "yellow" }
     ]
   },
   {
@@ -208,15 +210,60 @@
         "subtitle": "AI Analysis: Critical Neurological Flags Detected"
     },
     "initialDiagnosis": [
-        { "name": "Viral Syndrome / Flu", "probability": 45, "color": "orange" },
-        { "name": "Migraine", "probability": 35, "color": "orange" },
-        { "name": "Meningitis", "probability": 15, "color": "orange-light" },
-        { "name": "Dehydration", "probability": 5, "color": "yellow" }
+        { "name": "Bacterial meningitis, unspecified", "probability": 40, "color": "orange" },
+        { "name": "Viral meningtis, unspecified", "probability": 30, "color": "orange" },
+        { "name": "Subarachnoid hemorrhage, unspecified", "probability": 15, "color": "orange-light" },
+        { "name": "Encephalitis, myelitis and encephalomyelitis, unspecified", "probability": 10, "color": "yellow" },
+        { "name": "Acute sinusitis, unspecified", "probability": 5, "color": "yellow" }
     ],
     "diagnosis": [
-        { "name": "Meningitis (Bacterial/Viral)", "probability": 92, "color": "red" },
-        { "name": "Severe Migraine", "probability": 5, "color": "yellow" },
-        { "name": "Influenza", "probability": 3, "color": "green" }
+        { "name": "Bacterial meningitis, unspecified", "probability": 45, "color": "red" },
+        { "name": "Viral meningitis, unspecified", "probability": 35, "color": "orange" },
+        { "name": "Encephalitis, myelitis and encephalomyelitis, unspecified", "probability": 10, "color": "orange-light" },
+        { "name": "Influenza, unspecified", "probability": 5, "color": "yellow" },
+        { "name": "Acute sinusitis, unspecified", "probability": 5, "color": "yellow" }
+    ],
+    "diagnosisDetails": [
+        {
+            "name": "Meningitis, unspecified bacterial",
+            "probability": 45,
+            "risk": 90,
+            "description": "Patient presents with high fever (102.3F), severe headache (8/10, behind eyes, base of skull), significant neck stiffness, positive nuchal rigidity (pain with chin to chest), photophobia, and vomiting. These are classic signs of bacterial meningitis, which is a medical emergency requiring immediate investigation and treatment.",
+            "positiveFactors": ["temperature 102.3F", "headache severe", "neck stiffness", "nuchal rigidity positive", "photophobia", "vomiting present once morning", "ibuprofen ineffective"],
+            "negativeFactors": ["rash absent", "confusion absent"]
+        },
+        {
+            "name": "Viral meningitis, unspecified",
+            "probability": 35,
+            "risk": 75,
+            "description": "Many symptoms overlap with bacterial meningitis, including fever, severe headache, neck stiffness, photophobia, and vomiting. Viral meningitis is generally less severe but still requires urgent medical evaluation and differentiation from bacterial causes.",
+            "positiveFactors": ["temperature 102.3F", "headache severe", "neck stiffness", "nuchal rigidity positive", "photophobia", "vomiting present once morning", "ibuprofen ineffective"],
+            "negativeFactors": ["rash absent", "confusion absent"]
+        },
+        {
+            "name": "Encephalitis, myelitis and encephalomyelitis, unspecified",
+            "probability": 10,
+            "risk": 80,
+            "description": "Though the patient denies confusion, encephalitis remains a critical differential in the context of high fever, severe headache, and meningeal signs. It involves inflammation of the brain itself and can present with similar symptoms.",
+            "positiveFactors": ["temperature 102.3F", "headache severe", "fever", "nuchal rigidity positive", "photophobia"],
+            "negativeFactors": ["confusion absent", "seizures absent"]
+        },
+        {
+            "name": "Influenza due to unidentified influenza virus",
+            "probability": 5,
+            "risk": 40,
+            "description": "Patient has fever and headache, and a coworker had the flu. However, the prominent nuchal rigidity and photophobia are typical for uncomplicated influenza and suggest a more serious central nervous system process.",
+            "positiveFactors": ["fever", "temperature 102.3F", "headache severe", "flu exposure coworker", "nuchal rigidity positive", "photophobia"],
+            "negativeFactors": []
+        },
+        {
+            "name": "Acute sinusitis, unspecified",
+            "probability": 5,
+            "risk": 30,
+            "description": "Sinusitis can cause headache (especially behind eyes) and fever. However, the severity of headache (8/10), prominent nuchal rigidity, photophobia, and vomiting are not typical for isolated sinusitis.",
+            "positiveFactors": ["headache severe", "headache location behind eyes", "fever", "nuchal rigidity positive", "photophobia"],
+            "negativeFactors": []
+        }
     ],
     "symptomCheckerTranscript": [
         {

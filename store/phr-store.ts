@@ -44,6 +44,14 @@ export interface PhrData {
     probability: number;
     color: string;
   }>;
+  diagnosisDetails?: Array<{
+    name: string;
+    probability: number;
+    risk: number;
+    description: string;
+    positiveFactors: string[];
+    negativeFactors: string[];
+  }>;
 }
 
 interface PhrStore {

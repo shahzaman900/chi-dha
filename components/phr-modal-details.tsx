@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bot, CheckCircle2, Activity, AlertTriangle, Siren, Check } from "lucide-react"
+import { Bot, CheckCircle2, Activity, AlertTriangle, Siren, Check, Maximize2, X } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import { useState } from "react"
 
 import { PhrData } from "@/store/phr-store"
 
 export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrData, view?: 'assessment' | 'treatment' | 'default' }) {
+    const [showDiagnosisDetails, setShowDiagnosisDetails] = useState(false);
     if (patient.patientId === '1') {
         return (
             <div className="bg-slate-950 p-6 rounded-lg h-full overflow-y-auto custom-scrollbar">
@@ -69,19 +71,21 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
     }
 
 
-    if (patient.patientId === '2') {
+    if (patient.patientId === '2' || patient.patientId === '3') {
+        const isEmergency = patient.patientId === '3';
+
         return (
             <div className="bg-slate-950 p-6 rounded-lg h-full overflow-y-auto custom-scrollbar flex flex-col gap-6">
                 {/* Header */}
                 <div>
-                    <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                        <div className="bg-orange-500/20 p-2 rounded-lg">
-                            <Activity className="h-6 w-6 text-orange-500" />
+                    <h2 className={`text-xl font-bold flex items-center gap-2 ${isEmergency ? 'text-red-400' : 'text-slate-100'}`}>
+                        <div className={`p-2 rounded-lg ${isEmergency ? 'bg-red-500/20' : 'bg-orange-500/20'}`}>
+                            {isEmergency ? <AlertTriangle className="h-6 w-6 text-red-500" /> : <Activity className="h-6 w-6 text-orange-500" />}
                         </div>
-                        {view === 'assessment' ? 'AI Assessment & Analysis' : 'Early Warning Intervention & Triage'}
+                        {view === 'assessment' ? 'AI Assessment & Analysis' : (isEmergency ? 'CRITICAL: Emergency Protocol Activation' : 'Early Warning Intervention & Triage')}
                     </h2>
                     <p className="text-slate-400 text-sm mt-1 ml-12">
-                        {view === 'assessment' ? 'Symptom Check & Differential Diagnosis' : 'AI -> Nurse Escalation Protocol Active'}
+                        {view === 'assessment' ? 'Symptom Check & Differential Diagnosis' : (isEmergency ? 'AI -> ER Diversion Protocol Active' : 'AI -> Nurse Escalation Protocol Active')}
                     </p>
                 </div>
 
@@ -135,8 +139,20 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                         {/* Col 3: Updated Diagnosis (Post-Q&A) */}
                         <Card className="bg-slate-900 border border-slate-800 flex flex-col h-full">
                             <CardHeader className="pb-2 bg-slate-800/50 border-b border-slate-800">
-                                <CardTitle className="text-lg text-red-500">Updated Probabilities</CardTitle>
-                                <p className="text-xs text-slate-500 font-medium">Post-Q&A Analysis</p>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle className="text-lg text-red-500">Updated Probabilities</CardTitle>
+                                        <p className="text-xs text-slate-500 font-medium">Post-Q&A Analysis</p>
+                                    </div>
+                                    {patient.patientId === '3' && (
+                                        <button 
+                                            onClick={() => setShowDiagnosisDetails(true)}
+                                            className="text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider border border-cyan-500/30 px-2 py-1 rounded bg-cyan-950/30"
+                                        >
+                                            <Maximize2 className="h-3 w-3" /> View Detailed
+                                        </button>
+                                    )}
+                                </div>
                             </CardHeader>
                             <CardContent className="pt-4 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
                                 {patient.diagnosis.map((d: any, i: number) => (
@@ -147,52 +163,195 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                     </div>
                 ) : (
                     <div className="flex flex-col lg:flex-row gap-6 h-[800px]">
-                        {/* Treatment Plan: Approved Actions */}
-                        <Card className="bg-slate-900 border border-slate-800 flex-1">
-                            <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
-                                <CardTitle className="text-sm text-cyan-400 font-bold uppercase tracking-wide">Approved Treatment Actions</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-3 space-y-3">
-                                {patient.treatmentPlan?.actions.map((action: string, i: number) => (
-                                    <div key={i} className="flex gap-3">
-                                        <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500 shrink-0"></div>
-                                        <p className="text-slate-300 text-sm">{action}</p>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
+                       {isEmergency ? (
+                           <>
+                              {/* Emergency Col 1: ER Transport */}
+                              <Card className="bg-red-950/10 border border-red-900/40 flex-1">
+                                   <CardHeader className="bg-red-900/20 border-b border-red-900/40 py-3">
+                                       <CardTitle className="text-sm text-red-400 font-bold uppercase tracking-wide flex items-center gap-2">
+                                           <Siren className="h-4 w-4" /> Immediate ER Transport
+                                       </CardTitle>
+                                   </CardHeader>
+                                   <CardContent className="pt-4 space-y-4">
+                                       <div className="p-4 bg-red-900/10 rounded-lg border border-red-900/30">
+                                           <div className="text-red-300 font-bold text-lg mb-1">Ambulance Dispatched</div>
+                                           <div className="text-red-400/70 text-sm">ETA: 8 Minutes</div>
+                                       </div>
+                                       {patient.treatmentPlan?.actions.map((action: string, i: number) => (
+                                           <div key={i} className="flex gap-3">
+                                               <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-red-500 shrink-0"></div>
+                                               <p className="text-slate-300 text-sm">{action}</p>
+                                           </div>
+                                       ))}
+                                   </CardContent>
+                              </Card>
 
-                        {/* Lab Dispatch */}
-                        <Card className="bg-slate-900 border border-slate-800 flex-1">
-                            <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
-                                <CardTitle className="text-sm text-orange-400 font-bold uppercase tracking-wide">Lab Dispatch Workflow</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-3 space-y-3">
-                                {patient.treatmentPlan?.labDispatch.map((step: string, i: number) => (
-                                    <div key={i} className="flex gap-3">
-                                        <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
-                                        <p className="text-slate-300 text-sm">{step}</p>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
+                              {/* Emergency Col 2: Hospital Notification */}
+                              <Card className="bg-slate-900 border border-slate-800 flex-1">
+                                   <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
+                                       <CardTitle className="text-sm text-orange-400 font-bold uppercase tracking-wide">ER Triage Notification</CardTitle>
+                                   </CardHeader>
+                                   <CardContent className="pt-4 space-y-4">
+                                       <div className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg">
+                                           <div className="h-8 w-8 rounded-full bg-green-900/30 flex items-center justify-center border border-green-500/30">
+                                               <Check className="h-4 w-4 text-green-500" />
+                                           </div>
+                                           <div>
+                                               <div className="text-slate-200 font-medium text-sm">City General ER Notified</div>
+                                               <div className="text-slate-500 text-xs">Meningitis Protocol Activated</div>
+                                           </div>
+                                       </div>
+                                       <Separator className="bg-slate-800" />
+                                       {patient.treatmentPlan?.labDispatch.map((step: string, i: number) => (
+                                           <div key={i} className="flex gap-3">
+                                               <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+                                               <p className="text-slate-300 text-sm">{step}</p>
+                                           </div>
+                                       ))}
+                                   </CardContent>
+                              </Card>
 
-                        {/* Medication Delivery */}
-                        <Card className="bg-slate-900 border border-slate-800 flex-1">
-                            <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
-                                <CardTitle className="text-sm text-emerald-400 font-bold uppercase tracking-wide">Medication Delivery Workflow</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-3 space-y-3">
-                                {patient.treatmentPlan?.nurseDispatch.map((step: string, i: number) => (
-                                    <div key={i} className="flex gap-3">
-                                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                                        <p className="text-slate-300 text-sm">{step}</p>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
+                              {/* Emergency Col 3: Clinical Handoff */}
+                              <Card className="bg-slate-900 border border-slate-800 flex-1">
+                                   <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
+                                       <CardTitle className="text-sm text-cyan-400 font-bold uppercase tracking-wide">Clinical Handoff Data</CardTitle>
+                                   </CardHeader>
+                                   <CardContent className="pt-4 space-y-4">
+                                        <div className="text-xs text-slate-500 uppercase font-bold tracking-widest mb-2">Transmitted Vitals</div>
+                                        <div className="grid grid-cols-2 gap-2 mb-4">
+                                            <div className="bg-slate-800 p-2 rounded border border-slate-700">
+                                                <div className="text-slate-400 text-[10px]">TEMP</div>
+                                                <div className="text-red-400 font-mono font-bold">102.3 F</div>
+                                            </div>
+                                            <div className="bg-slate-800 p-2 rounded border border-slate-700">
+                                                <div className="text-slate-400 text-[10px]">HR</div>
+                                                <div className="text-orange-400 font-mono font-bold">115 BPM</div>
+                                            </div>
+                                        </div>
+                                        <Separator className="bg-slate-800 mb-4" />
+                                        {patient.treatmentPlan?.nurseDispatch.map((step: string, i: number) => (
+                                           <div key={i} className="flex gap-3">
+                                               <CheckCircle2 className="h-4 w-4 text-cyan-500 shrink-0 mt-0.5" />
+                                               <p className="text-slate-300 text-sm">{step}</p>
+                                           </div>
+                                       ))}
+                                   </CardContent>
+                              </Card>
+                           </>
+                       ) : (
+                           <>
+                               {/* Treatment Plan: Approved Actions */}
+                               <Card className="bg-slate-900 border border-slate-800 flex-1">
+                                   <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
+                                       <CardTitle className="text-sm text-cyan-400 font-bold uppercase tracking-wide">Approved Treatment Actions</CardTitle>
+                                   </CardHeader>
+                                   <CardContent className="pt-3 space-y-3">
+                                       {patient.treatmentPlan?.actions.map((action: string, i: number) => (
+                                           <div key={i} className="flex gap-3">
+                                               <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500 shrink-0"></div>
+                                               <p className="text-slate-300 text-sm">{action}</p>
+                                           </div>
+                                       ))}
+                                   </CardContent>
+                               </Card>
+
+                               {/* Lab Dispatch */}
+                               <Card className="bg-slate-900 border border-slate-800 flex-1">
+                                   <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
+                                       <CardTitle className="text-sm text-orange-400 font-bold uppercase tracking-wide">Lab Dispatch Workflow</CardTitle>
+                                   </CardHeader>
+                                   <CardContent className="pt-3 space-y-3">
+                                       {patient.treatmentPlan?.labDispatch.map((step: string, i: number) => (
+                                           <div key={i} className="flex gap-3">
+                                               <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+                                               <p className="text-slate-300 text-sm">{step}</p>
+                                           </div>
+                                       ))}
+                                   </CardContent>
+                               </Card>
+
+                               {/* Medication Delivery */}
+                               <Card className="bg-slate-900 border border-slate-800 flex-1">
+                                   <CardHeader className="bg-slate-800/50 border-b border-slate-800 py-3">
+                                       <CardTitle className="text-sm text-emerald-400 font-bold uppercase tracking-wide">Medication Delivery Workflow</CardTitle>
+                                   </CardHeader>
+                                   <CardContent className="pt-3 space-y-3">
+                                       {patient.treatmentPlan?.nurseDispatch.map((step: string, i: number) => (
+                                           <div key={i} className="flex gap-3">
+                                               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                                               <p className="text-slate-300 text-sm">{step}</p>
+                                           </div>
+                                       ))}
+                                   </CardContent>
+                               </Card>
+                           </>
+                       )}
                     </div>
                 )}
+
+            
+            {showDiagnosisDetails && patient.diagnosisDetails && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+                    <div className="bg-slate-50 w-full max-w-4xl max-h-[90vh] rounded-xl overflow-hidden shadow-2xl flex flex-col">
+                        <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white">
+                            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <Activity className="h-5 w-5 text-cyan-600" />
+                                Differential Diagnosis
+                            </h2>
+                            <div className="flex items-center gap-4">
+                                <Activity className="h-5 w-5 text-green-500 animate-pulse" />
+                                <button 
+                                    onClick={() => setShowDiagnosisDetails(false)}
+                                    className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-6 bg-slate-50 space-y-4">
+                            {patient.diagnosisDetails.map((detail, idx) => (
+                                <div key={idx} className="bg-[#FFFBEB] border-l-4 border-l-yellow-400 rounded-r-lg shadow-sm p-4 relative overflow-hidden">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="text-lg font-bold text-yellow-700">{detail.name}</h3>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-2xl font-bold text-yellow-600">{detail.probability}%</span>
+                                            <div className="text-xs font-bold text-slate-400">Risk: {detail.risk}%</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="absolute top-0 right-0 w-32 h-1 bg-yellow-200"></div>
+                                    
+                                    <p className="text-slate-600 text-sm mb-4 leading-relaxed">
+                                        {detail.description}
+                                    </p>
+                                    
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        {detail.positiveFactors.map((factor, i) => (
+                                            <span key={i} className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md border border-green-200">
+                                                {factor}
+                                            </span>
+                                        ))}
+                                        {detail.negativeFactors.map((factor, i) => (
+                                            <span key={i} className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-md border border-red-200">
+                                                {factor}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    
+                                    {/* Progress Bar Visual */}
+                                    <div className="mt-3 h-1.5 w-full bg-yellow-100 rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-yellow-500 rounded-full" 
+                                            style={{ width: `${detail.probability}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
             </div>
         )
     }
