@@ -120,70 +120,91 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
         </div>
 
         {/* Middle Column - Diagnosis */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className={`bg-slate-800 border ${borderColor} h-full`}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-orange-400">{patient.diagnosisMetadata?.title || "AI Differential Diagnosis"}</CardTitle>
-              <p className="text-xs text-slate-500">{patient.diagnosisMetadata?.subtitle || "Based on vital trends & historical data"}</p>
-            </CardHeader>
-            <CardContent className="space-y-5 overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-              {patient.diagnosis.map((diag, i) => (
-                <div key={i}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium text-slate-200 text-sm">{diag.name}</span>
-                    <span className={`font-bold text-sm ${diag.color === 'red' ? 'text-red-400' : diag.color === 'orange' ? 'text-orange-400' : diag.color === 'orange-light' ? 'text-orange-400' : 'text-yellow-400'}`}>
-                      {diag.probability}%
-                    </span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-700 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all ${diag.color === 'red' ? 'bg-gradient-to-r from-red-600 to-red-400' : diag.color === 'orange' ? 'bg-gradient-to-r from-orange-600 to-orange-400' : diag.color === 'orange-light' ? 'bg-gradient-to-r from-orange-400 to-amber-400' : 'bg-gradient-to-r from-yellow-600 to-yellow-400'}`} 
-                      style={{ width: `${diag.probability}%` }}
-                    ></div>
+      <div className="lg:col-span-1 h-full">
+        <Card className={`bg-slate-800 border ${borderColor} h-full flex flex-col`}>
+          <CardHeader className="pb-2 shrink-0">
+            <CardTitle className={`text-lg flex items-center gap-2 ${patientId === '3' ? 'text-orange-500' : 'text-orange-400'}`}>
+               <Activity className="h-5 w-5" /> 
+               {patient.diagnosisMetadata?.title || "Differential Diagnosis"}
+            </CardTitle>
+            {patient.diagnosisMetadata?.subtitle && (
+                <p className="text-xs text-slate-500 font-medium uppercase mt-1">
+                    {patient.diagnosisMetadata.subtitle}
+                </p>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-6 pt-4 flex-1 overflow-y-auto max-h-[500px] custom-scrollbar">
+            {patient.diagnosis.map((d: any, i: number) => (
+              <div key={i}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-slate-200 font-medium">{d.name}</span>
+                  <span className={`font-bold ${
+                    d.color === 'red' ? 'text-red-500' : 
+                    d.color === 'orange' ? 'text-orange-500' : 
+                    d.color === 'orange-light' ? 'text-amber-500' : 'text-yellow-400'
+                  }`}>{d.probability}%</span>
+                </div>
+                <div className="h-3 w-full bg-slate-700/50 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-1000 ${
+                        d.color === 'red' ? 'bg-red-500' : 
+                        d.color === 'orange' ? 'bg-orange-500' : 
+                        d.color === 'orange-light' ? 'bg-amber-500' : 
+                        'bg-yellow-400'
+                    }`} 
+                    style={{ width: `${d.probability}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Right Column - Timeline */}
+      <div className="lg:col-span-1 h-full">
+        <Card className={`bg-slate-800 border ${borderColor} h-full flex flex-col`}>
+          <CardHeader className="pb-2 shrink-0">
+            <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
+              <Clock className="h-5 w-5" /> Timeline of Events
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-y-auto max-h-[500px] custom-scrollbar pl-6">
+            <div className="relative border-l-2 border-slate-700 ml-2 pl-6 space-y-8 py-2">
+              {patient.timeline.map((event, i) => (
+                <div key={i} className="relative">
+                  <div className={`absolute -left-[31px] top-1 h-4 w-4 rounded-full border-4 border-slate-800 ${
+                      event.type === 'critical' || event.type === 'critical-action' ? 'bg-red-500' :
+                      event.type === 'system' ? 'bg-cyan-500' :
+                      event.type === 'warning' ? 'bg-orange-500' : 'bg-slate-500'
+                    }`}></div>
+                  
+                  <div className="flex flex-col gap-1">
+                    <div className="text-cyan-500 font-bold text-xs">{event.time}</div>
+                    <div className={`text-sm leading-snug ${event.type === 'critical' || event.type === 'critical-action' ? 'text-red-400 font-bold' : 'text-slate-300'}`}>
+                        {event.event}
+                    </div>
+
+                    {/* View Details Button for specific events */}
+                    {(event.time.includes("Day 3") || event.event.includes("Symptom Checker")) && (
+                        <div className="mt-2">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 px-4 text-xs font-medium border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950 hover:text-cyan-300 bg-slate-800/50 rounded-md"
+                                onClick={() => setIsDetailsOpen(true)}
+                            >
+                                View Details
+                            </Button>
+                        </div>
+                    )}
                   </div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Timeline */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className={`bg-slate-800 border ${borderColor} h-full`}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-cyan-400 flex items-center gap-2">
-                <Clock className="h-5 w-5" /> Timeline of Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="overflow-auto max-h-[calc(100%-4rem)]">
-              <div className="relative border-l-2 border-slate-600 ml-2 pl-6 space-y-6">
-                {patient.timeline.map((event, i) => (
-                  <div key={i} className="relative">
-                    <div className={`absolute -left-[29px] h-3 w-3 rounded-full border-2 border-slate-800 ${
-                      event.type === 'critical' || event.type === 'critical-action' ? 'bg-red-500' : 
-                      event.type === 'system' ? 'bg-cyan-500' : 
-                      event.type === 'warning' ? 'bg-orange-500' : 'bg-slate-500'
-                    }`}></div>
-                    <div className="text-cyan-400 font-semibold text-xs">{event.time}</div>
-                    <div className={`text-sm ${event.type === 'critical' || event.type === 'critical-action' ? 'text-red-400 font-semibold' : 'text-slate-300'}`}>
-                      {event.event}
-                    </div>
-                    {event.time === "Day 3 (TODAY)" && (
-                      <Button 
-                        variant="link" 
-                        size="sm" 
-                        className="text-cyan-400 p-0 h-auto mt-1 hover:text-cyan-300"
-                        onClick={() => setIsDetailsOpen(true)}
-                      >
-                        View Details
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       </div>
     <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-[1400px] h-[90vh] bg-slate-900 border-slate-700 text-slate-100 overflow-y-auto">

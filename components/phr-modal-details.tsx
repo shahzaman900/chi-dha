@@ -7,65 +7,112 @@ import { PhrData } from "@/store/phr-store"
 export function PhrModalDetails({ patient }: { patient: PhrData }) {
   if (patient.patientId === '3') {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 py-4 h-full">
-        {/* Left Column: EWS & Profile */}
-        <div className="space-y-6">
-           <Card className="bg-red-500/10 border-red-500/50">
-             <CardHeader className="pb-2">
-               <CardTitle className="text-xl text-red-500 flex items-center gap-2">
-                 CRITICAL ALERT
-               </CardTitle>
-             </CardHeader>
-             <CardContent>
-                <div className="text-center py-4">
-                  <div className="text-sm text-red-400 font-semibold mb-1">EARLY WARNING SCORE</div>
-                  <div className="text-6xl font-bold text-slate-100 mb-2">{patient.ews.score}</div>
-                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/50 font-bold text-sm">
-                    CRITICAL
-                  </div>
-                </div>
-             </CardContent>
-           </Card>
+      <div className="flex flex-col h-full bg-slate-950 p-6 rounded-lg">
+        {/* Section 1: Diagnostic Probability Report */}
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 shrink-0 mb-8">
+            <h2 className="text-xl font-semibold text-slate-100 mb-4">Diagnostic Probability Report</h2>
+            <Separator className="bg-red-500/20 h-[1px] mb-4 w-full" />
+            
+            {patient.diagnosisMetadata?.subtitle && (
+                <p className="text-xs font-bold text-cyan-400 uppercase tracking-wide mb-6">
+                   {patient.diagnosisMetadata.subtitle}
+                </p>
+            )}
 
-           <Card className="bg-slate-800 border-slate-700">
-             <CardHeader>
-               <CardTitle className="text-cyan-400">Current Symptoms</CardTitle>
-             </CardHeader>
-             <CardContent className="space-y-3">
-               {Object.entries(patient.metrics).map(([key, metric]) => (
-                 <div key={key} className="flex justify-between items-center border-b border-slate-700 pb-2 last:border-0 last:pb-0">
-                    <span className="text-slate-400 font-medium">{key}</span>
-                    <span className="text-red-400 font-bold">{metric.value}</span>
-                 </div>
-               ))}
-             </CardContent>
-           </Card>
+            <div className="space-y-5">
+                 {patient.diagnosis.map((d: any, i: number) => (
+                    <div key={i}>
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-slate-200 font-medium text-sm">{d.name}</span>
+                            <span className={`font-bold text-sm ${
+                                d.color === 'red' ? 'text-red-500' : 
+                                d.color === 'orange' ? 'text-orange-500' :
+                                d.color === 'orange-light' ? 'text-amber-500' : 'text-yellow-400'
+                            }`}>{d.probability}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                            <div 
+                                className={`h-full rounded-full ${
+                                    d.color === 'red' ? 'bg-red-600' : 
+                                    d.color === 'orange' ? 'bg-orange-500' :
+                                    d.color === 'orange-light' ? 'bg-amber-500' : 'bg-yellow-400'
+                                }`} 
+                                style={{ width: `${d.probability}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                 ))}
+            </div>
         </div>
 
-        {/* Right Column: Symptom Checker Timeline */}
-        <Card className="bg-slate-800 border-slate-700 flex flex-col h-full">
-           <CardHeader>
-             <CardTitle className="text-orange-400">Symptom Checker Assessment Timeline</CardTitle>
-           </CardHeader>
-           <CardContent className="space-y-6 pt-4 flex-1 overflow-y-auto relative">
-              <div className="absolute left-[28px] top-6 bottom-6 w-0.5 bg-slate-700"></div>
-              {patient.timeline.map((event, i) => (
-                <div key={i} className="relative flex gap-4">
-                   <div className={`relative z-10 w-4 h-4 rounded-full mt-1 shrink-0 ${
-                      event.type === 'critical' ? 'bg-red-500 ring-4 ring-red-500/20' : 
-                      event.type === 'system' ? 'bg-cyan-500 ring-4 ring-cyan-500/20' : 
-                      'bg-slate-500'
-                   }`}></div>
-                   <div>
-                      <div className={`text-xs font-bold mb-0.5 ${event.type === 'critical' ? 'text-red-400' : event.type === 'system' ? 'text-cyan-400' : 'text-slate-400'}`}>
-                        {event.time}
-                      </div>
-                      <div className="text-slate-200 text-sm font-medium">{event.event}</div>
-                   </div>
-                </div>
-              ))}
-           </CardContent>
-        </Card>
+        {/* Section 2: Chat between patient and system */}
+        {patient.symptomCheckerTranscript && (
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-2">
+                {patient.symptomCheckerTranscript.map((step, index) => (
+                    <div key={index} className="mb-8">
+                        {/* Step Header */}
+                        <div className="flex items-center gap-4 mb-6">
+                            <Separator className="flex-1 bg-slate-800" />
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                                {step.step}
+                            </span>
+                            <Separator className="flex-1 bg-slate-800" />
+                        </div>
+                        
+                        <div className="space-y-6">
+                            {/* System Message - Left Aligned */}
+                            <div className="flex gap-4 max-w-[85%]">
+                                <div className="h-10 w-10 shrink-0 rounded-full bg-cyan-950/50 border border-cyan-900 flex items-center justify-center mt-1">
+                                    <Bot className="h-5 w-5 text-cyan-400" />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-cyan-500 mb-1 ml-1">System</div>
+                                    <div className="bg-slate-800/80 border border-slate-700/50 rounded-2xl rounded-tl-none p-5 text-slate-200 shadow-sm leading-relaxed">
+                                        {step.system}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Patient Response - Right Aligned */}
+                            <div className="flex flex-row-reverse gap-4 max-w-[85%] ml-auto">
+                                <div className="h-10 w-10 shrink-0 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mt-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-slate-400">
+                                        <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-slate-400 mb-1 mr-1 text-right">Patient</div>
+                                    <div className="bg-slate-800/80 border border-slate-700/50 rounded-2xl rounded-tr-none p-5 text-slate-200 shadow-sm leading-relaxed">
+                                        "{step.patient}"
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Alert - Centered/Full width if exists */}
+                            {step.alert && (
+                                <div className={`mx-auto max-w-[90%] rounded-lg border p-4 flex items-start gap-4 ${
+                                    step.alertType === 'critical' ? 'bg-red-950/10 border-red-900/30' : 'bg-orange-950/10 border-orange-900/30'
+                                }`}>
+                                     {step.alertType === 'critical' ? (
+                                        <div className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5 shrink-0">!</div>
+                                    ) : (
+                                        <div className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5 shrink-0">!</div>
+                                    )}
+                                    <div>
+                                        <p className={`text-sm font-bold mb-0.5 ${step.alertType === 'critical' ? 'text-red-400' : 'text-orange-400'}`}>
+                                            {step.alert}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            {step.alertDesc}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
       </div>
     )
   }

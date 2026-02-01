@@ -22,6 +22,14 @@ export interface PhrData {
     title: string;
     subtitle: string;
   };
+  symptomCheckerTranscript?: {
+    step: string;
+    system: string;
+    patient: string;
+    alert?: string;
+    alertType?: "warning" | "critical";
+    alertDesc?: string;
+  }[];
   diagnosis: Array<{ name: string; probability: number; color: string }>;
 }
 

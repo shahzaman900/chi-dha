@@ -99,13 +99,9 @@
       "Mental Status": { "value": "Altered", "change": "" }
     },
     "timeline": [
-      { "time": "Morning", "event": "Initial symptom onset - dull headache", "type": "critical-action" },
-      { "time": "Mid-Morning", "event": "Headache worsening, feeling 'wiped out'", "type": "critical-action" },
-      { "time": "Check Start", "event": "Patient uses Symptom Checker: AI assessment begins", "type": "system" },
-      { "time": "Step 2", "event": "Fever detected 102.4°F - System escalates concern", "type": "system" },
-      { "time": "Step 3", "event": "Neck stiffness: Nuchal rigidity detected", "type": "warning" },
-      { "time": "Step 4-5", "event": "Altered mental status: Classic Triad complete", "type": "critical" },
-      { "time": "ALERT", "event": "CRITICAL: Emergency response triggered - 911 Recommended", "type": "critical" }
+      { "time": "Jan 31, 2026 11:45 AM", "event": "Patient uses Symptom Checker: AI assessment begins", "type": "system" },
+      { "time": "Jan 31, 2026 11:50 AM", "event": "Fever detected 102.4°F - System escalates concern", "type": "system" },
+      { "time": "Jan 31, 2026 11:50 AM", "event": "CRITICAL: Emergency response triggered - 911 Recommended", "type": "critical" }
     ],
     "diagnosisMetadata": {
       "title": "Diagnostic Probability Report",
@@ -116,6 +112,48 @@
       { "name": "Encephalitis", "probability": 10, "color": "orange" },
       { "name": "Severe Systemic Infection (Sepsis)", "probability": 4, "color": "orange-light" },
       { "name": "Migraine with Fever", "probability": 1, "color": "yellow" }
+    ],
+    "symptomCheckerTranscript": [
+      {
+        "step": "Step 1 - Initial Presentation",
+        "system": "Welcome to the Symptom Checker. To start, how would you describe the onset of your headache?",
+        "patient": "It started this morning as a dull ache, but it's getting much worse. I feel really wiped out.",
+        "alert": "Progressive worsening noted",
+        "alertType": "warning",
+        "alertDesc": "Proceeding to systemic symptom assessment"
+      },
+      {
+        "step": "Step 2 - Fever & Systemic Symptoms",
+        "system": "I'm sorry you're feeling unwell. Are you currently running a fever, or do you have chills or body aches?",
+        "patient": "Yes, I just checked. I have a fever of 102.4°F (39.1°C). My whole body feels heavy and sore.",
+        "alert": "High fever detected (102.4°F)",
+        "alertType": "critical",
+        "alertDesc": "Systemic symptoms present - escalating concern"
+      },
+      {
+        "step": "Step 3 - Physical Maneuvers (Neck Stiffness)",
+        "system": "This is important: Try to chin-tuck (touch your chin to your chest). Are you able to do this comfortably, or is your neck very stiff or painful?",
+        "patient": "I can't do it. My neck is incredibly stiff, and trying to move it makes the pain in my head shoot up.",
+        "alert": "CRITICAL: Nuchal rigidity detected",
+        "alertType": "critical",
+        "alertDesc": "Classic meningitis sign - emergency protocol activated"
+      },
+      {
+        "step": "Step 4 - Sensory & Skin Check",
+        "system": "Are you experiencing sensitivity to bright lights? Also, do you notice any new rashes or small purple/red spots on your skin?",
+        "patient": "The light is blinding me; I'm wearing sunglasses indoors. I don't see a rash yet, but I feel slightly confused and dizzy.",
+        "alert": "Severe photophobia + confusion",
+        "alertType": "critical",
+        "alertDesc": "Altered mental status - critical finding"
+      },
+      {
+        "step": "Step 5 - Mental Status",
+        "system": "Are you finding it difficult to concentrate, or do you feel unusually drowsy or 'foggy'?",
+        "patient": "Yes, it's getting hard to focus on these questions. I just want to sleep, but the pain is too sharp.",
+        "alert": "Altered mental status confirmed",
+        "alertType": "critical",
+        "alertDesc": "Classic Triad complete - Emergency alert triggered"
+      }
     ]
   }
 ]
