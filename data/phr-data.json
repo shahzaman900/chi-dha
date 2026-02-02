@@ -64,21 +64,21 @@
             "probability": 65,
             "description": "Patient has a history of COPD and presents with acute, progressive worsening of respiratory rate, heart rate, and oxygen saturation. This is a common and severe complication of COPD.",
             "positiveFactors": ["COPD history", "RR increasing", "SpO2 decreasing", "HR increasing", "Age 75 years"],
-            "negativeFactors": []
+            "negativeFactors": ["cough","chest pain", "increase sputum"]
         },
         {
             "name": "Pneumonia, unspecified organism",
             "probability": 30,
             "description": "Pneumonia is a common trigger for COPD exacerbations and can lead to rapid respiratory deterioration in elderly patients, especially those with underlying chronic lung disease. The acute worsening of vitals is consistent with an infectious process.",
             "positiveFactors": ["Age 75 years", "COPD history", "RR increasing", "SpO2 decreasing", "HR increasing"],
-            "negativeFactors": []
+            "negativeFactors": ["cough", "fever", "purulent sputum"]
         },
         {
             "name": "Acute heart failure, unspecified",
             "probability": 7,
             "description": "Given the patient's age and history of hypertension and diabetes, acute heart failure could manifest with acute respiratory distress, increasing heart rate, and hypoxemia, mimicking a primary respiratory event.",
             "positiveFactors": ["Age 75 years", "HTN history", "Diabetes history", "HR increasing", "SpO2 decreasing"],
-            "negativeFactors": []
+            "negativeFactors": ["history of CAD"]
         },
         {
             "name": "Pulmonary embolism without acute cor pulmonale",
