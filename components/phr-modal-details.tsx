@@ -213,14 +213,14 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                         <CardTitle className="text-lg text-red-500">Updated Probabilities</CardTitle>
                                         <p className="text-xs text-slate-500 font-medium">Post-Q&A Analysis</p>
                                     </div>
-                                    {patient.patientId === '3' && (
+                                    {/* {patient.patientId === '3' && (
                                         <button 
                                             onClick={() => setShowDiagnosisDetails(true)}
                                             className="text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider border border-cyan-500/30 px-2 py-1 rounded bg-cyan-950/30"
                                         >
                                             <Maximize2 className="h-3 w-3" /> View Detailed
                                         </button>
-                                    )}
+                                    )} */}
                                 </div>
                             </CardHeader>
                             <CardContent className="pt-4 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
