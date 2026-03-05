@@ -54,27 +54,27 @@ export function PatientRegistrationModal() {
 
   return (
     <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
-      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-700 text-slate-100">
+      <DialogContent className="sm:max-w-[425px] bg-white border-slate-200 text-slate-900">
         <DialogHeader>
           <DialogTitle className="text-xl">Register New Patient</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right text-slate-300">
+            <Label htmlFor="name" className="text-right text-slate-700">
               Name
             </Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              className="col-span-3 bg-slate-800 border-slate-700 focus-visible:ring-slate-500"
+              className="col-span-3 bg-white border-slate-200 focus-visible:ring-blue-500 shadow-sm"
               placeholder="Full Name"
               required
             />
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="age" className="text-right text-slate-300">
+            <Label htmlFor="age" className="text-right text-slate-700">
               Age
             </Label>
             <Input
@@ -84,13 +84,13 @@ export function PatientRegistrationModal() {
               max="150"
               value={formData.age}
               onChange={(e) => handleChange("age", parseInt(e.target.value) || 0)}
-              className="col-span-3 bg-slate-800 border-slate-700 focus-visible:ring-slate-500"
+              className="col-span-3 bg-white border-slate-200 focus-visible:ring-blue-500 shadow-sm"
               required
             />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="ewsScore" className="text-right text-slate-300">
+            <Label htmlFor="ewsScore" className="text-right text-slate-700">
               EWS Score
             </Label>
             <Input
@@ -100,22 +100,22 @@ export function PatientRegistrationModal() {
               max="20"
               value={formData.ewsScore}
               onChange={(e) => handleChange("ewsScore", parseInt(e.target.value) || 0)}
-              className="col-span-3 bg-slate-800 border-slate-700 focus-visible:ring-slate-500"
+              className="col-span-3 bg-white border-slate-200 focus-visible:ring-blue-500 shadow-sm"
             />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="status" className="text-right text-slate-300">
+            <Label htmlFor="status" className="text-right text-slate-700">
               Status
             </Label>
             <Select 
                value={formData.status} 
                onValueChange={(val: string) => handleChange("status", val)}
             >
-              <SelectTrigger className="col-span-3 bg-slate-800 border-slate-700">
+              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-blue-500">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+              <SelectContent className="bg-white shadow-md border-slate-200 text-slate-800">
                 <SelectItem value="CRITICAL">CRITICAL</SelectItem>
                 <SelectItem value="High Risk">High Risk</SelectItem>
                 <SelectItem value="Medium Risk">Medium Risk</SelectItem>
@@ -126,17 +126,17 @@ export function PatientRegistrationModal() {
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="trend" className="text-right text-slate-300">
+            <Label htmlFor="trend" className="text-right text-slate-700">
               Trend
             </Label>
             <Select 
                value={formData.trend} 
                onValueChange={(val: string) => handleChange("trend", val)}
             >
-              <SelectTrigger className="col-span-3 bg-slate-800 border-slate-700">
+              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-blue-500">
                 <SelectValue placeholder="Select trend" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+              <SelectContent className="bg-white shadow-md border-slate-200 text-slate-800">
                 <SelectItem value="Escalating">Escalating</SelectItem>
                 <SelectItem value="Rising">Rising</SelectItem>
                 <SelectItem value="Stable">Stable</SelectItem>
@@ -146,17 +146,17 @@ export function PatientRegistrationModal() {
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="initiatedBy" className="text-right text-slate-300">
+            <Label htmlFor="initiatedBy" className="text-right text-slate-700">
               Initiated By
             </Label>
             <Select 
                value={formData.initiatedBy} 
                onValueChange={(val: string) => handleChange("initiatedBy", val)}
             >
-              <SelectTrigger className="col-span-3 bg-slate-800 border-slate-700">
+              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-blue-500">
                 <SelectValue placeholder="Select initiator" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+              <SelectContent className="bg-white shadow-md border-slate-200 text-slate-800">
                 <SelectItem value="System">System</SelectItem>
                 <SelectItem value="Nurse">Nurse</SelectItem>
                 <SelectItem value="Doctor">Doctor</SelectItem>
@@ -170,7 +170,7 @@ export function PatientRegistrationModal() {
                type="button" 
                variant="ghost" 
                onClick={() => setIsRegistrationOpen(false)}
-               className="text-slate-400 hover:text-slate-100 hover:bg-slate-800"
+               className="text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             >
               Cancel
             </Button>

@@ -43,20 +43,20 @@ export function PatientTable() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-slate-900 text-slate-100 w-full h-full">
+    <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 w-full h-full">
       <div className="flex-1 overflow-auto">
         <Table>
-          <TableHeader className="bg-slate-800 sticky top-0">
-            <TableRow className="border-slate-700 hover:bg-slate-800">
-              <TableHead className="w-[50px] px-4 py-3">
-                <Checkbox className="border-slate-600" />
+          <TableHeader className="bg-white sticky top-0 border-b border-slate-200 shadow-sm z-10">
+            <TableRow className="border-none hover:bg-transparent">
+              <TableHead className="w-[50px] px-6 py-4">
+                <Checkbox className="border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600" />
               </TableHead>
-              <TableHead className="text-slate-400 font-medium">Patient</TableHead>
-              <TableHead className="text-slate-400 font-medium">EWS Score</TableHead>
-              <TableHead className="text-slate-400 font-medium">Status</TableHead>
-              <TableHead className="text-slate-400 font-medium">Initiated By</TableHead>
-              <TableHead className="text-slate-400 font-medium">Escalated By</TableHead>
-              <TableHead className="text-slate-400 font-medium">Trend</TableHead>
+              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Patient</TableHead>
+              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">EWS Score</TableHead>
+              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Status</TableHead>
+              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Initiated By</TableHead>
+              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Escalated By</TableHead>
+              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Trend</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -68,25 +68,28 @@ export function PatientTable() {
                 key={patient.id} 
                 onClick={() => handleRowClick(patient.id)}
                 className={`
-                    border-slate-800 transition-colors cursor-pointer
+                    border-b border-slate-100 transition-all cursor-pointer group
                     ${isSelected 
-                        ? "bg-blue-600/30 border-l-4 border-l-blue-500 hover:bg-blue-600/40" 
-                        : index % 2 === 1 ? "bg-slate-850/30" : "bg-slate-900"
+                        ? "bg-blue-50/80 border-l-4 border-l-blue-600" 
+                        : "bg-white hover:bg-slate-50"
                     }
-                    ${!isSelected && "hover:bg-slate-800"}
                 `}
               >
-                <TableCell className="px-4 py-3">
+                <TableCell className="px-6 py-4">
                   <Checkbox 
                     checked={isSelected}
                     onCheckedChange={() => handleRowClick(patient.id)}
-                    className="border-slate-600"
+                    className="border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                   />
                 </TableCell>
-                <TableCell className="font-medium text-slate-100">{patient.name} ({patient.age})</TableCell>
-                <TableCell className="font-bold text-slate-100">{patient.ewsScore}</TableCell>
+                <TableCell className="font-semibold text-slate-900">{patient.name} <span className="font-normal text-slate-500">({patient.age}y)</span></TableCell>
+                <TableCell className="font-bold text-slate-900">
+                   <div className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-md bg-slate-100 text-slate-700">
+                     {patient.ewsScore}
+                   </div>
+                </TableCell>
                 <TableCell>
-                    <div className="flex items-center font-medium text-slate-200">
+                    <div className="flex items-center font-medium text-slate-800">
                         {getStatusIcon(patient.status)}
                         <span className={
                             patient.status === "CRITICAL" ? "text-red-400" :
@@ -95,16 +98,16 @@ export function PatientTable() {
                         }>{patient.status}</span>
                     </div>
                 </TableCell>
-                <TableCell className="text-slate-300">{patient.initiatedBy || "-"}</TableCell>
-                <TableCell className="text-slate-300">
+                <TableCell className="text-slate-600">{patient.initiatedBy || "-"}</TableCell>
+                <TableCell className="text-slate-600">
                     {patient.escalatedBy ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900/40 text-red-200 border border-red-800/50">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
                             {patient.escalatedBy}
                         </span>
                     ) : "-"}
                 </TableCell>
                 <TableCell className="font-medium">
-                    <div className="flex items-center text-slate-300">
+                    <div className="flex items-center text-slate-700">
                         {getTrendIcon(patient.trend)}
                         {patient.trend}
                     </div>
@@ -115,20 +118,20 @@ export function PatientTable() {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-t border-slate-700 text-xs text-slate-400">
+      <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-200 text-sm text-slate-500">
         <div className="flex items-center gap-3">
            <span>Version 1.124</span>
-           <span className="text-slate-600">•</span>
-           <span className="font-medium text-slate-300">Make Master Tab</span>
+           <span className="text-slate-300">•</span>
+           <span className="font-medium text-slate-700">Make Master Tab</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6 text-sm">
              <span>Rows per page: 30</span>
-             <span>1 - 30 of 30</span>
+             <span className="font-medium text-slate-700">1 - 30 of 30</span>
              <div className="flex items-center gap-1">
-                 <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-100 hover:bg-slate-700">
+                 <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full">
                    <ChevronLeft className="h-4 w-4" />
                  </Button>
-                 <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-100 hover:bg-slate-700">
+                 <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full">
                    <ChevronRight className="h-4 w-4" />
                  </Button>
              </div>

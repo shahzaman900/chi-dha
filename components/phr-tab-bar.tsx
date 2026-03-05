@@ -10,21 +10,21 @@ export function PhrTabBar() {
   if (openTabs.length === 0) return null
 
   return (
-    <div className="flex items-end gap-0 bg-slate-950 px-2 pt-1 border-b border-slate-700 overflow-x-auto">
+    <div className="flex items-end gap-1 bg-slate-100/80 px-4 pt-2 border-b border-slate-200 overflow-x-auto">
       {/* Patients Tab - always present */}
       <button
         onClick={() => setActiveTab(null)}
         className={`
-          group flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg
-          transition-all duration-150 border border-b-0 min-w-[120px] shrink-0
+          group flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl
+          transition-all duration-150 border min-w-[130px] shrink-0
           ${activeTabId === null
-            ? "bg-slate-800 text-slate-100 border-slate-700"
-            : "bg-slate-900/50 text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-800/50"
+            ? "bg-white text-blue-700 border-slate-200 border-b-white z-10 -mb-[1px] shadow-sm"
+            : "bg-transparent text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-200/50"
           }
         `}
       >
-        <Users className="h-3.5 w-3.5" />
-        <span>Patients</span>
+        <Users className="h-4 w-4" />
+        <span>Patients List</span>
       </button>
 
       {/* PHR Tabs */}
@@ -35,11 +35,11 @@ export function PhrTabBar() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
-              group flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-t-lg
-              transition-all duration-150 border border-b-0 max-w-[200px] shrink-0
+              group flex items-center justify-between gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-xl
+              transition-all duration-150 border max-w-[220px] shrink-0
               ${isActive
-                ? "bg-slate-800 text-slate-100 border-slate-700"
-                : "bg-slate-900/50 text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-800/50"
+                ? "bg-white text-blue-700 border-slate-200 border-b-white z-10 -mb-[1px] shadow-sm"
+                : "bg-transparent text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-200/50"
               }
             `}
           >
@@ -52,15 +52,15 @@ export function PhrTabBar() {
                 closePhrTab(tab.id)
               }}
               className={`
-                shrink-0 rounded p-0.5 ml-1
-                transition-colors duration-100
+                shrink-0 rounded-full p-1 ml-2
+                transition-all duration-150
                 ${isActive 
-                  ? "hover:bg-slate-600 text-slate-400 hover:text-slate-100" 
-                  : "hover:bg-slate-700 text-slate-500 hover:text-slate-200 opacity-0 group-hover:opacity-100"
+                  ? "hover:bg-slate-100 text-slate-400 hover:text-red-500" 
+                  : "hover:bg-slate-300 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
                 }
               `}
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </span>
           </button>
         )

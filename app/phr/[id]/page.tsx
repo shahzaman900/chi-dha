@@ -31,17 +31,17 @@ export default function PhrDashboard({ params }: { params: Promise<{ id: string 
   const bgGradient = isCritical ? "bg-gradient-to-br from-red-500 to-red-600" : "bg-gradient-to-br from-orange-400 to-orange-600"
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-50">
       <SiteHeader />
       <div className="flex-1 overflow-auto p-6 md:p-8">
         
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 border-b border-slate-800 pb-4">
-            <Button variant="ghost" className="text-slate-400 hover:text-white" onClick={() => router.back()}>
+        <div className="flex items-center gap-4 mb-8 border-b border-slate-200 pb-4">
+            <Button variant="ghost" className="text-slate-600 hover:text-white" onClick={() => router.back()}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                 <h1 className="text-3xl font-bold text-slate-100">Real-World Example: {patient.profile.name}</h1>
+                 <h1 className="text-3xl font-bold text-slate-900">Real-World Example: {patient.profile.name}</h1>
                  <div className={`h-1 w-32 ${headerColor} mt-2`}></div>
             </div>
         </div>
@@ -51,7 +51,7 @@ export default function PhrDashboard({ params }: { params: Promise<{ id: string 
             <div className="lg:col-span-7 space-y-8">
                 
                 {/* EWS Alert Card */}
-                <Card className={`bg-slate-900 border-2 ${borderColor} overflow-hidden`}>
+                <Card className={`bg-white border-2 ${borderColor} overflow-hidden`}>
                     <div className={`${bgGradient} p-8 text-center text-white`}>
                         <div className="text-sm font-bold opacity-90 tracking-wider mb-2">EARLY WARNING SCORE</div>
                         <div className="text-7xl font-bold mb-4">{patient.ews.score}</div>
@@ -60,17 +60,17 @@ export default function PhrDashboard({ params }: { params: Promise<{ id: string 
                             {patient.ews.status}
                         </div>
                     </div>
-                    <CardContent className="p-6 bg-white dark:bg-slate-900">
+                    <CardContent className="p-6 bg-white dark:bg-white">
                         <h3 className={`text-lg font-bold ${textColor} mb-4`}>Patient Profile</h3>
-                        <div className="space-y-2 text-sm text-slate-300">
-                            <div><span className="font-semibold text-slate-100">Age:</span> {patient.profile.age} years old</div>
-                            <div><span className="font-semibold text-slate-100">Conditions:</span> {patient.profile.conditions.join(", ")}</div>
-                            <div><span className="font-semibold text-slate-100">Living:</span> {patient.profile.living}</div>
-                            <div><span className="font-semibold text-slate-100">History:</span> {patient.profile.history}</div>
-                            <div><span className="font-semibold text-slate-100">Status:</span> {patient.profile.status}</div>
+                        <div className="space-y-2 text-sm text-slate-700">
+                            <div><span className="font-semibold text-slate-900">Age:</span> {patient.profile.age} years old</div>
+                            <div><span className="font-semibold text-slate-900">Conditions:</span> {patient.profile.conditions.join(", ")}</div>
+                            <div><span className="font-semibold text-slate-900">Living:</span> {patient.profile.living}</div>
+                            <div><span className="font-semibold text-slate-900">History:</span> {patient.profile.history}</div>
+                            <div><span className="font-semibold text-slate-900">Status:</span> {patient.profile.status}</div>
                         </div>
 
-                        <div className="mt-6 pt-6 border-t border-slate-700">
+                        <div className="mt-6 pt-6 border-t border-slate-200">
                              <h4 className="text-cyan-500 font-bold mb-4">Current Metrics</h4>
                              <div className="space-y-2">
                                 {Object.entries(patient.metrics).map(([key, data]: [string, any]) => (
@@ -94,10 +94,10 @@ export default function PhrDashboard({ params }: { params: Promise<{ id: string 
                         {patient.diagnosis.map((diag, i) => (
                             <div key={i}>
                                 <div className="flex justify-between items-center mb-1">
-                                    <span className="font-bold text-slate-200">{diag.name}</span>
+                                    <span className="font-bold text-slate-800">{diag.name}</span>
                                     <span className={`font-bold ${diag.color === 'red' ? 'text-red-500' : diag.color === 'orange' ? 'text-orange-500' : 'text-yellow-500'}`}>{diag.probability}%</span>
                                 </div>
-                                <div className="h-6 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div className="h-6 w-full bg-slate-50 rounded-full overflow-hidden">
                                      <div 
                                         className={`h-full ${diag.color === 'red' ? 'bg-red-500' : diag.color === 'orange' ? 'bg-orange-500' : 'bg-yellow-500'}`} 
                                         style={{ width: `${diag.probability}%` }}
@@ -115,7 +115,7 @@ export default function PhrDashboard({ params }: { params: Promise<{ id: string 
                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                     Timeline of Events
                  </h3>
-                 <div className="space-y-0 relative border-l-2 border-slate-800 ml-3">
+                 <div className="space-y-0 relative border-l-2 border-slate-200 ml-3">
                     {patient.timeline.map((event, i) => (
                         <div key={i} className="mb-8 ml-6 relative">
                             {/* Dot */}
@@ -127,7 +127,7 @@ export default function PhrDashboard({ params }: { params: Promise<{ id: string 
                             
                             <div>
                                 <div className="text-cyan-500 font-bold text-sm mb-1">{event.time}</div>
-                                <div className={`font-medium ${event.type === 'critical' || event.type === 'critical-action' ? 'text-red-400 font-bold' : 'text-slate-300'}`}>
+                                <div className={`font-medium ${event.type === 'critical' || event.type === 'critical-action' ? 'text-red-400 font-bold' : 'text-slate-700'}`}>
                                     {event.event}
                                 </div>
                             </div>

@@ -23,27 +23,26 @@ export function PracticeHeader() {
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold flex items-center gap-2 text-slate-100">
-           <Archive className="h-5 w-5 text-slate-400" /> Patients
+    <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 shadow-sm relative z-0">
+      <div className="flex items-center gap-6">
+        <h1 className="text-xl font-bold flex items-center gap-2 text-slate-800">
+           <Archive className="h-6 w-6 text-blue-500" /> Patients
         </h1>
-        <div className="w-[280px]">
+        <div className="w-[320px]">
           <Input 
-            placeholder="Search" 
-            className="h-9 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500" 
+            placeholder="Search patients..." 
+            className="h-10 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus-visible:ring-blue-500 rounded-full px-4" 
           />
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <Button 
-          size="icon" 
           onClick={handleOpenRegistration}
-          className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-white"
+          className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full shadow-sm flex items-center gap-2 transition-all"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" /> Add Patient
         </Button>
-        <Button size="icon" className="h-9 w-9 bg-slate-700 hover:bg-slate-600 text-slate-300">
+        <Button size="icon" variant="outline" className="h-10 w-10 text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900 rounded-full">
            <RotateCw className="h-4 w-4" />
         </Button>
         {selectedPatientId && (
