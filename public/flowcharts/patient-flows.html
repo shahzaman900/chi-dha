@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient EWS Flow Charts</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #f8f9fa;
+        color: #333;
+        padding: 40px 20px;
+      }
+      h1 {
+        text-align: center;
+        font-size: 28px;
+        color: #1a1a2e;
+        margin-bottom: 40px;
+      }
+      .flow-container {
+        max-width: 1200px;
+        margin: 0 auto 60px;
+      }
+      .flow-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+      }
+      .flow-title.low {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-left: 5px solid #4caf50;
+      }
+      .flow-title.medium {
+        background: #fff3e0;
+        color: #e65100;
+        border-left: 5px solid #ff9800;
+      }
+      .flow-title.high {
+        background: #ffebee;
+        color: #c62828;
+        border-left: 5px solid #f44336;
+      }
+
+      .flow-diagram {
+        display: flex;
+        gap: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .section {
+        padding: 30px 24px;
+        flex: 1;
+        position: relative;
+        min-width: 0;
+      }
+      .section-label {
+        position: absolute;
+        top: 12px;
+        left: 16px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        opacity: 0.6;
+      }
+
+      .section.patient-ai {
+        background: #eef2ff;
+      }
+      .section.patient-ai .section-label {
+        color: #4338ca;
+      }
+
+      .section.nurse {
+        background: #fefce8;
+      }
+      .section.nurse .section-label {
+        color: #a16207;
+      }
+
+      .section.doctor {
+        background: #ecfdf5;
+      }
+      .section.doctor .section-label {
+        color: #047857;
+      }
+
+      .section.system {
+        background: #f0fdf4;
+      }
+      .section.system .section-label {
+        color: #15803d;
+      }
+
+      .section.emergency {
+        background: #fff1f2;
+      }
+      .section.emergency .section-label {
+        color: #be123c;
+      }
+
+      .nodes {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 30px;
+        align-items: center;
+      }
+
+      .node {
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        text-align: center;
+        max-width: 220px;
+        width: 100%;
+        line-height: 1.4;
+        position: relative;
+      }
+      .node.process {
+        background: #e0d4f5;
+        color: #4a2d82;
+        border: 1.5px solid #c4b0e0;
+      }
+      .node.output {
+        background: #ffd966;
+        color: #5a4000;
+        border: 1.5px solid #e6c24a;
+        font-weight: 600;
+      }
+      .node.critical {
+        background: #ff6b6b;
+        color: #fff;
+        border: 1.5px solid #e04545;
+        font-weight: 700;
+      }
+      .node.decision {
+        background: #fff;
+        color: #333;
+        border: 2px dashed #999;
+        font-style: italic;
+      }
+      .node.highlight {
+        background: #ff9800;
+        color: #fff;
+        border: 1.5px solid #e68a00;
+        font-weight: 700;
+      }
+      .node.highlight-red {
+        background: #ef4444;
+        color: #fff;
+        border: 1.5px solid #dc2626;
+        font-weight: 700;
+      }
+      .node.highlight-green {
+        background: #4caf50;
+        color: #fff;
+        border: 1.5px solid #388e3c;
+        font-weight: 700;
+      }
+
+      .arrow {
+        display: flex;
+        justify-content: center;
+        padding: 2px 0;
+      }
+      .arrow::after {
+        content: "▼";
+        color: #999;
+        font-size: 14px;
+      }
+      .arrow.right::after {
+        content: "▶";
+      }
+      .arrow.branch {
+        position: relative;
+      }
+      .arrow.branch::after {
+        content: "";
+      }
+
+      .branch-container {
+        display: flex;
+        gap: 16px;
+        width: 100%;
+        justify-content: center;
+      }
+      .branch-path {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        flex: 1;
+        max-width: 160px;
+      }
+      .branch-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .branch-label.yes {
+        color: #16a34a;
+      }
+      .branch-label.no {
+        color: #dc2626;
+      }
+
+      .node-sub {
+        font-size: 11px;
+        color: #666;
+        margin-top: 3px;
+        font-weight: 400;
+      }
+      .section-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 0, 0, 0.03),
+          transparent
+        );
+        width: 30px;
+        flex-shrink: 0;
+      }
+      .section-arrow::after {
+        content: "▶";
+        color: #bbb;
+        font-size: 20px;
+      }
+
+      .loop-indicator {
+        margin-top: 8px;
+        font-size: 11px;
+        color: #888;
+        text-align: center;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .loop-indicator::before {
+        content: "↩";
+        font-size: 16px;
+        font-style: normal;
+      }
+
+      @media (max-width: 900px) {
+        .flow-diagram {
+          flex-direction: column;
+        }
+        .section-arrow {
+          width: auto;
+          height: 30px;
+        }
+        .section-arrow::after {
+          content: "▼";
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🏥 Patient EWS Flowcharts</h1>
+
+    <!-- ==================== FLOW 1: NORMAL PATIENT ==================== -->
+    <div class="flow-container">
+      <div class="flow-title low">
+        🟢 Flow 1 — Normal Patient (EWS 0-4) — LOW RISK
+      </div>
+      <div class="flow-diagram">
+        <div class="section patient-ai">
+          <div class="section-label">Patient / AI</div>
+          <div class="nodes">
+            <div class="node process">
+              👤 Patient
+              <div class="node-sub">Enrolled in RPM program</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              📡 Routine Vitals Collection
+              <div class="node-sub">
+                HR, BP, SpO2, Weight auto-synced from home devices
+              </div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              🧠 AI Processes Vitals
+              <div class="node-sub">Compares against baseline</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node highlight-green">
+              ✅ EWS Score: 0-4
+              <div class="node-sub">LOW RISK</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              No Alert Triggered
+              <div class="node-sub">All vitals within normal range</div>
+            </div>
+          </div>
+        </div>
+        <div class="section-arrow"></div>
+        <div class="section system">
+          <div class="section-label">System Response</div>
+          <div class="nodes">
+            <div class="node process">
+              🔄 Continue Routine Monitoring
+              <div class="node-sub">No human intervention needed</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              📚 Patient Education
+              <div class="node-sub">
+                Lifestyle tips, med reminders, dietary guidance
+              </div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              ⏰ Next Scheduled Check
+              <div class="node-sub">12-24 hours</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              📊 Wellness Report Generated
+              <div class="node-sub">Monthly summary for primary care</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              📋 Sent to Primary Care
+              <div class="node-sub">Routine update — no action needed</div>
+            </div>
+            <div class="loop-indicator">Loop back to Vitals Collection</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== FLOW 2: MEDIUM EWS ==================== -->
+    <div class="flow-container">
+      <div class="flow-title medium">
+        🟡 Flow 2 — Medium EWS Patient (EWS 5-6) — MEDIUM RISK
+      </div>
+      <div class="flow-diagram">
+        <div class="section patient-ai">
+          <div class="section-label">Patient / AI</div>
+          <div class="nodes">
+            <div class="node process">
+              👤 Patient
+              <div class="node-sub">Existing or new patient</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              ⚠️ Vitals Detected Abnormal
+              <div class="node-sub">HR, BP, or Weight trending up</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node highlight">
+              ⚠️ EWS Score: 5-6
+              <div class="node-sub">MEDIUM RISK</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              📞 AI Initiates Call to Patient
+              <div class="node-sub">Automated symptom check</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              💬 Symptom Checker Conversation
+              <div class="node-sub">AI asks targeted Q&A</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              📝 Transcription
+              <div class="node-sub">Full call transcript saved</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              🔬 Diff. Diagnosis
+              <div class="node-sub">
+                AI-generated with probabilities (For / Against factors)
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-arrow"></div>
+        <div class="section nurse">
+          <div class="section-label">Nurse (RN)</div>
+          <div class="nodes">
+            <div class="node process">
+              🔔 Nurse Notified
+              <div class="node-sub">Alert on dashboard</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              📋 RN Review
+              <div class="node-sub">Reviews AI transcript + diagnosis</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              📊 Assessment
+              <div class="node-sub">Nurse clinical judgment</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node decision">Stable?</div>
+            <div class="arrow branch"></div>
+            <div class="branch-container">
+              <div class="branch-path">
+                <div class="branch-label yes">✅ YES</div>
+                <div class="node process" style="font-size: 12px">
+                  Continue Monitoring
+                </div>
+                <div class="arrow"></div>
+                <div class="node output" style="font-size: 12px">
+                  Follow-up 24-48hrs
+                </div>
+              </div>
+              <div class="branch-path">
+                <div class="branch-label no">❌ NO</div>
+                <div class="node process" style="font-size: 12px">
+                  Escalate to Doctor ▶
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-arrow"></div>
+        <div class="section doctor">
+          <div class="section-label">Doctor</div>
+          <div class="nodes">
+            <div class="node process">
+              👨‍⚕️ Doctor Notified
+              <div class="node-sub">Case escalated from nurse</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              📄 Reviews AI Assessment
+              <div class="node-sub">+ Nurse notes + vitals trends</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              💊 Treatment Plan
+              <div class="node-sub">Medication adjustment, dietary changes</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="branch-container">
+              <div class="branch-path">
+                <div class="node output" style="font-size: 12px">
+                  👩‍⚕️ Nurse Dispatch
+                  <div class="node-sub">Home visit</div>
+                </div>
+              </div>
+              <div class="branch-path">
+                <div class="node output" style="font-size: 12px">
+                  🧪 Lab Dispatch
+                  <div class="node-sub">Blood work</div>
+                </div>
+              </div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              📅 Follow-up Schedule
+              <div class="node-sub">48-72 hour reassessment</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== FLOW 3: HIGH EWS / CRITICAL ==================== -->
+    <div class="flow-container">
+      <div class="flow-title high">
+        🔴 Flow 3 — High EWS Patient (EWS 7+) — HIGH RISK / CRITICAL
+      </div>
+      <div class="flow-diagram">
+        <div class="section patient-ai">
+          <div class="section-label">Patient / AI</div>
+          <div class="nodes">
+            <div class="node process">
+              👤 Patient
+              <div class="node-sub">Vitals rapidly deteriorating</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              🚨 Vitals Rapidly Deteriorating
+              <div class="node-sub">Multiple parameters abnormal</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node highlight-red">
+              🚨 EWS Score: 7+
+              <div class="node-sub">HIGH RISK / CRITICAL</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node critical">⚡ IMMEDIATE AI ALERT</div>
+            <div class="arrow"></div>
+            <div class="node decision">Patient Responds?</div>
+            <div class="arrow branch"></div>
+            <div class="branch-container">
+              <div class="branch-path">
+                <div class="branch-label yes">✅ YES</div>
+                <div class="node process" style="font-size: 12px">
+                  AI Symptom Q&A
+                </div>
+                <div class="arrow"></div>
+                <div class="node output" style="font-size: 12px">
+                  📝 Transcription
+                </div>
+                <div class="arrow"></div>
+                <div class="node output" style="font-size: 12px">
+                  🔬 AI Diff. Diagnosis
+                </div>
+              </div>
+              <div class="branch-path">
+                <div class="branch-label no">❌ NO</div>
+                <div class="node critical" style="font-size: 12px">
+                  Auto-Escalate
+                  <div class="node-sub">Skip to Nurse ▶</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-arrow"></div>
+        <div class="section nurse">
+          <div class="section-label">Nurse (RN)</div>
+          <div class="nodes">
+            <div class="node critical">
+              🚨 Nurse Escalation Alert
+              <div class="node-sub">URGENT priority</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              📋 RN Assessment
+              <div class="node-sub">Reviews AI data + contacts patient</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node decision">EWS 9+? Emergency?</div>
+            <div class="arrow branch"></div>
+            <div class="branch-container">
+              <div class="branch-path">
+                <div class="branch-label no">EWS 7-8</div>
+                <div class="node process" style="font-size: 12px">
+                  Escalate to Doctor ▶
+                </div>
+              </div>
+              <div class="branch-path">
+                <div class="branch-label" style="color: #dc2626">EWS 9+</div>
+                <div class="node critical" style="font-size: 12px">
+                  Emergency Protocol ▶▶
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-arrow"></div>
+        <div class="section doctor">
+          <div class="section-label">Doctor (EWS 7-8)</div>
+          <div class="nodes">
+            <div class="node process">
+              👨‍⚕️ Doctor Notified
+              <div class="node-sub">URGENT case</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              📄 Reviews AI Diagnosis + Vitals
+              <div class="node-sub">Full clinical picture</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              💊 Approves Treatment Plan
+              <div class="node-sub">Urgent medication changes</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="branch-container">
+              <div class="branch-path">
+                <div class="node output" style="font-size: 11px">
+                  👩‍⚕️ Nurse Dispatch
+                  <div class="node-sub">Same-day visit</div>
+                </div>
+              </div>
+              <div class="branch-path">
+                <div class="node output" style="font-size: 11px">
+                  🧪 Lab - STAT
+                  <div class="node-sub">Urgent blood work</div>
+                </div>
+              </div>
+              <div class="branch-path">
+                <div class="node output" style="font-size: 11px">
+                  💊 Meds - URGENT
+                  <div class="node-sub">Same-day delivery</div>
+                </div>
+              </div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              📅 Intensive Follow-up
+              <div class="node-sub">Reassess in 24 hours</div>
+            </div>
+          </div>
+        </div>
+        <div class="section-arrow"></div>
+        <div class="section emergency">
+          <div class="section-label">Emergency (EWS 9+)</div>
+          <div class="nodes">
+            <div class="node critical">
+              🚨 Emergency Protocol
+              <div class="node-sub">Activated automatically</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node critical">
+              🚑 Ambulance Dispatched
+              <div class="node-sub">ETA: 8 minutes</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              🏥 ER Triage Notified
+              <div class="node-sub">Pre-arrival alert sent</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node output">
+              📋 Clinical Handoff
+              <div class="node-sub">Vitals + AI Dx + history transmitted</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node process">
+              🩺 Vitals Monitored En Route
+              <div class="node-sub">Nurse checks q15min</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="node critical">
+              🏥 ER Treatment
+              <div class="node-sub">Patient received at hospital</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

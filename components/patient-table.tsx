@@ -12,16 +12,9 @@ import {
 import { usePatientStore } from "@/store/patient-store"
 import { Button } from "./ui/button"
 import { ChevronLeft, ChevronRight, Siren, AlertTriangle, Check } from "lucide-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { PhrDisplay } from "@/components/phr-display"
 
 export function PatientTable() {
-  const { patients, selectedPatientId, setSelectedPatientId, isPhrOpen, setIsPhrOpen } = usePatientStore()
+  const { patients, selectedPatientId, setSelectedPatientId } = usePatientStore()
 
   const handleRowClick = (id: string) => {
     setSelectedPatientId(id === selectedPatientId ? null : id)
@@ -141,16 +134,6 @@ export function PatientTable() {
              </div>
         </div>
       </div>
-       
-      {/* PHR Modal */}
-      <Dialog open={isPhrOpen} onOpenChange={setIsPhrOpen}>
-        <DialogContent showCloseButton={false} className="w-[95vw] max-w-[95vw] h-[85vh] bg-slate-900 border-slate-700 p-0 overflow-hidden rounded-xl">
-          <DialogHeader className="hidden">
-            <DialogTitle>PHR Dashboard</DialogTitle>
-          </DialogHeader>
-          {selectedPatientId && <PhrDisplay patientId={selectedPatientId} />}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

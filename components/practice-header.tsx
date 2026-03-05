@@ -7,11 +7,14 @@ import { Input } from "@/components/ui/input"
 import { usePatientStore } from "@/store/patient-store"
 
 export function PracticeHeader() {
-  const { selectedPatientId, setIsPhrOpen } = usePatientStore()
+  const { selectedPatientId, patients, openPhrTab } = usePatientStore()
 
   const handleViewPhr = () => {
     if (selectedPatientId) {
-      setIsPhrOpen(true)
+      const patient = patients.find((p) => p.id === selectedPatientId)
+      if (patient) {
+        openPhrTab(patient.id, patient.name)
+      }
     }
   }
 
