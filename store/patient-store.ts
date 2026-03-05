@@ -30,6 +30,10 @@ interface PatientStore {
   openPhrTab: (patientId: string, patientName: string) => void;
   closePhrTab: (tabId: string) => void;
   setActiveTab: (tabId: string | null) => void;
+  // Registration system
+  isRegistrationOpen: boolean;
+  setIsRegistrationOpen: (open: boolean) => void;
+  addPatient: (patient: Omit<Patient, "id">) => void;
 }
 
 export const usePatientStore = create<PatientStore>((set, get) => ({
@@ -84,4 +88,19 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   },
 
   setActiveTab: (tabId) => set({ activeTabId: tabId }),
+
+  // Registration system
+  isRegistrationOpen: false,
+  setIsRegistrationOpen: (open) => set({ isRegistrationOpen: open }),
+  addPatient: (patientInfo) => {
+    const newPatient: Patient = {
+      ...patientInfo,
+      id: Date.now().toString(), // Generate a unique ID based on timestamp
+    };
+
+    // Add to top of the list
+    set((state) => ({
+      patients: [newPatient, ...state.patients],
+    }));
+  },
 }));

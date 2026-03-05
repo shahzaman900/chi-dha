@@ -5,6 +5,7 @@ import { PatientTable } from "@/components/patient-table"
 import { SiteHeader } from "@/components/site-header"
 import { PhrTabBar } from "@/components/phr-tab-bar"
 import { PhrDisplay } from "@/components/phr-display"
+import { PatientRegistrationModal } from "@/components/patient-registration-modal"
 import { usePatientStore } from "@/store/patient-store"
 
 export default function Home() {
@@ -27,6 +28,8 @@ export default function Home() {
            </>
          )}
       </div>
+      
+      <PatientRegistrationModal />
     </div>
   )
 }

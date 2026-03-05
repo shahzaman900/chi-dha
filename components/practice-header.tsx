@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { usePatientStore } from "@/store/patient-store"
 
 export function PracticeHeader() {
-  const { selectedPatientId, patients, openPhrTab } = usePatientStore()
+  const { selectedPatientId, patients, openPhrTab, setIsRegistrationOpen } = usePatientStore()
 
   const handleViewPhr = () => {
     if (selectedPatientId) {
@@ -16,6 +16,10 @@ export function PracticeHeader() {
         openPhrTab(patient.id, patient.name)
       }
     }
+  }
+
+  const handleOpenRegistration = () => {
+    setIsRegistrationOpen(true)
   }
 
   return (
@@ -32,7 +36,11 @@ export function PracticeHeader() {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button size="icon" className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-white">
+        <Button 
+          size="icon" 
+          onClick={handleOpenRegistration}
+          className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-white"
+        >
           <Plus className="h-4 w-4" />
         </Button>
         <Button size="icon" className="h-9 w-9 bg-slate-700 hover:bg-slate-600 text-slate-300">
