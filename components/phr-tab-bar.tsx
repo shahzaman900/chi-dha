@@ -18,7 +18,7 @@ export function PhrTabBar() {
           group flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl
           transition-all duration-150 border min-w-[130px] shrink-0
           ${activeTabId === null
-            ? "bg-white text-blue-700 border-slate-200 border-b-white z-10 -mb-[1px] shadow-sm"
+            ? "bg-white text-brand-700 border-slate-200 border-b-white z-10 -mb-[1px] shadow-sm"
             : "bg-transparent text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-200/50"
           }
         `}
@@ -38,12 +38,12 @@ export function PhrTabBar() {
               group flex items-center justify-between gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-xl
               transition-all duration-150 border max-w-[220px] shrink-0
               ${isActive
-                ? "bg-white text-blue-700 border-slate-200 border-b-white z-10 -mb-[1px] shadow-sm"
+                ? "bg-white text-brand-700 border-slate-200 border-b-white z-10 -mb-[1px] shadow-sm"
                 : "bg-transparent text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-200/50"
               }
             `}
           >
-            <FileText className="h-3.5 w-3.5 shrink-0 text-blue-400" />
+            <FileText className="h-3.5 w-3.5 shrink-0 text-brand-400" />
             <span className="truncate">{tab.patientName}</span>
             <span
               role="button"

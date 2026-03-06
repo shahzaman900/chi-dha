@@ -24,7 +24,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
 
   if (!patient) {
       return (
-        <div className="flex bg-white text-slate-900 items-center justify-center p-8 h-full">
+        <div className="flex bg-card text-foreground items-center justify-center p-8 h-full">
             <h2 className="text-xl font-bold">Patient Not Found</h2>
         </div>
       )
@@ -43,11 +43,11 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
   }
 
   return (
-    <div className="flex overflow-auto flex-col bg-white text-slate-900 h-full">
+    <div className="flex overflow-auto flex-col bg-card text-foreground h-full">
       {/* Header */}
       <div className={`flex items-center justify-between px-6 py-4 ${statusColor}`}>
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-full bg-card/20 flex items-center justify-center">
             <User className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -81,52 +81,52 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
         <div className="lg:col-span-1 space-y-6">
           
           {/* Patient Profile Card */}
-          <Card className={`bg-white shadow-sm border ${borderColor}`}>
+          <Card className={`bg-card shadow-sm border ${borderColor}`}>
             <CardHeader className="pb-2">
               <CardTitle className={`text-lg ${textAccent}`}>Patient Profile</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-600">Age</span>
-                <span className="text-slate-900 font-medium">{patient.profile.age} years old</span>
+                <span className="text-muted-foreground">Age</span>
+                <span className="text-foreground font-medium">{patient.profile.age} years old</span>
               </div>
-              <Separator className="bg-slate-200" />
+              <Separator className="bg-secondary" />
               <div className="flex justify-between items-start">
-                 <span className="text-slate-600">Conditions</span>
-                 <span className="text-slate-900 font-medium text-right max-w-[180px]">{patient.profile.conditions.join(", ")}</span>
+                 <span className="text-muted-foreground">Conditions</span>
+                 <span className="text-foreground font-medium text-right max-w-[180px]">{patient.profile.conditions.join(", ")}</span>
                </div>
-               <Separator className="bg-slate-200" />
+               <Separator className="bg-secondary" />
               <div className="flex justify-between">
-                <span className="text-slate-600">Living</span>
-                <span className="text-slate-900 font-medium">{patient.profile.living}</span>
+                <span className="text-muted-foreground">Living</span>
+                <span className="text-foreground font-medium">{patient.profile.living}</span>
               </div>
-              <Separator className="bg-slate-200" />
+              <Separator className="bg-secondary" />
               <div className="flex justify-between">
-                <span className="text-slate-600">History</span>
-                <span className="text-slate-900 font-medium">{patient.profile.history}</span>
+                <span className="text-muted-foreground">History</span>
+                <span className="text-foreground font-medium">{patient.profile.history}</span>
               </div>
-              <Separator className="bg-slate-200" />
+              <Separator className="bg-secondary" />
               <div className="flex justify-between">
-                <span className="text-slate-600">Status</span>
-                <span className="text-slate-900 font-medium">{patient.profile.status}</span>
+                <span className="text-muted-foreground">Status</span>
+                <span className="text-foreground font-medium">{patient.profile.status}</span>
               </div>
             </CardContent>
           </Card>
 
           {/* Vital Metrics Card */}
-          <Card className={`bg-white shadow-sm border ${borderColor}`}>
+          <Card className={`bg-card shadow-sm border ${borderColor}`}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-blue-600">Current Vitals</CardTitle>
+              <CardTitle className="text-lg text-brand-600">Current Vitals</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
               {Object.entries(patient.metrics).map(([key, data]: [string, any]) => (
-                <div key={key} className={`p-3 rounded-lg bg-slate-50 border ${borderColor}`}>
-                  <div className="flex items-center gap-2 text-slate-600 text-xs uppercase mb-1">
+                <div key={key} className={`p-3 rounded-lg bg-muted border ${borderColor}`}>
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase mb-1">
                     {metricIcons[key] || <Activity className="h-4 w-4" />}
                     {key}
                   </div>
                   <div className={`text-xl font-bold ${textAccent === 'text-orange-400' ? 'text-orange-600' : 'text-red-500'}`}>{data.value}</div>
-                  {data.change && <div className="text-xs text-slate-500">{data.change}</div>}
+                  {data.change && <div className="text-xs text-muted-foreground">{data.change}</div>}
                 </div>
               ))}
             </CardContent>
@@ -135,7 +135,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
 
         {/* Middle Column - Diagnosis */}
       <div className="lg:col-span-1 h-full">
-        <Card className={`bg-slate-50 border ${borderColor} h-full flex flex-col`}>
+        <Card className={`bg-muted border ${borderColor} h-full flex flex-col`}>
           <CardHeader className="pb-2 shrink-0">
              <div className="flex justify-between items-start">
                 <div>
@@ -144,7 +144,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                     {patient.diagnosisMetadata?.title || "Differential Diagnosis"}
                     </CardTitle>
                     {patient.diagnosisMetadata?.subtitle && (
-                        <p className="text-xs text-slate-500 font-medium uppercase mt-1">
+                        <p className="text-xs text-muted-foreground font-medium uppercase mt-1">
                             {patient.diagnosisMetadata.subtitle}
                         </p>
                     )}
@@ -154,7 +154,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                         variant="ghost" 
                         size="sm"
                         onClick={() => setShowDetailedDiagnosis(true)}
-                        className="h-7 px-2 text-[10px] font-bold uppercase tracking-wider border border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700 gap-1.5 ml-2"
+                        className="h-7 px-2 text-[10px] font-bold uppercase tracking-wider border border-brand-200 text-brand-600 hover:bg-brand-50 hover:text-brand-700 gap-1.5 ml-2"
                     >
                         <Maximize2 className="h-3 w-3" /> View Detailed
                     </Button>
@@ -165,14 +165,14 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
             {patient.diagnosis.map((d: any, i: number) => (
               <div key={i}>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-800 font-medium">{d.name}</span>
+                  <span className="text-foreground font-medium">{d.name}</span>
                   <span className={`font-bold ${
                     d.color === 'red' ? 'text-red-500' : 
                     d.color === 'orange' ? 'text-orange-500' : 
                     d.color === 'orange-light' ? 'text-amber-500' : 'text-yellow-600'
                   }`}>{d.probability}%</span>
                 </div>
-                <div className="h-3 w-full bg-slate-200/50 rounded-full overflow-hidden">
+                <div className="h-3 w-full bg-secondary/50 rounded-full overflow-hidden">
                   <div 
                     className={`h-full rounded-full transition-all duration-1000 ${
                         d.color === 'red' ? 'bg-red-500' : 
@@ -191,25 +191,25 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
 
       {/* Right Column - Timeline */}
       <div className="lg:col-span-1 h-full">
-        <Card className={`bg-slate-50 border ${borderColor} h-full flex flex-col`}>
+        <Card className={`bg-muted border ${borderColor} h-full flex flex-col`}>
           <CardHeader className="pb-2 shrink-0">
-            <CardTitle className="text-lg text-blue-600 flex items-center gap-2">
+            <CardTitle className="text-lg text-brand-600 flex items-center gap-2">
               <Clock className="h-5 w-5" /> Timeline of Events
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto max-h-[500px] custom-scrollbar pl-6">
-            <div className="relative border-l-2 border-slate-200 ml-2 pl-6 space-y-8 py-2">
+            <div className="relative border-l-2 border-border ml-2 pl-6 space-y-8 py-2">
               {patient.timeline.map((event, i) => (
                 <div key={i} className="relative">
-                  <div className={`absolute -left-[31px] top-1 h-4 w-4 rounded-full border-4 border-slate-200 ${
+                  <div className={`absolute -left-[31px] top-1 h-4 w-4 rounded-full border-4 border-border ${
                       event.type === 'critical' || event.type === 'critical-action' ? 'bg-red-500' :
-                      event.type === 'system' ? 'bg-blue-500' :
+                      event.type === 'system' ? 'bg-brand-500' :
                       event.type === 'warning' ? 'bg-orange-500' : 'bg-slate-500'
                     }`}></div>
                   
                   <div className="flex flex-col gap-1">
-                    <div className="text-blue-500 font-bold text-xs">{event.time}</div>
-                    <div className={`text-sm leading-snug ${event.type === 'critical' || event.type === 'critical-action' ? 'text-red-400 font-bold' : 'text-slate-700'}`}>
+                    <div className="text-brand-500 font-bold text-xs">{event.time}</div>
+                    <div className={`text-sm leading-snug ${event.type === 'critical' || event.type === 'critical-action' ? 'text-red-400 font-bold' : 'text-muted-foreground'}`}>
                         {event.event}
                     </div>
 
@@ -219,7 +219,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                             <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="h-8 px-4 text-xs font-medium border border-blue-500/30 text-blue-600 hover:bg-blue-50 hover:text-blue-700 bg-slate-50/50 rounded-md"
+                                className="h-8 px-4 text-xs font-medium border border-brand-500/30 text-brand-600 hover:bg-brand-50 hover:text-brand-700 bg-muted/50 rounded-md"
                                 onClick={() => {
                                     if (event.event.includes("AI Assessment")) {
                                         setActiveModal({ isOpen: true, view: 'assessment' })
@@ -239,7 +239,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                             <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="h-8 px-4 text-xs font-medium border border-blue-500/30 text-blue-600 hover:bg-blue-50 hover:text-blue-700 bg-slate-50/50 rounded-md"
+                                className="h-8 px-4 text-xs font-medium border border-brand-500/30 text-brand-600 hover:bg-brand-50 hover:text-brand-700 bg-muted/50 rounded-md"
                                 onClick={() => setShowTreatmentDetails(true)}
                             >
                                 View Detailed
@@ -255,36 +255,36 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
       </div>
       </div>
     <Dialog open={activeModal.isOpen} onOpenChange={(open) => setActiveModal(prev => ({ ...prev, isOpen: open }))}>
-        <DialogContent className="max-w-[95vw] h-[90vh] p-0 border-slate-200 bg-slate-50">
+        <DialogContent className="max-w-[95vw] h-[90vh] p-0 border-border bg-muted">
            <PhrModalDetails patient={patient} view={activeModal.view} />
         </DialogContent>
     </Dialog>
 
     {showDetailedDiagnosis && patient.diagnosisDetails && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200 backdrop-blur-sm">
-            <div className="bg-slate-50 w-full max-w-4xl max-h-[90vh] rounded-xl overflow-hidden shadow-2xl flex flex-col border border-slate-200">
-                <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white/50">
-                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-blue-600" />
+            <div className="bg-muted w-full max-w-4xl max-h-[90vh] rounded-xl overflow-hidden shadow-2xl flex flex-col border border-border">
+                <div className="flex items-center justify-between p-4 border-b border-border bg-card/50">
+                    <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-brand-600" />
                         Differential Diagnosis
                     </h2>
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 shadow-sm">
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border shadow-sm">
                             <Activity className="h-4 w-4 text-green-500 animate-pulse" />
-                            <span className="text-xs font-medium text-slate-600">Live Analysis</span>
+                            <span className="text-xs font-medium text-muted-foreground">Live Analysis</span>
                         </div>
                         <button 
                             onClick={() => setShowDetailedDiagnosis(false)}
-                            className="h-8 w-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors border border-slate-200 shadow-sm"
+                            className="h-8 w-8 rounded-full bg-card hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors border border-border shadow-sm"
                         >
                             <X className="h-5 w-5" />
                         </button>
                     </div>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto p-6 bg-slate-50 space-y-4 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 bg-muted space-y-4 custom-scrollbar">
                     {patient.diagnosisDetails.map((detail, idx) => (
-                        <div key={idx} className="bg-white/50 border-l-4 border-l-yellow-500 rounded-r-lg shadow-sm p-5 relative overflow-hidden border-y border-r border-slate-200">
+                        <div key={idx} className="bg-card/50 border-l-4 border-l-yellow-500 rounded-r-lg shadow-sm p-5 relative overflow-hidden border-y border-r border-border">
                             <div className="flex justify-between items-start mb-3">
                                 <h3 className="text-lg font-bold text-yellow-600 tracking-wide">{detail.name}</h3>
                                 <div className="flex items-center gap-4">
@@ -292,17 +292,17 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                                         <span className="text-2xl font-bold text-yellow-600 leading-none">{detail.probability}%</span>
                                         <span className="text-[10px] text-yellow-500/50 uppercase font-bold tracking-wider">Probability</span>
                                     </div>
-                                    <div className="h-8 w-[1px] bg-slate-50"></div>
+                                    <div className="h-8 w-[1px] bg-muted"></div>
                                     <div className="flex flex-col items-start">
-                                        <div className="text-lg font-bold text-slate-800 leading-none">{detail.risk}%</div>
-                                        <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Risk Score</div>
+                                        <div className="text-lg font-bold text-foreground leading-none">{detail.risk}%</div>
+                                        <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Risk Score</div>
                                     </div>
                                 </div>
                             </div>
                             
                             <div className="absolute top-0 right-0 w-32 h-20 bg-gradient-to-br from-yellow-500/5 to-transparent pointer-events-none"></div>
                             
-                            <p className="text-slate-700 text-sm mb-5 leading-relaxed">
+                            <p className="text-muted-foreground text-sm mb-5 leading-relaxed">
                                 {detail.description}
                             </p>
                             
@@ -322,7 +322,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                             </div>
                             
                             {/* Progress Bar Visual */}
-                            <div className="mt-2 h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                            <div className="mt-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                                 <div 
                                     className="h-full bg-yellow-500/80 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]" 
                                     style={{ width: `${detail.probability}%` }}
@@ -337,20 +337,20 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
     
     {patient.patientId === '2' && showTreatmentDetails && patient.treatmentDetails && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200 backdrop-blur-sm">
-            <div className="bg-white w-full max-w-5xl rounded-xl overflow-hidden shadow-2xl flex flex-col border border-slate-200 max-h-[90vh]">
-                <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-white">
-                    <h2 className="text-xl font-bold text-blue-600 flex items-center gap-2">
+            <div className="bg-card w-full max-w-5xl rounded-xl overflow-hidden shadow-2xl flex flex-col border border-border max-h-[90vh]">
+                <div className="flex items-center justify-between p-6 border-b border-border bg-card">
+                    <h2 className="text-xl font-bold text-brand-600 flex items-center gap-2">
                         {patient.treatmentDetails.title}
                     </h2>
                     <button 
                         onClick={() => setShowTreatmentDetails(false)}
-                        className="h-8 w-8 rounded-full bg-slate-50 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                        className="h-8 w-8 rounded-full bg-muted hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors"
                     >
                         <X className="h-5 w-5" />
                     </button>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto p-6 bg-slate-50 grid grid-cols-1 md:grid-cols-2 gap-6 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 bg-muted grid grid-cols-1 md:grid-cols-2 gap-6 custom-scrollbar">
                     {/* Left Column: Immediate Interventions */}
                     <div className="border border-green-500/30 rounded-lg overflow-hidden flex flex-col">
                         <div className="bg-green-500/10 p-4 border-b border-green-500/30">
@@ -361,13 +361,13 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                                 {patient.treatmentDetails.immediateInterventions.subtitle}
                             </p>
                         </div>
-                        <div className="p-6 space-y-6 flex-1 bg-white/50 max-h-[300px] overflow-y-auto custom-scrollbar">
+                        <div className="p-6 space-y-6 flex-1 bg-card/50 max-h-[300px] overflow-y-auto custom-scrollbar">
                             {patient.treatmentDetails.immediateInterventions.sections.map((section, idx) => (
                                 <div key={idx}>
-                                    <h4 className="text-blue-600 font-bold mb-2 text-sm">{section.name}</h4>
+                                    <h4 className="text-brand-600 font-bold mb-2 text-sm">{section.name}</h4>
                                     <ul className="space-y-2">
                                         {section.items.map((item, i) => (
-                                            <li key={i} className="flex items-start gap-2 text-slate-700 text-sm">
+                                            <li key={i} className="flex items-start gap-2 text-muted-foreground text-sm">
                                                 <div className="h-1.5 w-1.5 rounded-full bg-slate-500 mt-1.5 shrink-0"></div>
                                                 {item}
                                             </li>
@@ -379,24 +379,24 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                     </div>
 
                     {/* Right Column: Monitoring & Follow-up */}
-                    <div className="border border-blue-500/30 rounded-lg overflow-hidden flex flex-col">
-                        <div className="bg-blue-500/10 p-4 border-b border-blue-500/30">
-                            <h3 className="text-blue-600 font-bold text-lg uppercase tracking-wide">
+                    <div className="border border-brand-500/30 rounded-lg overflow-hidden flex flex-col">
+                        <div className="bg-brand-500/10 p-4 border-b border-brand-500/30">
+                            <h3 className="text-brand-600 font-bold text-lg uppercase tracking-wide">
                                 {patient.treatmentDetails.monitoring.title}
                             </h3>
-                            <p className="text-blue-500/70 text-sm mt-1">
+                            <p className="text-brand-500/70 text-sm mt-1">
                                 {patient.treatmentDetails.monitoring.subtitle}
                             </p>
                         </div>
-                        <div className="p-6 space-y-6 flex-1 bg-white/50 max-h-[300px] overflow-y-auto custom-scrollbar">
+                        <div className="p-6 space-y-6 flex-1 bg-card/50 max-h-[300px] overflow-y-auto custom-scrollbar">
                             {patient.treatmentDetails.monitoring.sections.map((section, idx) => (
                                 <div key={idx}>
-                                    <h4 className={`font-bold mb-2 text-sm ${section.name.includes("Red Flags") ? "text-red-400" : "text-blue-600"}`}>
+                                    <h4 className={`font-bold mb-2 text-sm ${section.name.includes("Red Flags") ? "text-red-400" : "text-brand-600"}`}>
                                         {section.name}
                                     </h4>
                                     <ul className="space-y-2">
                                         {section.items.map((item, i) => (
-                                            <li key={i} className="flex items-start gap-2 text-slate-700 text-sm">
+                                            <li key={i} className="flex items-start gap-2 text-muted-foreground text-sm">
                                                 <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${section.name.includes("Red Flags") ? "bg-red-500" : "bg-slate-500"}`}></div>
                                                 {item}
                                             </li>
@@ -415,10 +415,10 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                                     {patient.treatmentDetails.nurseDispatch.title}
                                 </h3>
                             </div>
-                            <div className="p-6 space-y-6 flex-1 bg-white/50 max-h-[300px] overflow-y-auto custom-scrollbar">
+                            <div className="p-6 space-y-6 flex-1 bg-card/50 max-h-[300px] overflow-y-auto custom-scrollbar">
                                 <ul className="space-y-4">
                                     {patient.treatmentDetails.nurseDispatch.items.map((item: string, i: number) => (
-                                        <li key={i} className="flex items-start gap-3 text-slate-700 text-sm">
+                                        <li key={i} className="flex items-start gap-3 text-muted-foreground text-sm">
                                             <div className="h-2 w-2 rounded-full bg-violet-500 mt-1.5 shrink-0"></div>
                                             <span>{item}</span>
                                         </li>
@@ -436,10 +436,10 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                                     {patient.treatmentDetails.labDispatch.title}
                                 </h3>
                             </div>
-                            <div className="p-6 space-y-6 flex-1 bg-white/50 max-h-[300px] overflow-y-auto custom-scrollbar">
+                            <div className="p-6 space-y-6 flex-1 bg-card/50 max-h-[300px] overflow-y-auto custom-scrollbar">
                                 <ul className="space-y-4">
                                     {patient.treatmentDetails.labDispatch.items.map((item: string, i: number) => (
-                                        <li key={i} className="flex items-start gap-3 text-slate-700 text-sm">
+                                        <li key={i} className="flex items-start gap-3 text-muted-foreground text-sm">
                                             <div className="h-2 w-2 rounded-full bg-amber-500 mt-1.5 shrink-0"></div>
                                             <span>{item}</span>
                                         </li>

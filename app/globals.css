@@ -46,6 +46,20 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+@theme {
+  --color-brand-50: #eaf4ff;
+  --color-brand-100: #d6eaff;
+  --color-brand-200: #add5ff;
+  --color-brand-300: #7abaff;
+  --color-brand-400: #3b9bff;
+  --color-brand-500: #007bff;
+  --color-brand-600: #0060db;
+  --color-brand-700: #005cbb;
+  --color-brand-800: #004b9c;
+  --color-brand-900: #003673;
+  --color-brand-950: #00224d;
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -54,8 +68,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: #005cbb;
+  --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -88,8 +102,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: #005cbb;
+  --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);

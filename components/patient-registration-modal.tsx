@@ -67,7 +67,7 @@ export function PatientRegistrationModal() {
               id="name"
               value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              className="col-span-3 bg-white border-slate-200 focus-visible:ring-blue-500 shadow-sm"
+              className="col-span-3 bg-white border-slate-200 focus-visible:ring-brand-500 shadow-sm"
               placeholder="Full Name"
               required
             />
@@ -84,7 +84,7 @@ export function PatientRegistrationModal() {
               max="150"
               value={formData.age}
               onChange={(e) => handleChange("age", parseInt(e.target.value) || 0)}
-              className="col-span-3 bg-white border-slate-200 focus-visible:ring-blue-500 shadow-sm"
+              className="col-span-3 bg-white border-slate-200 focus-visible:ring-brand-500 shadow-sm"
               required
             />
           </div>
@@ -100,7 +100,7 @@ export function PatientRegistrationModal() {
               max="20"
               value={formData.ewsScore}
               onChange={(e) => handleChange("ewsScore", parseInt(e.target.value) || 0)}
-              className="col-span-3 bg-white border-slate-200 focus-visible:ring-blue-500 shadow-sm"
+              className="col-span-3 bg-white border-slate-200 focus-visible:ring-brand-500 shadow-sm"
             />
           </div>
 
@@ -112,7 +112,7 @@ export function PatientRegistrationModal() {
                value={formData.status} 
                onValueChange={(val: string) => handleChange("status", val)}
             >
-              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-blue-500">
+              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-brand-500">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent className="bg-white shadow-md border-slate-200 text-slate-800">
@@ -133,7 +133,7 @@ export function PatientRegistrationModal() {
                value={formData.trend} 
                onValueChange={(val: string) => handleChange("trend", val)}
             >
-              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-blue-500">
+              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-brand-500">
                 <SelectValue placeholder="Select trend" />
               </SelectTrigger>
               <SelectContent className="bg-white shadow-md border-slate-200 text-slate-800">
@@ -153,7 +153,7 @@ export function PatientRegistrationModal() {
                value={formData.initiatedBy} 
                onValueChange={(val: string) => handleChange("initiatedBy", val)}
             >
-              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-blue-500">
+              <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-brand-500">
                 <SelectValue placeholder="Select initiator" />
               </SelectTrigger>
               <SelectContent className="bg-white shadow-md border-slate-200 text-slate-800">
@@ -174,7 +174,7 @@ export function PatientRegistrationModal() {
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button type="submit" className="bg-brand-600 hover:bg-brand-700 text-white">
               Register Patient
             </Button>
           </div>

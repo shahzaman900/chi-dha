@@ -49,7 +49,7 @@ export function PatientTable() {
           <TableHeader className="bg-white sticky top-0 border-b border-slate-200 shadow-sm z-10">
             <TableRow className="border-none hover:bg-transparent">
               <TableHead className="w-[50px] px-6 py-4">
-                <Checkbox className="border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600" />
+                <Checkbox className="border-slate-300 data-[state=checked]:bg-brand-600 data-[state=checked]:border-brand-600" />
               </TableHead>
               <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Patient</TableHead>
               <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">EWS Score</TableHead>
@@ -70,7 +70,7 @@ export function PatientTable() {
                 className={`
                     border-b border-slate-100 transition-all cursor-pointer group
                     ${isSelected 
-                        ? "bg-blue-50/80 border-l-4 border-l-blue-600" 
+                        ? "bg-brand-50/80 border-l-4 border-l-blue-600" 
                         : "bg-white hover:bg-slate-50"
                     }
                 `}
@@ -79,7 +79,7 @@ export function PatientTable() {
                   <Checkbox 
                     checked={isSelected}
                     onCheckedChange={() => handleRowClick(patient.id)}
-                    className="border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                    className="border-slate-300 data-[state=checked]:bg-brand-600 data-[state=checked]:border-brand-600"
                   />
                 </TableCell>
                 <TableCell className="font-semibold text-slate-900">{patient.name} <span className="font-normal text-slate-500">({patient.age}y)</span></TableCell>
