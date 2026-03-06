@@ -176,104 +176,23 @@ export function PatientTable() {
             style={{ 
               left: `${menuPosition.x}px`, 
               top: `${menuPosition.y}px`,
-              // Ensure it doesn't go offscreen by clamping broadly or transforming appropriately
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-[280px] p-0 border border-slate-200 shadow-xl rounded-lg bg-white overflow-hidden">
-              <div className="py-1">
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Eye className="h-[18px] w-[18px] text-slate-500" />
-                    <span>View Details</span>
-                  </div>
-                  <span className="text-xs text-slate-400">V</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Pencil className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Edit</span>
-                  </div>
-                  <span className="text-xs text-slate-400">E</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Billing Report</span>
-                  </div>
-                  <span className="text-xs text-slate-400">B</span>
-                </div>
-              </div>
-              
-              <DropdownMenuSeparator className="bg-slate-100 my-0 h-[1px]" />
-              
-              <div className="py-1">
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Resend Registration Email</span>
-                  </div>
-                  <span className="text-xs text-slate-400">M</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <MessageSquare className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Resend Registration Text</span>
-                  </div>
-                  <span className="text-xs text-slate-400">T</span>
-                </div>
-              </div>
-              
-              <DropdownMenuSeparator className="bg-slate-100 my-0 h-[1px]" />
-              
-              <div className="py-1">
+            <div className="w-[200px] p-1 border border-slate-200 shadow-xl rounded-lg bg-white overflow-hidden">
                 <div 
-                  className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors"
+                  className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors rounded-md"
                   onClick={() => {
                       const patient = patients.find(p => p.id === contextMenuOpenId)
                       if(patient) handleViewPhr(patient.id, patient.name)
                   }}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 font-medium">
                     <Eye className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Open PHR Dialog</span>
+                    <span>View PHR</span>
                   </div>
                   <span className="text-xs text-slate-400">P</span>
                 </div>
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Eye className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Open PHR Route</span>
-                  </div>
-                  <span className="text-xs text-slate-400">R</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Plus className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Add External Order</span>
-                  </div>
-                  <span className="text-xs text-slate-400">S</span>
-                </div>
-              </div>
-              
-              <DropdownMenuSeparator className="bg-slate-100 my-0 h-[1px]" />
-              
-              <div className="py-1">
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FlaskConical className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Convert to Test Patient</span>
-                  </div>
-                  <span className="text-xs text-slate-400">C</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <UserMinus className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Convert to Inactive Patient</span>
-                  </div>
-                  <span className="text-xs text-slate-400">I</span>
-                </div>
-              </div>
             </div>
           </div>
         )}
