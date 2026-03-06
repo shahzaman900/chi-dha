@@ -9,7 +9,8 @@
     "initiatedBy": "System",
     "escalationStatus": "Dispatched",
     "escalatedBy": "Nurse",
-    "aiTriageScore": 9.5
+    "aiTriageScore": 9.5,
+    "aiEngagement": "call"
   },
   {
     "id": "2",
@@ -29,7 +30,8 @@
     "status": "CRITICAL",
     "trend": "Escalating",
     "initiatedBy": "Patient",
-    "aiTriageScore": 8.8
+    "aiTriageScore": 8.8,
+    "aiEngagement": "text"
   },
   {
     "id": "4",

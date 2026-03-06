@@ -19,7 +19,7 @@ import { usePatientStore } from "@/store/patient-store"
 import { Button } from "./ui/button"
 import { 
   ChevronLeft, ChevronRight, Siren, AlertTriangle, Check, Search, Filter, Settings,
-  Eye, Pencil, FileText, Mail, MessageSquare, Plus, FlaskConical, UserMinus, Activity
+  Eye, Pencil, FileText, Mail, MessageSquare, Plus, FlaskConical, UserMinus, Activity, Phone
 } from "lucide-react"
 import { useState } from "react"
 
@@ -96,6 +96,7 @@ export function PatientTable() {
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Patient</TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">EWS Score</TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">AI Triage score <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">AI Engagement <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Status <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Initiated By <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Escalated By <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
@@ -142,6 +143,23 @@ export function PatientTable() {
                      <div className="inline-flex items-center justify-center font-bold text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded">
                        {patient.aiTriageScore || "-"}
                      </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                     {patient.aiEngagement === 'call' && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold">
+                           <Phone className="h-3 w-3 animate-pulse" />
+                           <span className="animate-pulse">AI Call in Progress</span>
+                        </div>
+                     )}
+                     {patient.aiEngagement === 'text' && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
+                           <MessageSquare className="h-3 w-3 animate-pulse" />
+                           <span className="animate-pulse">AI Text in Progress</span>
+                        </div>
+                     )}
+                     {!patient.aiEngagement && (
+                        <span className="text-slate-400 font-medium">-</span>
+                     )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                       <div className="flex items-center text-slate-700">

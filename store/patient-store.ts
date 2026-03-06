@@ -12,6 +12,7 @@ export interface Patient {
   escalationStatus?: string;
   escalatedBy?: string;
   aiTriageScore?: number;
+  aiEngagement?: "call" | "text" | null;
 }
 
 export interface PhrTab {
@@ -43,7 +44,7 @@ interface PatientStore {
 }
 
 export const usePatientStore = create<PatientStore>((set, get) => ({
-  patients: patientsData,
+  patients: patientsData as Patient[],
   setPatients: (patients) => set({ patients }),
   selectedPatientId: null,
   setSelectedPatientId: (id) => set({ selectedPatientId: id }),
