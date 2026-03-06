@@ -3,18 +3,21 @@ import { Bell, Calendar, ChevronDown, PlusSquare, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { usePatientStore } from "@/store/patient-store"
 
 export function SiteHeader() {
+  const { currentMainTab, setCurrentMainTab } = usePatientStore()
+
   const navLinks = [
-    { name: "Dashboard", href: "#", active: false },
-    { name: "Patient Dashboard", href: "#", active: false },
-    { name: "Appointments", href: "#", active: false },
-    { name: "Availability", href: "#", active: false },
-    { name: "EWS", href: "#", active: true },
-    { name: "Merge Patients", href: "#", active: false },
-    { name: "Encounters", href: "#", active: false },
-    { name: "Services", href: "#", active: false },
-    { name: "SOAP Note A...", href: "#", active: false },
+    { name: "Dashboard", href: "#" },
+    { name: "Patient Dashboard", href: "#" },
+    { name: "Appointments", href: "#" },
+    { name: "Availability", href: "#" },
+    { name: "EWS", id: "ews", href: "#" },
+    { name: "Merge Patients", href: "#" },
+    { name: "Encounters", id: "encounters", href: "#" },
+    { name: "Services", href: "#" },
+    { name: "SOAP Note A...", href: "#" },
   ]
 
   return (
@@ -36,19 +39,28 @@ export function SiteHeader() {
           {/* Navigation */}
           <div className="relative">
             <nav className="flex items-center gap-1 text-[13px] font-semibold text-slate-700">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-                    link.active 
-                      ? "border-2 border-[#0f62fe] text-slate-800 bg-white" 
-                      : "hover:bg-slate-50 border-2 border-transparent"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = link.id === currentMainTab
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={(e) => {
+                      if (link.id) {
+                        e.preventDefault()
+                        setCurrentMainTab(link.id as "ews" | "encounters")
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+                      isActive
+                        ? "border-2 border-[#0f62fe] text-slate-800 bg-white" 
+                        : "hover:bg-slate-50 border-2 border-transparent"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                )
+              })}
             </nav>
             {/* The grey indicator bar below the first few items */}
             <div className="absolute -bottom-3 left-0 w-[420px] h-2 bg-slate-300 rounded-full"></div>

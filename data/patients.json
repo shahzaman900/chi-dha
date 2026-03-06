@@ -52,6 +52,29 @@
         "event": "Nurse escalated case and EMERGENCY services dispatched.",
         "type": "critical-action"
       }
+    ],
+    "encounters": [
+      {
+        "id": "1-enc-1",
+        "date": "Today, 09:30 AM",
+        "provider": "Dr. Smith",
+        "reason": "Routine checkup / monitoring",
+        "type": "Follow Up"
+      },
+      {
+        "id": "1-enc-2",
+        "date": "Jan 28, 2026 10:15 AM",
+        "provider": "Dr. Adams",
+        "reason": "Cardiology Consultation",
+        "type": "Initial Consultation"
+      },
+      {
+        "id": "1-enc-3",
+        "date": "Dec 15, 2025 09:00 AM",
+        "provider": "Dr. Smith",
+        "reason": "Annual Physical Exam",
+        "type": "Wellness Visit"
+      }
     ]
   },
   {

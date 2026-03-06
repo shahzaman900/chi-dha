@@ -2,6 +2,7 @@
 
 import { PracticeHeader } from "@/components/practice-header"
 import { PatientTable } from "@/components/patient-table"
+import { EncountersTable } from "@/components/encounters-table"
 import { SiteHeader } from "@/components/site-header"
 import { PhrTabBar } from "@/components/phr-tab-bar"
 import { PhrDisplay } from "@/components/phr-display"
@@ -10,7 +11,7 @@ import { PatientRegistrationModal } from "@/components/patient-registration-moda
 import { usePatientStore } from "@/store/patient-store"
 
 export default function Home() {
-  const { openTabs, activeTabId } = usePatientStore()
+  const { openTabs, activeTabId, currentMainTab } = usePatientStore()
 
   // Find the active tab's patientId
   const activeTab = openTabs.find((t) => t.id === activeTabId)
@@ -30,7 +31,7 @@ export default function Home() {
            <div className="flex flex-col flex-1 overflow-hidden p-6 pt-8 max-w-[1700px] mx-auto w-full">
              <PracticeHeader />
              <div className="flex-1 overflow-hidden bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col relative w-full h-[calc(100vh-140px)]">
-               <PatientTable />
+               {currentMainTab === "ews" ? <PatientTable /> : <EncountersTable />}
              </div>
            </div>
          )}

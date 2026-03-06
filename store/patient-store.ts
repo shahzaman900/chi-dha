@@ -1,5 +1,12 @@
 import { create } from "zustand";
 import patientsData from "@/data/patients.json";
+export interface EncounterRecord {
+  id: string;
+  date: string;
+  provider: string;
+  reason: string;
+  type: string;
+}
 
 export interface Patient {
   id: string;
@@ -14,6 +21,7 @@ export interface Patient {
   aiTriageScore?: number;
   aiEngagement?: "call" | "text" | null;
   timeline?: any[];
+  encounters?: EncounterRecord[];
 }
 
 export interface PhrTab {
@@ -42,6 +50,9 @@ interface PatientStore {
   isRegistrationOpen: boolean;
   setIsRegistrationOpen: (open: boolean) => void;
   addPatient: (patient: Omit<Patient, "id">) => void;
+  // Main Navigation
+  currentMainTab: "ews" | "encounters";
+  setCurrentMainTab: (tab: "ews" | "encounters") => void;
 }
 
 export const usePatientStore = create<PatientStore>((set, get) => ({
@@ -113,4 +124,8 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       patients: [newPatient, ...state.patients],
     }));
   },
+
+  // Main Navigation
+  currentMainTab: "ews",
+  setCurrentMainTab: (tab) => set({ currentMainTab: tab }),
 }));
