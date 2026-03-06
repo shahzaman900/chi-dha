@@ -78,7 +78,7 @@ export function PatientTable() {
       {/* Darker Header Above Table */}
       <div className="bg-[#eaf3fd] h-14 border-b border-[#dce9f8] flex items-center justify-between px-6 rounded-t-lg shrink-0 w-full">
         <div className="flex items-center gap-3">
-          <h2 className="font-bold text-slate-800 text-[15px]">Patients List</h2>
+          <h2 className="font-bold text-slate-800 text-[15px]">EWS List</h2>
           <Search className="h-4 w-4 text-slate-500 cursor-pointer hover:text-slate-700 transition" />
         </div>
         <div className="text-slate-500 text-sm">
@@ -189,7 +189,7 @@ export function PatientTable() {
                 >
                   <div className="flex items-center gap-3 font-medium">
                     <Eye className="h-[18px] w-[18px] text-slate-500" />
-                    <span>View PHR</span>
+                    <span>View Encounter</span>
                   </div>
                   <span className="text-xs text-slate-400">P</span>
                 </div>

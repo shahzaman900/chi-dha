@@ -24,7 +24,7 @@ export function PhrTabBar() {
         `}
       >
         <Users className="h-4 w-4" />
-        <span>Patients List</span>
+        <span>EWS List</span>
       </button>
 
       {/* PHR Tabs */}

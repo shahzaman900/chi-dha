@@ -10,7 +10,7 @@ export function SiteHeader() {
     { name: "Patient Dashboard", href: "#", active: false },
     { name: "Appointments", href: "#", active: false },
     { name: "Availability", href: "#", active: false },
-    { name: "Patients", href: "#", active: true },
+    { name: "EWS", href: "#", active: true },
     { name: "Merge Patients", href: "#", active: false },
     { name: "Encounters", href: "#", active: false },
     { name: "Services", href: "#", active: false },
