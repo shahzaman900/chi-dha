@@ -19,7 +19,7 @@ import { usePatientStore } from "@/store/patient-store"
 import { Button } from "./ui/button"
 import { 
   ChevronLeft, ChevronRight, Siren, AlertTriangle, Check, Search, Filter, Settings,
-  Eye, Pencil, FileText, Mail, MessageSquare, Plus, FlaskConical, UserMinus
+  Eye, Pencil, FileText, Mail, MessageSquare, Plus, FlaskConical, UserMinus, Activity
 } from "lucide-react"
 import { useState } from "react"
 
@@ -45,8 +45,8 @@ export function PatientTable() {
     setSelectedPatientId(id === selectedPatientId ? null : id)
   }
 
-  const handleViewPhr = (patientId: string, patientName: string) => {
-    openPhrTab(patientId, patientName)
+  const handleViewPhr = (patientId: string, patientName: string, type: 'encounter' | 'phr' = 'encounter') => {
+    openPhrTab(patientId, patientName, type)
     setContextMenuOpenId(null)
   }
 
@@ -184,12 +184,25 @@ export function PatientTable() {
                   className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors rounded-md"
                   onClick={() => {
                       const patient = patients.find(p => p.id === contextMenuOpenId)
-                      if(patient) handleViewPhr(patient.id, patient.name)
+                      if(patient) handleViewPhr(patient.id, patient.name, 'encounter')
                   }}
                 >
                   <div className="flex items-center gap-3 font-medium">
-                    <Eye className="h-[18px] w-[18px] text-slate-500" />
+                    <Activity className="h-[18px] w-[18px] text-slate-500" />
                     <span>View Encounter</span>
+                  </div>
+                  <span className="text-xs text-slate-400">E</span>
+                </div>
+                <div 
+                  className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors rounded-md mt-1"
+                  onClick={() => {
+                      const patient = patients.find(p => p.id === contextMenuOpenId)
+                      if(patient) handleViewPhr(patient.id, patient.name, 'phr')
+                  }}
+                >
+                  <div className="flex items-center gap-3 font-medium">
+                    <FileText className="h-[18px] w-[18px] text-slate-500" />
+                    <span>View PHR</span>
                   </div>
                   <span className="text-xs text-slate-400">P</span>
                 </div>

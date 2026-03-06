@@ -1,7 +1,7 @@
 "use client"
 
 import { usePatientStore } from "@/store/patient-store"
-import { Users, FileText, X } from "lucide-react"
+import { Users, FileText, X, Activity } from "lucide-react"
 
 export function PhrTabBar() {
   const { openTabs, activeTabId, setActiveTab, closePhrTab } = usePatientStore()
@@ -43,7 +43,10 @@ export function PhrTabBar() {
               }
             `}
           >
-            <FileText className="h-3.5 w-3.5 shrink-0 text-brand-400" />
+            {tab.type === 'phr' ? 
+              <FileText className="h-3.5 w-3.5 shrink-0 text-brand-400" /> : 
+              <Activity className="h-3.5 w-3.5 shrink-0 text-brand-400" />
+            }
             <span className="truncate">{tab.patientName}</span>
             <span
               role="button"

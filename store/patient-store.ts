@@ -17,6 +17,7 @@ export interface PhrTab {
   id: string;
   patientId: string;
   patientName: string;
+  type: "encounter" | "phr";
 }
 
 interface PatientStore {
@@ -27,7 +28,11 @@ interface PatientStore {
   // Tab system
   openTabs: PhrTab[];
   activeTabId: string | null; // null = Patients tab is active
-  openPhrTab: (patientId: string, patientName: string) => void;
+  openPhrTab: (
+    patientId: string,
+    patientName: string,
+    type?: "encounter" | "phr",
+  ) => void;
   closePhrTab: (tabId: string) => void;
   setActiveTab: (tabId: string | null) => void;
   // Registration system
@@ -46,19 +51,21 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   openTabs: [],
   activeTabId: null,
 
-  openPhrTab: (patientId, patientName) => {
+  openPhrTab: (patientId, patientName, type = "encounter") => {
     const { openTabs } = get();
-    // Check if tab already open for this patient
-    const existing = openTabs.find((t) => t.patientId === patientId);
+    // Check if tab already open for this patient AND this specific type
+    const tabId = `${type}-${patientId}`;
+    const existing = openTabs.find((t) => t.id === tabId);
     if (existing) {
       // Just activate it
       set({ activeTabId: existing.id });
     } else {
       // Create new tab
       const newTab: PhrTab = {
-        id: `phr-${patientId}`,
+        id: tabId,
         patientId,
         patientName,
+        type,
       };
       set({
         openTabs: [...openTabs, newTab],
