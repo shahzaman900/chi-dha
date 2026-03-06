@@ -15,17 +15,19 @@ export default function Home() {
   const activeTab = openTabs.find((t) => t.id === activeTabId)
 
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
+    <div className="flex h-screen flex-col bg-[#fcfcfc] text-foreground">
       <SiteHeader />
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden bg-[#fafafa]">
          <PhrTabBar />
          {activeTab ? (
            <PhrDisplay patientId={activeTab.patientId} />
          ) : (
-           <>
+           <div className="flex flex-col flex-1 overflow-hidden p-6 pt-8 max-w-[1700px] mx-auto w-full">
              <PracticeHeader />
-             <PatientTable />
-           </>
+             <div className="flex-1 overflow-hidden bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col relative w-full h-[calc(100vh-140px)]">
+               <PatientTable />
+             </div>
+           </div>
          )}
       </div>
       

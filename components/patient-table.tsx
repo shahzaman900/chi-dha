@@ -9,15 +9,45 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import { usePatientStore } from "@/store/patient-store"
 import { Button } from "./ui/button"
-import { ChevronLeft, ChevronRight, Siren, AlertTriangle, Check } from "lucide-react"
+import { 
+  ChevronLeft, ChevronRight, Siren, AlertTriangle, Check, Search, Filter, Settings,
+  Eye, Pencil, FileText, Mail, MessageSquare, Plus, FlaskConical, UserMinus
+} from "lucide-react"
+import { useState } from "react"
 
 export function PatientTable() {
-  const { patients, selectedPatientId, setSelectedPatientId } = usePatientStore()
+  const { patients, selectedPatientId, setSelectedPatientId, openPhrTab } = usePatientStore()
+  
+  // Context Menu State
+  const [contextMenuOpenId, setContextMenuOpenId] = useState<string | null>(null)
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
 
-  const handleRowClick = (id: string) => {
+  const handleRowClick = (e: React.MouseEvent, id: string) => {
+    // Only select if they specifically clicked the checkbox or if it's not a context menu interaction
+    // Since we're changing this to open a menu on click, we'll stop the selection toggle here
+    // But keep standard selection logic isolated
+    
+    // Instead of selecting, open context menu where clicked:
+    setContextMenuOpenId(contextMenuOpenId === id ? null : id)
+    setMenuPosition({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleCheckboxClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
     setSelectedPatientId(id === selectedPatientId ? null : id)
+  }
+
+  const handleViewPhr = (patientId: string, patientName: string) => {
+    openPhrTab(patientId, patientName)
+    setContextMenuOpenId(null)
   }
 
   const getStatusIcon = (status: string) => {
@@ -31,7 +61,7 @@ export function PatientTable() {
       case "Healthy":
         return <Check className="h-4 w-4 text-green-500 mr-2" />
       default:
-        return null
+        return <Check className="h-4 w-4 text-green-400 mr-2" />
     }
   }
 
@@ -43,82 +73,220 @@ export function PatientTable() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30 w-full h-full">
-      <div className="flex-1 overflow-auto">
+    <div className="flex-1 flex flex-col overflow-hidden bg-white w-full h-full relative" onClick={() => setContextMenuOpenId(null)}>
+      
+      {/* Darker Header Above Table */}
+      <div className="bg-[#eaf3fd] h-14 border-b border-[#dce9f8] flex items-center justify-between px-6 rounded-t-lg shrink-0 w-full">
+        <div className="flex items-center gap-3">
+          <h2 className="font-bold text-slate-800 text-[15px]">Patients List</h2>
+          <Search className="h-4 w-4 text-slate-500 cursor-pointer hover:text-slate-700 transition" />
+        </div>
+        <div className="text-slate-500 text-sm">
+          307 records
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto relative">
         <Table>
-          <TableHeader className="bg-white sticky top-0 border-b border-slate-200 shadow-sm z-10">
+          <TableHeader className="bg-[#eaf3fd] sticky top-0 z-10 shadow-sm shadow-[#eaf3fd]/50">
             <TableRow className="border-none hover:bg-transparent">
               <TableHead className="w-[50px] px-6 py-4">
-                <Checkbox className="border-slate-300 data-[state=checked]:bg-brand-600 data-[state=checked]:border-brand-600" />
+                <Checkbox className="border-slate-400 bg-white data-[state=checked]:bg-[#0f62fe] data-[state=checked]:border-[#0f62fe] rounded-sm" />
               </TableHead>
-              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Patient</TableHead>
-              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">EWS Score</TableHead>
-              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Status</TableHead>
-              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Initiated By</TableHead>
-              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Escalated By</TableHead>
-              <TableHead className="text-slate-500 font-semibold text-xs uppercase tracking-wider">Trend</TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Patient</TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">EWS Score</TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Status <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Initiated By <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Escalated By <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Trend <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {patients.map((patient: any, index: number) => {
               const isSelected = selectedPatientId === patient.id;
+              const isMenuOpen = contextMenuOpenId === patient.id;
               
               return (
-              <TableRow 
-                key={patient.id} 
-                onClick={() => handleRowClick(patient.id)}
-                className={`
-                    border-b border-slate-100 transition-all cursor-pointer group
-                    ${isSelected 
-                        ? "bg-brand-50/80 border-l-4 border-l-blue-600" 
-                        : "bg-white hover:bg-slate-50"
-                    }
-                `}
-              >
-                <TableCell className="px-6 py-4">
-                  <Checkbox 
-                    checked={isSelected}
-                    onCheckedChange={() => handleRowClick(patient.id)}
-                    className="border-slate-300 data-[state=checked]:bg-brand-600 data-[state=checked]:border-brand-600"
-                  />
-                </TableCell>
-                <TableCell className="font-semibold text-slate-900">{patient.name} <span className="font-normal text-slate-500">({patient.age}y)</span></TableCell>
-                <TableCell className="font-bold text-slate-900">
-                   <div className="inline-flex items-center justify-center min-w-[32px] h-8 rounded-md bg-slate-100 text-slate-700">
-                     {patient.ewsScore}
-                   </div>
-                </TableCell>
-                <TableCell>
-                    <div className="flex items-center font-medium text-slate-800">
-                        {getStatusIcon(patient.status)}
-                        <span className={
-                            patient.status === "CRITICAL" ? "text-red-400" :
-                            patient.status === "High Risk" ? "text-orange-400" :
-                            patient.status === "Medium Risk" ? "text-yellow-400" : "text-emerald-400"
-                        }>{patient.status}</span>
-                    </div>
-                </TableCell>
-                <TableCell className="text-slate-600">{patient.initiatedBy || "-"}</TableCell>
-                <TableCell className="text-slate-600">
-                    {patient.escalatedBy ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                            {patient.escalatedBy}
-                        </span>
-                    ) : "-"}
-                </TableCell>
-                <TableCell className="font-medium">
-                    <div className="flex items-center text-slate-700">
-                        {getTrendIcon(patient.trend)}
-                        {patient.trend}
-                    </div>
-                </TableCell>
-              </TableRow>
+                <TableRow 
+                  key={patient.id} 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleRowClick(e, patient.id)
+                  }}
+                  className={`
+                      border-b border-slate-100 transition-all cursor-pointer group text-[13px] text-slate-600
+                      ${isSelected || isMenuOpen
+                          ? "bg-brand-50/50" 
+                          : "bg-white hover:bg-slate-50"
+                      }
+                  `}
+                >
+                  <TableCell className="px-6 py-4">
+                    <Checkbox 
+                      checked={isSelected}
+                      onCheckedChange={() => {
+                        // Handled by onClick below to safely pass event
+                      }}
+                      className="border-slate-400 bg-white data-[state=checked]:bg-[#0f62fe] data-[state=checked]:border-[#0f62fe] rounded-sm z-10 relative"
+                      onClick={(e) => handleCheckboxClick(e, patient.id)}
+                    />
+                  </TableCell>
+                  <TableCell className="text-slate-700 whitespace-nowrap">{patient.name} <span className="text-slate-400">({patient.age}y)</span></TableCell>
+                  <TableCell className="whitespace-nowrap">
+                     <div className="inline-flex items-center justify-center font-medium bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-700">
+                       {patient.ewsScore}
+                     </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                      <div className="flex items-center text-slate-700">
+                          {getStatusIcon(patient.status)}
+                          <span className={
+                              patient.status === "CRITICAL" ? "text-red-500" :
+                              patient.status === "High Risk" ? "text-orange-500" :
+                              patient.status === "Medium Risk" ? "text-yellow-500" : "text-emerald-500"
+                          }>{patient.status}</span>
+                      </div>
+                  </TableCell>
+                  <TableCell className="text-slate-600 whitespace-nowrap">{patient.initiatedBy || "-"}</TableCell>
+                  <TableCell className="text-slate-600 whitespace-nowrap">
+                      {patient.escalatedBy ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium border border-red-200 bg-red-50 text-red-600">
+                              {patient.escalatedBy}
+                          </span>
+                      ) : "-"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                      <div className="flex items-center text-slate-600">
+                          {getTrendIcon(patient.trend)}
+                          <span>{patient.trend}</span>
+                      </div>
+                  </TableCell>
+                </TableRow>
             )})}
+            
+            {/* Added empty spacer to ensure table items don't hide behind floating button */}
+            <TableRow className="border-transparent hover:bg-transparent"><TableCell colSpan={7} className="h-16 cursor-default"></TableCell></TableRow>
           </TableBody>
         </Table>
+
+        {/* Global Floating Context Menu */}
+        {contextMenuOpenId && (
+          <div 
+            className="fixed z-50 animate-in fade-in zoom-in-95 duration-100"
+            style={{ 
+              left: `${menuPosition.x}px`, 
+              top: `${menuPosition.y}px`,
+              // Ensure it doesn't go offscreen by clamping broadly or transforming appropriately
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-[280px] p-0 border border-slate-200 shadow-xl rounded-lg bg-white overflow-hidden">
+              <div className="py-1">
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Eye className="h-[18px] w-[18px] text-slate-500" />
+                    <span>View Details</span>
+                  </div>
+                  <span className="text-xs text-slate-400">V</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Pencil className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Edit</span>
+                  </div>
+                  <span className="text-xs text-slate-400">E</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Billing Report</span>
+                  </div>
+                  <span className="text-xs text-slate-400">B</span>
+                </div>
+              </div>
+              
+              <DropdownMenuSeparator className="bg-slate-100 my-0 h-[1px]" />
+              
+              <div className="py-1">
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Resend Registration Email</span>
+                  </div>
+                  <span className="text-xs text-slate-400">M</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <MessageSquare className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Resend Registration Text</span>
+                  </div>
+                  <span className="text-xs text-slate-400">T</span>
+                </div>
+              </div>
+              
+              <DropdownMenuSeparator className="bg-slate-100 my-0 h-[1px]" />
+              
+              <div className="py-1">
+                <div 
+                  className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors"
+                  onClick={() => {
+                      const patient = patients.find(p => p.id === contextMenuOpenId)
+                      if(patient) handleViewPhr(patient.id, patient.name)
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <Eye className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Open PHR Dialog</span>
+                  </div>
+                  <span className="text-xs text-slate-400">P</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Eye className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Open PHR Route</span>
+                  </div>
+                  <span className="text-xs text-slate-400">R</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Plus className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Add External Order</span>
+                  </div>
+                  <span className="text-xs text-slate-400">S</span>
+                </div>
+              </div>
+              
+              <DropdownMenuSeparator className="bg-slate-100 my-0 h-[1px]" />
+              
+              <div className="py-1">
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <FlaskConical className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Convert to Test Patient</span>
+                  </div>
+                  <span className="text-xs text-slate-400">C</span>
+                </div>
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <UserMinus className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Convert to Inactive Patient</span>
+                  </div>
+                  <span className="text-xs text-slate-400">I</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-200 text-sm text-slate-500">
+      {/* Floating Action Button */}
+      <div className="absolute right-4 bottom-[72px] z-20">
+         <div className="bg-[#00a2ff] hover:bg-blue-500 rounded-xl h-[52px] w-[52px] shadow-lg flex items-center justify-center cursor-pointer transition-colors shadow-blue-400/30">
+           <Settings className="h-6 w-6 text-white" />
+         </div>
+      </div>
+
+      <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-slate-200 text-sm text-slate-500 w-full shrink-0">
         <div className="flex items-center gap-3">
            <span>Version 1.124</span>
            <span className="text-slate-300">•</span>
