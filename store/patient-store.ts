@@ -13,6 +13,7 @@ export interface Patient {
   escalatedBy?: string;
   aiTriageScore?: number;
   aiEngagement?: "call" | "text" | null;
+  timeline?: any[];
 }
 
 export interface PhrTab {

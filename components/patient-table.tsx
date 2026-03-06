@@ -19,9 +19,10 @@ import { usePatientStore } from "@/store/patient-store"
 import { Button } from "./ui/button"
 import { 
   ChevronLeft, ChevronRight, Siren, AlertTriangle, Check, Search, Filter, Settings,
-  Eye, Pencil, FileText, Mail, MessageSquare, Plus, FlaskConical, UserMinus, Activity, Phone
+  Eye, Pencil, FileText, Mail, MessageSquare, Plus, FlaskConical, UserMinus, Activity, Phone, Clock
 } from "lucide-react"
 import { useState } from "react"
+import { TimelineModal } from "./timeline-modal"
 
 export function PatientTable() {
   const { patients, selectedPatientId, setSelectedPatientId, openPhrTab } = usePatientStore()
@@ -29,6 +30,7 @@ export function PatientTable() {
   // Context Menu State
   const [contextMenuOpenId, setContextMenuOpenId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
+  const [timelineModalPatientId, setTimelineModalPatientId] = useState<string | null>(null)
 
   const handleRowClick = (e: React.MouseEvent, id: string) => {
     // Only select if they specifically clicked the checkbox or if it's not a context menu interaction
@@ -230,10 +232,30 @@ export function PatientTable() {
                   </div>
                   <span className="text-xs text-slate-400">P</span>
                 </div>
+                
+                <div 
+                  className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors rounded-md mt-1 border-t border-slate-100 pt-3"
+                  onClick={() => {
+                     setTimelineModalPatientId(contextMenuOpenId)
+                     setContextMenuOpenId(null)
+                  }}
+                >
+                  <div className="flex items-center gap-3 font-medium">
+                    <Clock className="h-[18px] w-[18px] text-slate-500" />
+                    <span>Timeline of Events</span>
+                  </div>
+                  <span className="text-xs text-slate-400">T</span>
+                </div>
             </div>
           </div>
         )}
       </div>
+
+      <TimelineModal 
+        patientId={timelineModalPatientId} 
+        isOpen={!!timelineModalPatientId} 
+        onClose={() => setTimelineModalPatientId(null)} 
+      />
 
       {/* Floating Action Button */}
       <div className="absolute right-4 bottom-[72px] z-20">
