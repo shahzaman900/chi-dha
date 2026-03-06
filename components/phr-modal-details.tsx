@@ -71,7 +71,7 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                             <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
                                 <div className="flex gap-3 items-start">
                                     <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
-                                    <p className="text-foreground text-lg">Supplemental Oxygen</p>
+                                    <p className="text-black text-lg">Supplemental Oxygen</p>
                                 </div>
                                 <div className="flex gap-3 items-start">
                                     <CheckCircle2 className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
@@ -122,9 +122,7 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                 </div>
                                 <div className="flex gap-3 items-center">
                                     <CheckCircle2 className="h-4 w-4 text-brand-500 shrink-0" />
-                                    <div className="text-muted-foreground text-sm flex items-center gap-1">
-                                        <span className="font-bold text-white text-lg">Supplemental Oxygen</span>
-                                    </div>
+                                    <p className="text-muted-foreground text-sm">Supplemental Oxygen</p>
                                 </div>
                                 <div className="flex gap-3 items-center">
                                     <CheckCircle2 className="h-4 w-4 text-brand-500 shrink-0" />
