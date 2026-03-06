@@ -45,32 +45,42 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
   return (
     <div className="flex overflow-auto flex-col bg-card text-foreground h-full">
       {/* Header */}
-      <div className={`flex items-center justify-between px-6 py-4 ${statusColor}`}>
+      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-border">
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-card/20 flex items-center justify-center">
-            <User className="h-6 w-6 text-white" />
+          <div className="h-12 w-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center">
+            <User className="h-6 w-6 text-slate-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{patient.profile.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{patient.profile.name}</h1>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-center">
-            <div className="text-xs text-white/70 uppercase tracking-wider">EWS Score</div>
-            <div className="text-4xl font-bold text-white">{patient.ews.score}</div>
+        
+        <div className="flex items-center justify-center gap-3 flex-1 px-8">
+           <Button className="bg-brand-600 hover:bg-brand-700 text-white h-9 px-4 rounded-full text-xs font-semibold tracking-wide shadow-sm transition-all border-none">
+              Trigger AI Text Flow
+           </Button>
+           <Button className="bg-brand-600 hover:bg-brand-700 text-white h-9 px-4 rounded-full text-xs font-semibold tracking-wide shadow-sm transition-all border-none">
+              Trigger AI Call Flow
+           </Button>
+           <Button className="bg-brand-600 hover:bg-brand-700 text-white h-9 px-4 rounded-full text-xs font-semibold tracking-wide shadow-sm transition-all border-none">
+              Dispatch Emergency Services
+           </Button>
+           <Button className="bg-brand-600 hover:bg-brand-700 text-white h-9 px-4 rounded-full text-xs font-semibold tracking-wide shadow-sm transition-all border-none">
+              Refer to Doctor
+           </Button>
+        </div>
+        <div className="flex items-center gap-4 pl-4 border-l border-slate-200">
+          <div className="text-center bg-slate-200/60 px-5 py-2 rounded-xl border border-slate-200 flex flex-col items-center justify-center min-w-[100px]">
+            <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">EWS Score</div>
+            <div className="text-2xl font-bold text-slate-700 leading-none">{patient.ews.score}</div>
           </div>
-          <Badge variant="outline" className="border-white/50 text-white text-lg px-4 py-2">
-            {isCritical ? <Siren className="h-5 w-5 mr-2" /> : <AlertTriangle className="h-5 w-5 mr-2" />}
+          <Badge variant="outline" className={`text-sm font-bold tracking-wide px-4 py-2 rounded-full self-stretch flex items-center border ${
+            isCritical ? 'bg-red-50 text-red-600 border-red-200' : 'bg-orange-50 text-orange-600 border-orange-200'
+          }`}>
+            {isCritical ? <Siren className="h-4 w-4 mr-2" /> : <AlertTriangle className="h-4 w-4 mr-2" />}
             {patient.ews.status}
           </Badge>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="bg-red-600 hover:bg-red-700 text-white ml-4 rounded-lg"
-            onClick={() => closePhrTab(patient.patientId)}
-          >
-            <X className="h-6 w-6" />
-          </Button>
+
         </div>
       </div>
 
