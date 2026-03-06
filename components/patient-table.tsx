@@ -95,6 +95,7 @@ export function PatientTable() {
               </TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Patient</TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">EWS Score</TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">AI Triage score <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Status <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Initiated By <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Escalated By <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
@@ -135,6 +136,11 @@ export function PatientTable() {
                   <TableCell className="whitespace-nowrap">
                      <div className="inline-flex items-center justify-center font-medium bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-700">
                        {patient.ewsScore}
+                     </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                     <div className="inline-flex items-center justify-center font-bold text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded">
+                       {patient.aiTriageScore || "-"}
                      </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">

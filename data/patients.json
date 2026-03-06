@@ -8,7 +8,8 @@
     "trend": "Escalating",
     "initiatedBy": "System",
     "escalationStatus": "Dispatched",
-    "escalatedBy": "Nurse"
+    "escalatedBy": "Nurse",
+    "aiTriageScore": 9.5
   },
   {
     "id": "2",
@@ -17,7 +18,8 @@
     "ewsScore": 7,
     "status": "High Risk",
     "trend": "Rising",
-    "initiatedBy": "Nurse"
+    "initiatedBy": "Nurse",
+    "aiTriageScore": 7.2
   },
   {
     "id": "3",
@@ -26,7 +28,8 @@
     "ewsScore": 9,
     "status": "CRITICAL",
     "trend": "Escalating",
-    "initiatedBy": "Patient"
+    "initiatedBy": "Patient",
+    "aiTriageScore": 8.8
   },
   {
     "id": "4",
@@ -34,7 +37,8 @@
     "age": 72,
     "ewsScore": 3,
     "status": "Stable",
-    "trend": "Stable"
+    "trend": "Stable",
+    "aiTriageScore": 2.1
   },
   {
     "id": "5",
@@ -42,6 +46,7 @@
     "age": 65,
     "ewsScore": 2,
     "status": "Stable",
-    "trend": "Stable"
+    "trend": "Stable",
+    "aiTriageScore": 1.5
   }
 ]

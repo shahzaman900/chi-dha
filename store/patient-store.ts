@@ -11,6 +11,7 @@ export interface Patient {
   initiatedBy?: string;
   escalationStatus?: string;
   escalatedBy?: string;
+  aiTriageScore?: number;
 }
 
 export interface PhrTab {
