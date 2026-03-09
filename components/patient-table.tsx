@@ -9,23 +9,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import { usePatientStore } from "@/store/patient-store"
+import { usePatientStore, Patient } from "@/store/patient-store"
 import { Button } from "./ui/button"
 import { 
   ChevronLeft, ChevronRight, Siren, AlertTriangle, Check, Search, Filter, Settings,
-  Eye, Pencil, FileText, Mail, MessageSquare, Plus, FlaskConical, UserMinus, Activity, Phone, Clock
+  Activity, Phone, Clock, MessageSquare,
+  Stethoscope, CheckCircle2, PauseCircle, AlertCircle, FileText
 } from "lucide-react"
 import { useState } from "react"
 import { TimelineModal } from "./timeline-modal"
 
 export function PatientTable() {
-  const { patients, selectedPatientId, setSelectedPatientId, openPhrTab } = usePatientStore()
+  const { 
+    patients, 
+    selectedPatientId, 
+    setSelectedPatientId, 
+    openPhrTab,
+    acknowledgeAlert,
+    triggerEmergency,
+    escalateToDoctor,
+    pauseAiOutreach,
+    initiateAiCheckIn,
+    markAsResolved
+  } = usePatientStore()
   
   // Context Menu State
   const [contextMenuOpenId, setContextMenuOpenId] = useState<string | null>(null)
@@ -116,7 +122,7 @@ export function PatientTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {patients.map((patient: any, index: number) => {
+            {patients.map((patient: Patient) => {
               const isSelected = selectedPatientId === patient.id;
               const isMenuOpen = contextMenuOpenId === patient.id;
               
@@ -216,47 +222,147 @@ export function PatientTable() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-[200px] p-1 border border-slate-200 shadow-xl rounded-lg bg-white overflow-hidden">
-                <div 
-                  className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors rounded-md"
-                  onClick={() => {
-                      const patient = patients.find(p => p.id === contextMenuOpenId)
-                      if(patient) handleViewPhr(patient.id, patient.name, 'encounter')
-                  }}
-                >
-                  <div className="flex items-center gap-3 font-medium">
-                    <Activity className="h-[18px] w-[18px] text-slate-500" />
-                    <span>View Encounter</span>
-                  </div>
-                  <span className="text-xs text-slate-400">E</span>
-                </div>
-                <div 
-                  className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors rounded-md mt-1"
-                  onClick={() => {
-                      const patient = patients.find(p => p.id === contextMenuOpenId)
-                      if(patient) handleViewPhr(patient.id, patient.name, 'phr')
-                  }}
-                >
-                  <div className="flex items-center gap-3 font-medium">
-                    <FileText className="h-[18px] w-[18px] text-slate-500" />
-                    <span>View PHR</span>
-                  </div>
-                  <span className="text-xs text-slate-400">P</span>
-                </div>
-                
-                <div 
-                  className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[14px] text-slate-700 transition-colors rounded-md mt-1 border-t border-slate-100 pt-3"
-                  onClick={() => {
-                     setTimelineModalPatientId(contextMenuOpenId)
-                     setContextMenuOpenId(null)
-                  }}
-                >
-                  <div className="flex items-center gap-3 font-medium">
-                    <Clock className="h-[18px] w-[18px] text-slate-500" />
-                    <span>Timeline of Events</span>
-                  </div>
-                  <span className="text-xs text-slate-400">T</span>
-                </div>
+            <div className="w-[240px] p-1 border border-slate-200 shadow-xl rounded-lg bg-white overflow-hidden flex flex-col">
+              {(() => {
+                const patient = patients.find(p => p.id === contextMenuOpenId);
+                if (!patient) return null;
+
+                const isCritical = ["Emergency Protocol", "Timeout Escalation", "Urgent Triage"].includes(patient.status);
+                const isAiActive = patient.aiEngagement?.includes("In Progress") || patient.aiEngagement?.includes("Active") || patient.aiEngagement?.includes("Awaiting");
+                const canAcknowledge = isCritical || patient.status === "AI Outreach";
+
+                return (
+                  <>
+                    {/* WORKFLOW & TRIAGE ACTIONS */}
+                    {(isCritical || canAcknowledge) && (
+                      <div className="pb-1 mb-1 border-b border-slate-100">
+                        {canAcknowledge && (
+                          <div 
+                            className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-orange-50 focus:bg-orange-50 text-[13px] text-orange-700 transition-colors rounded-md font-medium"
+                            onClick={() => {
+                               acknowledgeAlert(patient.id);
+                               setContextMenuOpenId(null);
+                            }}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <AlertCircle className="h-4 w-4" />
+                              <span>Acknowledge Alert</span>
+                            </div>
+                          </div>
+                        )}
+                        {!patient.status.includes("Emergency Protocol") && (
+                          <div 
+                            className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-red-50 focus:bg-red-50 text-[13px] text-red-700 transition-colors rounded-md font-medium mt-0.5"
+                            onClick={() => {
+                               triggerEmergency(patient.id);
+                               setContextMenuOpenId(null);
+                            }}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Siren className="h-4 w-4" />
+                              <span>Trigger Emergency</span>
+                            </div>
+                          </div>
+                        )}
+                        {patient.status !== "Refer to Doctor" && (
+                          <div 
+                            className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-indigo-50 focus:bg-indigo-50 text-[13px] text-indigo-700 transition-colors rounded-md font-medium mt-0.5"
+                            onClick={() => {
+                               escalateToDoctor(patient.id);
+                               setContextMenuOpenId(null);
+                            }}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Stethoscope className="h-4 w-4" />
+                              <span>Escalate to Doctor</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* COMMUNICATION ACTIONS */}
+                    <div className="pb-1 mb-1 border-b border-slate-100">
+                      {isAiActive ? (
+                        <div 
+                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md font-medium"
+                          onClick={() => {
+                             pauseAiOutreach(patient.id);
+                             setContextMenuOpenId(null);
+                          }}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <PauseCircle className="h-4 w-4 text-slate-500" />
+                            <span>Pause AI Outreach</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div 
+                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md font-medium"
+                          onClick={() => {
+                             initiateAiCheckIn(patient.id, "call");
+                             setContextMenuOpenId(null);
+                          }}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <Phone className="h-4 w-4 text-slate-500" />
+                            <span>Initiate AI Check-in</span>
+                          </div>
+                        </div>
+                      )}
+                      <div 
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md font-medium mt-0.5"
+                        onClick={() => {
+                           markAsResolved(patient.id);
+                           setContextMenuOpenId(null);
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <CheckCircle2 className="h-4 w-4 text-slate-500" />
+                          <span>Mark as Resolved</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CLINICAL REVIEW ACTIONS */}
+                    <div>
+                      <div 
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                        onClick={() => handleViewPhr(patient.id, patient.name, 'encounter')}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Activity className="h-4 w-4 text-slate-500" />
+                          <span>View Latest Encounter</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">E</span>
+                      </div>
+                      <div 
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md mt-0.5"
+                        onClick={() => handleViewPhr(patient.id, patient.name, 'phr')}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <FileText className="h-4 w-4 text-slate-500" />
+                          <span>Open Health Record</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">P</span>
+                      </div>
+                      <div 
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md mt-0.5"
+                        onClick={() => {
+                           setTimelineModalPatientId(contextMenuOpenId)
+                           setContextMenuOpenId(null)
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Clock className="h-4 w-4 text-slate-500" />
+                          <span>Timeline of Events</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">T</span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}

@@ -86,6 +86,16 @@ interface PatientStore {
   isRegistrationOpen: boolean;
   setIsRegistrationOpen: (open: boolean) => void;
   addPatient: (patient: Omit<Patient, "id">) => void;
+
+  // Patient Actions
+  updatePatientStatus: (patientId: string, status: PatientStatus) => void;
+  acknowledgeAlert: (patientId: string) => void;
+  triggerEmergency: (patientId: string) => void;
+  escalateToDoctor: (patientId: string) => void;
+  pauseAiOutreach: (patientId: string) => void;
+  initiateAiCheckIn: (patientId: string, type: "call" | "text") => void;
+  markAsResolved: (patientId: string) => void;
+
   // Main Navigation
   currentMainTab: "ews" | "encounters";
   setCurrentMainTab: (tab: "ews" | "encounters") => void;
@@ -158,6 +168,181 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     // Add to top of the list
     set((state) => ({
       patients: [newPatient, ...state.patients],
+    }));
+  },
+
+  // Patient Actions
+  updatePatientStatus: (patientId, status) => {
+    set((state) => ({
+      patients: state.patients.map((p) =>
+        p.id === patientId ? { ...p, status } : p,
+      ),
+    }));
+  },
+
+  acknowledgeAlert: (patientId) => {
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: "Alert acknowledged by Nurse.",
+          type: "system",
+        };
+
+        return {
+          ...p,
+          status: "Nurse Alerted",
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+  },
+
+  triggerEmergency: (patientId) => {
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: "EMERGENCY PROTOCOL triggered by Nurse.",
+          type: "critical-action",
+        };
+
+        return {
+          ...p,
+          status: "Emergency Protocol",
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+  },
+
+  escalateToDoctor: (patientId) => {
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: "Case escalated to Attending Physician.",
+          type: "critical",
+        };
+
+        return {
+          ...p,
+          status: "Refer to Doctor",
+          escalatedBy: "Triage Nurse",
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+  },
+
+  pauseAiOutreach: (patientId) => {
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: "AI Outreach paused by staff.",
+          type: "system",
+        };
+
+        return {
+          ...p,
+          aiEngagement: null,
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+  },
+
+  initiateAiCheckIn: (patientId, type) => {
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: `AI Check-in (${type}) initiated manually.`,
+          type: "update",
+        };
+
+        return {
+          ...p,
+          aiEngagement:
+            type === "call" ? "Call - In Progress" : "Text - Active Chat",
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+  },
+
+  markAsResolved: (patientId) => {
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: "Alert resolved.",
+          type: "update",
+        };
+
+        return {
+          ...p,
+          status: "Resolved",
+          aiEngagement: null,
+          escalatedBy: null,
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
     }));
   },
 
