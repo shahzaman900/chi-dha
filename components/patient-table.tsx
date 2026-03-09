@@ -408,18 +408,20 @@ export function PatientTable() {
                           </div>
                         </div>
                       )}
-                      <div 
-                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md font-medium mt-0.5"
-                        onClick={() => {
-                           setResolveSheetPatientId(patient.id);
-                           setContextMenuOpenId(null);
-                        }}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <CheckCircle2 className="h-4 w-4 text-slate-500" />
-                          <span>Mark as Resolved</span>
+                      {patient.status !== "Resolved" && (
+                        <div 
+                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md font-medium mt-0.5"
+                          onClick={() => {
+                             setResolveSheetPatientId(patient.id);
+                             setContextMenuOpenId(null);
+                          }}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <CheckCircle2 className="h-4 w-4 text-slate-500" />
+                            <span>Mark as Resolved</span>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* CLINICAL REVIEW ACTIONS */}
