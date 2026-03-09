@@ -18,6 +18,21 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { TimelineModal } from "./timeline-modal"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export function PatientTable() {
   const { 
@@ -37,6 +52,28 @@ export function PatientTable() {
   const [contextMenuOpenId, setContextMenuOpenId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
   const [timelineModalPatientId, setTimelineModalPatientId] = useState<string | null>(null)
+  
+  // Action Sheet State
+  const [actionSheetPatientId, setActionSheetPatientId] = useState<string | null>(null)
+  const [actionNote, setActionNote] = useState("")
+  
+  // Emergency Sheet State
+  const [emergencySheetPatientId, setEmergencySheetPatientId] = useState<string | null>(null)
+  const [dispatchRrt, setDispatchRrt] = useState(true)
+  const [dispatchPhysician, setDispatchPhysician] = useState(true)
+
+  // Escalate Sheet State
+  const [escalateSheetPatientId, setEscalateSheetPatientId] = useState<string | null>(null)
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("")
+  const [sbarAssessment, setSbarAssessment] = useState("")
+  const [sbarRecommendation, setSbarRecommendation] = useState("")
+
+  // Resolve Sheet State
+  const [resolveSheetPatientId, setResolveSheetPatientId] = useState<string | null>(null)
+  const [resolutionReason, setResolutionReason] = useState<string>("")
+  const [closingNote, setClosingNote] = useState("")
+  const [scheduleFollowUp, setScheduleFollowUp] = useState(false)
+  const [adjustBaselines, setAdjustBaselines] = useState(false)
   
   // Filtering State
   const [activeFilter, setActiveFilter] = useState<'all' | 'needs_action' | 'in_progress' | 'resolved'>('all')
@@ -301,7 +338,7 @@ export function PatientTable() {
                           <div 
                             className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-orange-50 focus:bg-orange-50 text-[13px] text-orange-700 transition-colors rounded-md font-medium"
                             onClick={() => {
-                               acknowledgeAlert(patient.id);
+                               setActionSheetPatientId(patient.id);
                                setContextMenuOpenId(null);
                             }}
                           >
@@ -315,7 +352,7 @@ export function PatientTable() {
                           <div 
                             className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-red-50 focus:bg-red-50 text-[13px] text-red-700 transition-colors rounded-md font-medium mt-0.5"
                             onClick={() => {
-                               triggerEmergency(patient.id);
+                               setEmergencySheetPatientId(patient.id);
                                setContextMenuOpenId(null);
                             }}
                           >
@@ -329,7 +366,7 @@ export function PatientTable() {
                           <div 
                             className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-indigo-50 focus:bg-indigo-50 text-[13px] text-indigo-700 transition-colors rounded-md font-medium mt-0.5"
                             onClick={() => {
-                               escalateToDoctor(patient.id);
+                               setEscalateSheetPatientId(patient.id);
                                setContextMenuOpenId(null);
                             }}
                           >
@@ -374,7 +411,7 @@ export function PatientTable() {
                       <div 
                         className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md font-medium mt-0.5"
                         onClick={() => {
-                           markAsResolved(patient.id);
+                           setResolveSheetPatientId(patient.id);
                            setContextMenuOpenId(null);
                         }}
                       >
@@ -441,6 +478,469 @@ export function PatientTable() {
            <Settings className="h-6 w-6 text-white" />
          </div>
       </div>
+
+      {/* Acknowledge Alert Slide-out Sheet */}
+      <Sheet open={!!actionSheetPatientId} onOpenChange={(open) => !open && setActionSheetPatientId(null)}>
+        <SheetContent className="sm:max-w-[450px] p-0 flex flex-col h-full bg-slate-50 overflow-y-auto">
+          {(() => {
+             const patient = patients.find(p => p.id === actionSheetPatientId);
+             if (!patient) return null;
+
+             return (
+               <>
+                  <SheetHeader className="px-6 py-5 bg-white border-b border-slate-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertCircle className="h-5 w-5 text-orange-500" />
+                      <SheetTitle className="text-xl">Acknowledge Alert</SheetTitle>
+                    </div>
+                    <SheetDescription>
+                      Review clinical context and take ownership of this alert.
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <div className="flex-1 p-6 flex flex-col gap-6">
+                     {/* Patient Summary Header */}
+                     <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div className="flex items-start justify-between">
+                           <div>
+                             <h3 className="font-bold text-lg text-slate-900">{patient.name}</h3>
+                             <p className="text-slate-500 text-sm">{patient.age}y • MRN: {patient.id.padStart(6, '0')} • Room 402B</p>
+                           </div>
+                           <div className="flex flex-col items-end">
+                             <div className="inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded text-orange-700 bg-orange-50 border-orange-200 mb-1">
+                               AI Score: {patient.aiTriageScore}
+                             </div>
+                             <span className="text-xs font-medium text-slate-500">EWS: {patient.ewsScore}</span>
+                           </div>
+                        </div>
+
+                        {/* Why are they here? */}
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                           <p className="text-sm font-medium text-slate-700 mb-1">Trigger Event</p>
+                           <p className="text-sm text-slate-600 bg-orange-50/50 p-3 rounded-md border border-orange-100 flex items-start gap-2">
+                             <Siren className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
+                             <span>SpO2 dropped to 88% over the last 2 hours. Heart rate showing rising trend.</span>
+                           </p>
+                        </div>
+                     </div>
+
+                     {/* Vitals Snapshot */}
+                     <div>
+                        <h4 className="text-sm font-semibold text-slate-700 mb-3 ml-1 flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-blue-500" />
+                          Latest Vitals
+                        </h4>
+                        <div className="grid grid-cols-2 gap-3">
+                           <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+                             <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">Heart Rate</span>
+                             <div className="flex items-baseline gap-1">
+                               <span className="text-lg font-bold text-slate-900">112</span>
+                               <span className="text-xs text-red-500 font-bold">↑</span>
+                             </div>
+                           </div>
+                           <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+                             <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">SpO2</span>
+                             <div className="flex items-baseline gap-1">
+                               <span className="text-lg font-bold text-red-600">88%</span>
+                               <span className="text-xs text-red-500 font-bold">↓</span>
+                             </div>
+                           </div>
+                           <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+                             <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">Blood Press.</span>
+                             <div className="flex items-baseline gap-1">
+                               <span className="text-lg font-bold text-slate-900">145/90</span>
+                             </div>
+                           </div>
+                           <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
+                             <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">Temp</span>
+                             <div className="flex items-baseline gap-1">
+                               <span className="text-lg font-bold text-slate-900">38.2°</span>
+                             </div>
+                           </div>
+                        </div>
+                     </div>
+                     
+                     {/* Nurse Assessment Note */}
+                     <div className="flex-1 flex flex-col">
+                        <label className="text-sm font-semibold text-slate-700 mb-2 ml-1">Initial Assessment Note (Optional)</label>
+                        <Textarea 
+                          placeholder="E.g. Patient appears flushed, applying supplemental oxygen..."
+                          className="flex-1 min-h-[120px] resize-none bg-white border-slate-200 focus-visible:ring-brand-500"
+                          value={actionNote}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setActionNote(e.target.value)}
+                        />
+                     </div>
+                  </div>
+
+                  {/* Fixed Bottom Action Bar */}
+                  <div className="p-4 bg-white border-t border-slate-200 mt-auto flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => {
+                        setActionSheetPatientId(null);
+                        setActionNote("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-orange-600 hover:bg-orange-700 text-white shadow-sm"
+                      onClick={() => {
+                        acknowledgeAlert(patient.id);
+                        setActionSheetPatientId(null);
+                        setActionNote("");
+                      }}
+                    >
+                      Take Ownership
+                    </Button>
+                  </div>
+               </>
+             )
+          })()}
+        </SheetContent>
+      </Sheet>
+
+      {/* Trigger Emergency Slide-out Sheet */}
+      <Sheet open={!!emergencySheetPatientId} onOpenChange={(open) => !open && setEmergencySheetPatientId(null)}>
+        <SheetContent className="sm:max-w-[450px] p-0 flex flex-col h-full bg-slate-50 overflow-y-auto border-l-red-500 border-l-[6px]">
+          {(() => {
+             const patient = patients.find(p => p.id === emergencySheetPatientId);
+             if (!patient) return null;
+
+             return (
+               <>
+                  <SheetHeader className="px-6 py-5 bg-red-600 border-b border-red-700 text-white">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Siren className="h-6 w-6 text-white animate-pulse" />
+                      <SheetTitle className="text-xl text-white">Trigger Emergency Protocol</SheetTitle>
+                    </div>
+                    <SheetDescription className="text-red-100 font-medium">
+                      You are about to initiate a Code Blue / Rapid Response.
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <div className="flex-1 p-6 flex flex-col gap-6">
+                     {/* Location Warning Box */}
+                     <div className="bg-red-50 rounded-xl border border-red-200 p-5 shadow-sm text-center">
+                        <h3 className="font-bold text-xl text-red-900 mb-1">{patient.name}</h3>
+                        <p className="text-red-700 font-medium">{patient.age}y • MRN: {patient.id.padStart(6, '0')}</p>
+                        
+                        <div className="mt-4 inline-block bg-white px-6 py-3 rounded-lg border-2 border-red-300 shadow-sm">
+                           <p className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Current Location</p>
+                           <p className="text-2xl font-black text-slate-900 tracking-tight">ROOM 402B</p>
+                        </div>
+                     </div>
+
+                     {/* Dispatch Protocols */}
+                     <div>
+                        <h4 className="text-sm font-semibold text-slate-700 mb-3 ml-1 flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-red-600" />
+                          Emergency Dispatch Options
+                        </h4>
+                        <div className="space-y-3">
+                           <label className="flex items-start gap-3 p-4 rounded-lg border border-slate-200 bg-white shadow-sm cursor-pointer hover:border-red-300 transition-colors">
+                             <Checkbox checked={dispatchRrt} onCheckedChange={(c) => setDispatchRrt(!!c)} className="mt-0.5 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600" />
+                             <div>
+                               <p className="font-semibold text-slate-900 text-sm">Deploy Rapid Response Team (RRT)</p>
+                               <p className="text-xs text-slate-500 mt-0.5">Dispatches the internal critical care team immediately to Room 402B.</p>
+                             </div>
+                           </label>
+
+                           <label className="flex items-start gap-3 p-4 rounded-lg border border-slate-200 bg-white shadow-sm cursor-pointer hover:border-red-300 transition-colors">
+                             <Checkbox checked={dispatchPhysician} onCheckedChange={(c) => setDispatchPhysician(!!c)} className="mt-0.5 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600" />
+                             <div>
+                               <p className="font-semibold text-slate-900 text-sm">Alert On-Call Attending</p>
+                               <p className="text-xs text-slate-500 mt-0.5">Sends priority SMS override to Dr. Smith&apos;s mobile device.</p>
+                             </div>
+                           </label>
+                           
+                           <label className="flex items-start gap-3 p-4 rounded-lg border border-slate-200 bg-white shadow-sm cursor-pointer hover:border-red-300 transition-colors">
+                             <Checkbox checked={true} disabled className="mt-0.5 data-[state=checked]:bg-slate-400 data-[state=checked]:border-slate-400 opacity-50" />
+                             <div className="opacity-70">
+                               <p className="font-semibold text-slate-900 text-sm flex items-center gap-2">
+                                 Automated Crash Cart Request <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded text-slate-600 uppercase font-bold tracking-wider">Default</span>
+                               </p>
+                               <p className="text-xs text-slate-500 mt-0.5">System automatically routes nearest crash cart based on RFID.</p>
+                             </div>
+                           </label>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Fixed Bottom Action Bar */}
+                  <div className="p-4 bg-white border-t border-slate-200 mt-auto flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setEmergencySheetPatientId(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="flex-[2] bg-red-600 hover:bg-red-700 text-white shadow-lg text-lg h-12 flex items-center gap-2"
+                      onClick={() => {
+                        triggerEmergency(patient.id);
+                        setEmergencySheetPatientId(null);
+                        setDispatchRrt(true);
+                        setDispatchPhysician(true);
+                      }}
+                    >
+                      <Siren className="h-5 w-5" />
+                      Dispatch Emergency
+                    </Button>
+                  </div>
+               </>
+             )
+          })()}
+        </SheetContent>
+      </Sheet>
+
+      {/* Escalate to Doctor Slide-out Sheet */}
+      <Sheet open={!!escalateSheetPatientId} onOpenChange={(open) => !open && setEscalateSheetPatientId(null)}>
+        <SheetContent className="sm:max-w-[500px] p-0 flex flex-col h-full bg-slate-50 overflow-y-auto border-l-indigo-500 border-l-[4px]">
+          {(() => {
+             const patient = patients.find(p => p.id === escalateSheetPatientId);
+             if (!patient) return null;
+
+             return (
+               <>
+                  <SheetHeader className="px-6 py-5 bg-indigo-600 border-b border-indigo-700 text-white">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Stethoscope className="h-5 w-5 text-indigo-100" />
+                      <SheetTitle className="text-xl text-white">Escalate to Physician</SheetTitle>
+                    </div>
+                    <SheetDescription className="text-indigo-100 font-medium">
+                      Formal Clinical SBAR Handoff
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <div className="flex-1 p-6 flex flex-col gap-6">
+                     
+                     {/* Physician Selection */}
+                     <div>
+                        <label className="text-sm font-bold text-slate-700 mb-2 block uppercase tracking-wider">Select Attending Physician</label>
+                        <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
+                          <SelectTrigger className="w-full bg-white border-slate-200 h-12 shadow-sm focus:ring-indigo-500">
+                            <SelectValue placeholder="Assign to an on-call doctor..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="dr_smith">Dr. Sarah Smith (Cardiology)</SelectItem>
+                            <SelectItem value="dr_jones">Dr. Michael Jones (Pulmonology)</SelectItem>
+                            <SelectItem value="dr_patel">Dr. Amit Patel (Internal Med)</SelectItem>
+                            <SelectItem value="dr_chen">Dr. Emily Chen (Hospitalist)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                     </div>
+
+                     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex-1 flex flex-col">
+                        <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
+                           <h3 className="font-bold text-slate-700 text-sm flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-indigo-500" /> 
+                              SBAR Clinical Handoff Form
+                           </h3>
+                        </div>
+                        
+                        <div className="p-4 flex flex-col gap-4 flex-1">
+                           {/* S: Situation */}
+                           <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="h-5 w-5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">S</div>
+                                <label className="text-sm font-bold text-slate-700">Situation <span className="text-slate-400 font-normal text-xs">(Auto-filled)</span></label>
+                              </div>
+                              <div className="text-sm text-slate-600 bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                                Escalating patient {patient.name} ({patient.age}y). EWS Score is currently {patient.ewsScore} (Condition: {patient.status}). Patient triggered automated early warning for anomalous vital trends.
+                              </div>
+                           </div>
+                           
+                           {/* B: Background */}
+                           <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="h-5 w-5 rounded bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">B</div>
+                                <label className="text-sm font-bold text-slate-700">Background <span className="text-slate-400 font-normal text-xs">(Auto-filled)</span></label>
+                              </div>
+                              <div className="text-sm text-slate-600 bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                                Admitted securely 2 days ago. Primary DX: exacerbation of chronic condition. Latest AI Triage Risk index is {patient.aiTriageScore}/10. 
+                              </div>
+                           </div>
+
+                           {/* A: Assessment */}
+                           <div className="flex-1 flex flex-col">
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="h-5 w-5 rounded bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">A</div>
+                                <label className="text-sm font-bold text-slate-900">Assessment <span className="text-red-500">*</span></label>
+                              </div>
+                              <Textarea 
+                                placeholder="What is your clinical assessment of the current situation?"
+                                className="flex-1 min-h-[80px] resize-none bg-white border-slate-300 focus-visible:ring-indigo-500 shadow-inner"
+                                value={sbarAssessment}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSbarAssessment(e.target.value)}
+                              />
+                           </div>
+
+                           {/* R: Recommendation */}
+                           <div className="flex-1 flex flex-col">
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="h-5 w-5 rounded bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">R</div>
+                                <label className="text-sm font-bold text-slate-900">Recommendation / Request <span className="text-red-500">*</span></label>
+                              </div>
+                              <Textarea 
+                                placeholder="What do you need the physician to do? (e.g., 'Please evaluate patient at bedside' or 'Requesting order for Lasix 40mg IV')"
+                                className="flex-1 min-h-[80px] resize-none bg-white border-slate-300 focus-visible:ring-indigo-500 shadow-inner"
+                                value={sbarRecommendation}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSbarRecommendation(e.target.value)}
+                              />
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Fixed Bottom Action Bar */}
+                  <div className="p-4 bg-white border-t border-slate-200 mt-auto flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setEscalateSheetPatientId(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm disabled:opacity-50"
+                      disabled={!selectedDoctor || !sbarAssessment || !sbarRecommendation}
+                      onClick={() => {
+                        escalateToDoctor(patient.id);
+                        setEscalateSheetPatientId(null);
+                        setSelectedDoctor("");
+                        setSbarAssessment("");
+                        setSbarRecommendation("");
+                      }}
+                    >
+                      <Stethoscope className="h-4 w-4 mr-2" />
+                      Send Handoff & Escalate
+                    </Button>
+                  </div>
+               </>
+             )
+          })()}
+        </SheetContent>
+      </Sheet>
+
+      {/* Mark as Resolved Slide-out Sheet */}
+      <Sheet open={!!resolveSheetPatientId} onOpenChange={(open) => !open && setResolveSheetPatientId(null)}>
+        <SheetContent className="sm:max-w-[450px] p-0 flex flex-col h-full bg-slate-50 overflow-y-auto border-l-emerald-500 border-l-[4px]">
+          {(() => {
+             const patient = patients.find(p => p.id === resolveSheetPatientId);
+             if (!patient) return null;
+
+             return (
+               <>
+                  <SheetHeader className="px-6 py-5 bg-white border-b border-slate-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                      <SheetTitle className="text-xl">Resolve Alert Encounter</SheetTitle>
+                    </div>
+                    <SheetDescription>
+                      Document the clinical resolution to safely close this loop.
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <div className="flex-1 p-6 flex flex-col gap-6">
+                     {/* Patient Summary */}
+                     <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center justify-between">
+                         <div>
+                           <h3 className="font-bold text-lg text-slate-900">{patient.name}</h3>
+                           <p className="text-slate-500 text-sm">MRN: {patient.id.padStart(6, '0')}</p>
+                         </div>
+                         <div className="text-right">
+                           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Current Status</p>
+                           <p className="text-sm font-medium text-slate-700">{patient.status}</p>
+                         </div>
+                     </div>
+                     
+                     {/* Resolution Form */}
+                     <div className="flex-1 flex flex-col gap-5">
+                       
+                        {/* 1. Reason */}
+                        <div>
+                           <label className="text-sm font-bold text-slate-700 mb-2 block">Resolution Reason <span className="text-red-500">*</span></label>
+                           <Select value={resolutionReason} onValueChange={setResolutionReason}>
+                             <SelectTrigger className="w-full bg-white border-slate-200 shadow-sm focus:ring-emerald-500">
+                               <SelectValue placeholder="Select primary reason..." />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="stabilized">Patient Stabilized Post-Intervention</SelectItem>
+                               <SelectItem value="false_alarm">False Alarm / Sensor Artifact</SelectItem>
+                               <SelectItem value="medication_adjusted">Medication Adjusted</SelectItem>
+                               <SelectItem value="admitted">Admitted to Hospital / ER</SelectItem>
+                               <SelectItem value="patient_refused">Patient Refused Assessment</SelectItem>
+                             </SelectContent>
+                           </Select>
+                        </div>
+
+                        {/* 2. Closing Note */}
+                        <div className="flex-1 flex flex-col">
+                           <label className="text-sm font-bold text-slate-700 mb-2">Final Clinical Note <span className="text-red-500">*</span></label>
+                           <Textarea 
+                             placeholder="Document your final assessment, interventions provided, and the patient's response..."
+                             className="flex-1 min-h-[120px] resize-none bg-white border-slate-300 focus-visible:ring-emerald-500 shadow-inner"
+                             value={closingNote}
+                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setClosingNote(e.target.value)}
+                           />
+                        </div>
+
+                        {/* 3. Follow-up Checkboxes */}
+                        <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100">
+                           <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-widest mb-3">Post-Resolution Plan</h4>
+                           <div className="space-y-3">
+                              <label className="flex items-start gap-3 cursor-pointer">
+                                <Checkbox checked={scheduleFollowUp} onCheckedChange={(c) => setScheduleFollowUp(!!c)} className="mt-0.5 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600" />
+                                <div>
+                                  <p className="font-semibold text-slate-900 text-sm">Schedule 24h Telemed Follow-up</p>
+                                </div>
+                              </label>
+                              <label className="flex items-start gap-3 cursor-pointer">
+                                <Checkbox checked={adjustBaselines} onCheckedChange={(c) => setAdjustBaselines(!!c)} className="mt-0.5 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600" />
+                                <div>
+                                  <p className="font-semibold text-slate-900 text-sm">Adjust Personal EWS Baselines</p>
+                                  <p className="text-xs text-slate-500 mt-0.5 leading-snug">The system will use today&apos;s vitals to recalibrate this patient&apos;s &quot;normal&quot; thresholds to prevent future false alarms.</p>
+                                </div>
+                              </label>
+                           </div>
+                        </div>
+
+                     </div>
+                  </div>
+
+                  {/* Fixed Bottom Action Bar */}
+                  <div className="p-4 bg-white border-t border-slate-200 mt-auto flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setResolveSheetPatientId(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="flex-[2] bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm disabled:opacity-50"
+                      disabled={!resolutionReason || !closingNote}
+                      onClick={() => {
+                        markAsResolved(patient.id);
+                        setResolveSheetPatientId(null);
+                        setResolutionReason("");
+                        setClosingNote("");
+                        setScheduleFollowUp(false);
+                        setAdjustBaselines(false);
+                      }}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Sign-off & Resolve
+                    </Button>
+                  </div>
+               </>
+             )
+          })()}
+        </SheetContent>
+      </Sheet>
 
       <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-slate-200 text-sm text-slate-500 w-full shrink-0">
         <div className="flex items-center gap-3">
