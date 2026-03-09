@@ -62,7 +62,7 @@ export interface PhrTab {
   id: string;
   patientId: string;
   patientName: string;
-  type: "encounter" | "phr";
+  type: "encounter" | "phr" | "copilot";
 }
 
 interface PatientStore {
@@ -76,7 +76,7 @@ interface PatientStore {
   openPhrTab: (
     patientId: string,
     patientName: string,
-    type?: "encounter" | "phr",
+    type?: "encounter" | "phr" | "copilot",
   ) => void;
   closePhrTab: (tabId: string) => void;
   setActiveTab: (tabId: string | null) => void;
@@ -87,12 +87,21 @@ interface PatientStore {
 
   // Patient Actions
   updatePatientStatus: (patientId: string, status: PatientStatus) => void;
-  acknowledgeAlert: (patientId: string) => void;
-  triggerEmergency: (patientId: string) => void;
-  escalateToDoctor: (patientId: string) => void;
+  acknowledgeAlert: (patientId: string, note?: string) => void;
+  triggerEmergency: (
+    patientId: string,
+    dispatchRrt: boolean,
+    dispatchPhysician: boolean,
+  ) => void;
+  escalateToDoctor: (
+    patientId: string,
+    doctorId: string,
+    assessment: string,
+    recommendation: string,
+  ) => void;
   pauseAiOutreach: (patientId: string) => void;
   initiateAiCheckIn: (patientId: string, type: "call" | "text") => void;
-  markAsResolved: (patientId: string) => void;
+  markAsResolved: (patientId: string, reason: string, note: string) => void;
 
   // Main Navigation
   currentMainTab: "ews" | "encounters";
@@ -178,7 +187,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }));
   },
 
-  acknowledgeAlert: (patientId) => {
+  acknowledgeAlert: (patientId, note) => {
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
@@ -192,7 +201,9 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
             minute: "2-digit",
             hour12: true,
           }),
-          event: "Alert acknowledged by Nurse.",
+          event: note
+            ? `Alert acknowledged by Nurse. Note: "${note}"`
+            : "Alert acknowledged by Nurse.",
           type: "system",
         };
 
@@ -205,10 +216,18 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }));
   },
 
-  triggerEmergency: (patientId) => {
+  triggerEmergency: (patientId, dispatchRrt, dispatchPhysician) => {
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
+
+        const dispatches = [];
+        if (dispatchRrt) dispatches.push("RRT");
+        if (dispatchPhysician) dispatches.push("Attending");
+        const dispatchText =
+          dispatches.length > 0
+            ? ` (Dispatched: ${dispatches.join(", ")})`
+            : "";
 
         const newTimelineEvent = {
           time: new Date().toLocaleString("en-US", {
@@ -219,7 +238,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
             minute: "2-digit",
             hour12: true,
           }),
-          event: "EMERGENCY PROTOCOL triggered by Nurse.",
+          event: `EMERGENCY PROTOCOL triggered by Nurse.${dispatchText}`,
           type: "critical-action",
         };
 
@@ -232,10 +251,14 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }));
   },
 
-  escalateToDoctor: (patientId) => {
+  escalateToDoctor: (patientId, doctorId, assessment, recommendation) => {
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
+
+        const formattedDocName = doctorId
+          .replace("dr_", "Dr. ")
+          .replace(/^\w/, (c) => c.toUpperCase());
 
         const newTimelineEvent = {
           time: new Date().toLocaleString("en-US", {
@@ -246,7 +269,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
             minute: "2-digit",
             hour12: true,
           }),
-          event: "Case escalated to Attending Physician.",
+          event: `Case escalated to ${formattedDocName}. Assessment: "${assessment}". Request: "${recommendation}".`,
           type: "critical",
         };
 
@@ -315,7 +338,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }));
   },
 
-  markAsResolved: (patientId) => {
+  markAsResolved: (patientId, reason, note) => {
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
@@ -329,15 +352,15 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
             minute: "2-digit",
             hour12: true,
           }),
-          event: "Alert resolved.",
-          type: "update",
+          event: `Encounter marked as Resolved. Reason: ${reason}. Note: "${note}"`,
+          type: "system",
         };
 
         return {
           ...p,
           status: "Resolved",
+          escalationStatus: "Stable",
           aiEngagement: null,
-          escalatedBy: null,
           timeline: [...(p.timeline || []), newTimelineEvent],
         };
       }),

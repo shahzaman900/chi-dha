@@ -45,7 +45,9 @@ export function PatientTable() {
     escalateToDoctor,
     pauseAiOutreach,
     initiateAiCheckIn,
-    markAsResolved
+    markAsResolved,
+    currentMainTab,
+    setCurrentMainTab
   } = usePatientStore()
   
   // Context Menu State
@@ -398,7 +400,7 @@ export function PatientTable() {
                         <div 
                           className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md font-medium"
                           onClick={() => {
-                             initiateAiCheckIn(patient.id, "call");
+                             openPhrTab(patient.id, patient.name, "copilot");
                              setContextMenuOpenId(null);
                           }}
                         >
@@ -589,7 +591,7 @@ export function PatientTable() {
                     <Button 
                       className="flex-1 bg-orange-600 hover:bg-orange-700 text-white shadow-sm"
                       onClick={() => {
-                        acknowledgeAlert(patient.id);
+                        acknowledgeAlert(patient.id, actionNote);
                         setActionSheetPatientId(null);
                         setActionNote("");
                       }}
@@ -682,7 +684,7 @@ export function PatientTable() {
                     <Button 
                       className="flex-[2] bg-red-600 hover:bg-red-700 text-white shadow-lg text-lg h-12 flex items-center gap-2"
                       onClick={() => {
-                        triggerEmergency(patient.id);
+                        triggerEmergency(patient.id, dispatchRrt, dispatchPhysician);
                         setEmergencySheetPatientId(null);
                         setDispatchRrt(true);
                         setDispatchPhysician(true);
@@ -810,7 +812,7 @@ export function PatientTable() {
                       className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm disabled:opacity-50"
                       disabled={!selectedDoctor || !sbarAssessment || !sbarRecommendation}
                       onClick={() => {
-                        escalateToDoctor(patient.id);
+                        escalateToDoctor(patient.id, selectedDoctor, sbarAssessment, sbarRecommendation);
                         setEscalateSheetPatientId(null);
                         setSelectedDoctor("");
                         setSbarAssessment("");
@@ -926,7 +928,7 @@ export function PatientTable() {
                       className="flex-[2] bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm disabled:opacity-50"
                       disabled={!resolutionReason || !closingNote}
                       onClick={() => {
-                        markAsResolved(patient.id);
+                        markAsResolved(patient.id, resolutionReason, closingNote);
                         setResolveSheetPatientId(null);
                         setResolutionReason("");
                         setClosingNote("");

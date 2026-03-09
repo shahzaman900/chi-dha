@@ -8,6 +8,7 @@ import { PhrTabBar } from "@/components/phr-tab-bar"
 import { PhrDisplay } from "@/components/phr-display"
 import { PatientHealthRecordDisplay } from "@/components/patient-health-record-display"
 import { PatientRegistrationModal } from "@/components/patient-registration-modal"
+import { LiveAiCopilotDashboard } from "@/components/live-ai-call-modal"
 import { usePatientStore } from "@/store/patient-store"
 
 export default function Home() {
@@ -24,6 +25,10 @@ export default function Home() {
          {activeTab ? (
            activeTab.type === 'phr' ? (
              <PatientHealthRecordDisplay patientId={activeTab.patientId} />
+           ) : activeTab.type === 'copilot' ? (
+             <div className="flex-1 overflow-hidden p-6 pt-8 max-w-[1700px] mx-auto w-full h-[calc(100vh-140px)]">
+               <LiveAiCopilotDashboard patientId={activeTab.patientId} />
+             </div>
            ) : (
              <PhrDisplay patientId={activeTab.patientId} />
            )

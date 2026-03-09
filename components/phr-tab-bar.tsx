@@ -1,7 +1,7 @@
 "use client"
 
 import { usePatientStore } from "@/store/patient-store"
-import { Users, FileText, X, Activity } from "lucide-react"
+import { Users, FileText, X, Activity, Bot } from "lucide-react"
 
 export function PhrTabBar() {
   const { openTabs, activeTabId, setActiveTab, closePhrTab } = usePatientStore()
@@ -45,9 +45,11 @@ export function PhrTabBar() {
           >
             {tab.type === 'phr' ? 
               <FileText className="h-3.5 w-3.5 shrink-0 text-brand-400" /> : 
+             tab.type === 'copilot' ?
+              <Bot className="h-4 w-4 shrink-0 text-indigo-500" /> :
               <Activity className="h-3.5 w-3.5 shrink-0 text-brand-400" />
             }
-            <span className="truncate">{tab.patientName}</span>
+            <span className="truncate">{tab.type === 'copilot' ? `AI Copilot: ${tab.patientName}` : tab.patientName}</span>
             <span
               role="button"
               onClick={(e) => {
