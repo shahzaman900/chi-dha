@@ -54,24 +54,35 @@ export function PatientTable() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "CRITICAL":
+      case "Emergency Protocol":
+      case "Timeout Escalation":
         return <Siren className="h-4 w-4 text-red-500 mr-2" />
-      case "High Risk":
-      case "Medium Risk":
-        return <AlertTriangle className="h-4 w-4 text-yellow-500 mr-2" />
-      case "Stable":
-      case "Healthy":
-        return <Check className="h-4 w-4 text-green-500 mr-2" />
+      case "Urgent Triage":
+      case "Nurse Alerted":
+      case "Refer to Doctor":
+        return <AlertTriangle className="h-4 w-4 text-orange-500 mr-2" />
+      case "AI Outreach":
+        return <Activity className="h-4 w-4 text-blue-500 mr-2" />
+      case "Stable / Monitoring":
+      case "Resolved":
+        return <Check className="h-4 w-4 text-emerald-500 mr-2" />
       default:
-        return <Check className="h-4 w-4 text-green-400 mr-2" />
+        return <Check className="h-4 w-4 text-slate-400 mr-2" />
     }
   }
 
-  const getTrendIcon = (trend: string) => {
-    if (trend.includes("Escalating")) return <span className="mr-2 text-red-400">↑↑</span>
-    if (trend.includes("Rising") || trend.includes("Up")) return <span className="mr-2 text-orange-400">↑</span>
-    if (trend.includes("Stable")) return <span className="mr-2 text-slate-500">→</span>
-    return null
+  const getAiTriageStatus = (score: number) => {
+    if (score >= 9) return "critical"
+    if (score >= 7) return "high risk"
+    if (score >= 5) return "medium risk"
+    return "stable"
+  }
+
+  const getAiTriageColorStyles = (score: number) => {
+    if (score >= 9) return "text-red-700 bg-red-50 border-red-200"
+    if (score >= 7) return "text-orange-700 bg-orange-50 border-orange-200"
+    if (score >= 5) return "text-yellow-700 bg-yellow-50 border-yellow-200"
+    return "text-emerald-700 bg-emerald-50 border-emerald-200"
   }
 
   return (
@@ -96,13 +107,12 @@ export function PatientTable() {
                 <Checkbox className="border-slate-400 bg-white data-[state=checked]:bg-[#0f62fe] data-[state=checked]:border-[#0f62fe] rounded-sm" />
               </TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Patient</TableHead>
-              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">EWS Score</TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">AI Triage score <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
-              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">AI Engagement <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Status <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">EWS Score</TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">AI Engagement <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Initiated By <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Escalated By <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
-              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">Trend <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" /></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -137,41 +147,48 @@ export function PatientTable() {
                   </TableCell>
                   <TableCell className="text-slate-700 whitespace-nowrap">{patient.name} <span className="text-slate-400">({patient.age}y)</span></TableCell>
                   <TableCell className="whitespace-nowrap">
-                     <div className="inline-flex items-center justify-center font-medium bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-700">
-                       {patient.ewsScore}
-                     </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                     <div className="inline-flex items-center justify-center font-bold text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded">
-                       {patient.aiTriageScore || "-"}
-                     </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                     {patient.aiEngagement === 'call' && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold">
-                           <Phone className="h-3 w-3 animate-pulse" />
-                           <span className="animate-pulse">AI Call in Progress</span>
+                     {patient.aiTriageScore ? (
+                        <div className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded ${getAiTriageColorStyles(patient.aiTriageScore)}`}>
+                          {patient.aiTriageScore} ({getAiTriageStatus(patient.aiTriageScore)})
                         </div>
-                     )}
-                     {patient.aiEngagement === 'text' && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
-                           <MessageSquare className="h-3 w-3 animate-pulse" />
-                           <span className="animate-pulse">AI Text in Progress</span>
+                     ) : (
+                        <div className="inline-flex items-center justify-center font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded">
+                          -
                         </div>
-                     )}
-                     {!patient.aiEngagement && (
-                        <span className="text-slate-400 font-medium">-</span>
                      )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                       <div className="flex items-center text-slate-700">
                           {getStatusIcon(patient.status)}
                           <span className={
-                              patient.status === "CRITICAL" ? "text-red-500" :
-                              patient.status === "High Risk" ? "text-orange-500" :
-                              patient.status === "Medium Risk" ? "text-yellow-500" : "text-emerald-500"
+                              ["Emergency Protocol", "Timeout Escalation"].includes(patient.status) ? "text-red-500 font-medium" :
+                              ["Urgent Triage", "Nurse Alerted", "Refer to Doctor"].includes(patient.status) ? "text-orange-500 font-medium" :
+                              patient.status === "AI Outreach" ? "text-blue-500 font-medium" : 
+                              "text-emerald-500 font-medium"
                           }>{patient.status}</span>
                       </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                     <div className="inline-flex items-center justify-center font-medium bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-700">
+                       {patient.ewsScore}
+                     </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                     {patient.aiEngagement ? (
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                           patient.aiEngagement.includes('Call') ? 'bg-blue-50 border-blue-200 text-blue-700' : 
+                           patient.aiEngagement.includes('Text') ? 'bg-indigo-50 border-indigo-200 text-indigo-700' :
+                           'bg-slate-50 border-slate-200 text-slate-700'
+                        } border`}>
+                           {patient.aiEngagement.includes('Call') ? <Phone className="h-3 w-3" /> : 
+                            patient.aiEngagement.includes('Text') ? <MessageSquare className="h-3 w-3" /> : null}
+                           <span className={patient.aiEngagement.includes('In Progress') || patient.aiEngagement.includes('Active') || patient.aiEngagement.includes('Awaiting') ? 'animate-pulse' : ''}>
+                              {patient.aiEngagement}
+                           </span>
+                        </div>
+                     ) : (
+                        <span className="text-slate-400 font-medium">-</span>
+                     )}
                   </TableCell>
                   <TableCell className="text-slate-600 whitespace-nowrap">{patient.initiatedBy || "-"}</TableCell>
                   <TableCell className="text-slate-600 whitespace-nowrap">
@@ -180,12 +197,6 @@ export function PatientTable() {
                               {patient.escalatedBy}
                           </span>
                       ) : "-"}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center text-slate-600">
-                          {getTrendIcon(patient.trend)}
-                          <span>{patient.trend}</span>
-                      </div>
                   </TableCell>
                 </TableRow>
             )})}

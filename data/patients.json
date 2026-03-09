@@ -4,13 +4,13 @@
     "name": "William Davis",
     "age": 75,
     "ewsScore": 11,
-    "status": "CRITICAL",
+    "status": "Emergency Protocol",
     "trend": "Escalating",
-    "initiatedBy": "System",
+    "initiatedBy": "System (Automated)",
     "escalationStatus": "Dispatched",
-    "escalatedBy": "Nurse",
+    "escalatedBy": "Triage Nurse",
     "aiTriageScore": 9.5,
-    "aiEngagement": "call",
+    "aiEngagement": "Call - No Answer",
     "timeline": [
       {
         "time": "Dec 15, 2025 9:00 AM",
@@ -82,7 +82,7 @@
     "name": "Robert Johnson",
     "age": 68,
     "ewsScore": 7,
-    "status": "High Risk",
+    "status": "Urgent Triage",
     "trend": "Rising",
     "initiatedBy": "Nurse",
     "aiTriageScore": 7.2
@@ -92,18 +92,18 @@
     "name": "Kylie James",
     "age": 32,
     "ewsScore": 9,
-    "status": "CRITICAL",
+    "status": "Timeout Escalation",
     "trend": "Escalating",
-    "initiatedBy": "Patient",
+    "initiatedBy": "Patient (Self-Reported)",
     "aiTriageScore": 8.8,
-    "aiEngagement": "text"
+    "aiEngagement": "Text - Active Chat"
   },
   {
     "id": "4",
     "name": "Sarah Chen",
     "age": 72,
     "ewsScore": 3,
-    "status": "Stable",
+    "status": "Stable / Monitoring",
     "trend": "Stable",
     "aiTriageScore": 2.1
   },
@@ -112,7 +112,7 @@
     "name": "Maria Garcia",
     "age": 65,
     "ewsScore": 2,
-    "status": "Stable",
+    "status": "Stable / Monitoring",
     "trend": "Stable",
     "aiTriageScore": 1.5
   }

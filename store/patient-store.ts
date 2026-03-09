@@ -8,18 +8,54 @@ export interface EncounterRecord {
   type: string;
 }
 
+export type PatientStatus =
+  | "Stable / Monitoring"
+  | "AI Outreach"
+  | "Nurse Alerted"
+  | "Urgent Triage"
+  | "Refer to Doctor"
+  | "Timeout Escalation"
+  | "Emergency Protocol"
+  | "Resolved";
+
+export type PatientAiEngagement =
+  | "Call - In Progress"
+  | "Call - Completed"
+  | "Call - No Answer"
+  | "Text - Awaiting Reply"
+  | "Text - Active Chat"
+  | "Text - Completed"
+  | "App Notification - Sent"
+  | null;
+
+export type PatientInitiatedBy =
+  | "System (Automated)"
+  | "AI Engine"
+  | "Patient (Self-Reported)"
+  | "Caregiver / Family"
+  | "Nurse"
+  | "Physician";
+
+export type PatientEscalatedBy =
+  | "AI System (Timeout)"
+  | "AI System (Risk Increase)"
+  | "Triage Nurse"
+  | "Attending Physician"
+  | "Patient"
+  | null;
+
 export interface Patient {
   id: string;
   name: string;
   age: number;
   ewsScore: number;
-  status: string;
+  status: PatientStatus;
   trend: string;
-  initiatedBy?: string;
+  initiatedBy?: PatientInitiatedBy;
   escalationStatus?: string;
-  escalatedBy?: string;
+  escalatedBy?: PatientEscalatedBy;
   aiTriageScore?: number;
-  aiEngagement?: "call" | "text" | null;
+  aiEngagement?: PatientAiEngagement;
   timeline?: any[];
   encounters?: EncounterRecord[];
 }
