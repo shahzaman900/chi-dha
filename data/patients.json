@@ -6,7 +6,7 @@
     "ewsScore": 11,
     "status": "Emergency Protocol",
     "trend": "Escalating",
-    "initiatedBy": "System (Automated)",
+    "initiatedBy": "AI Engine",
     "escalationStatus": "Dispatched",
     "escalatedBy": "Triage Nurse",
     "aiTriageScore": 9.5,
@@ -115,5 +115,80 @@
     "status": "Stable / Monitoring",
     "trend": "Stable",
     "aiTriageScore": 1.5
+  },
+  {
+    "id": "6",
+    "name": "David Thomson",
+    "age": 45,
+    "ewsScore": 8,
+    "status": "Nurse Alerted",
+    "trend": "Rising",
+    "initiatedBy": "AI Engine",
+    "aiTriageScore": 7.8,
+    "aiEngagement": "Call - Completed",
+    "timeline": [
+      {
+        "time": "Today, 10:00 AM",
+        "event": "AI Outreach initiated and completed.",
+        "type": "update"
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "name": "Evelyn Carter",
+    "age": 82,
+    "ewsScore": 6,
+    "status": "AI Outreach",
+    "trend": "Up",
+    "initiatedBy": "AI Engine",
+    "aiTriageScore": 6.5,
+    "aiEngagement": "Call - In Progress"
+  },
+  {
+    "id": "8",
+    "name": "James Wilson",
+    "age": 59,
+    "ewsScore": 10,
+    "status": "Refer to Doctor",
+    "trend": "Escalating",
+    "initiatedBy": "Nurse",
+    "escalatedBy": "Triage Nurse",
+    "aiTriageScore": 9.2,
+    "aiEngagement": "App Notification - Sent"
+  },
+  {
+    "id": "9",
+    "name": "Anita Patel",
+    "age": 38,
+    "ewsScore": 4,
+    "status": "Resolved",
+    "trend": "Stable",
+    "initiatedBy": "Patient (Self-Reported)",
+    "aiTriageScore": 3.4,
+    "aiEngagement": null,
+    "timeline": [
+      {
+        "time": "Yesterday, 4:00 PM",
+        "event": "Patient reported discomfort.",
+        "type": "warning"
+      },
+      {
+        "time": "Yesterday, 5:30 PM",
+        "event": "Alert resolved by Dr. Smith after review.",
+        "type": "update"
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "name": "Michael Lee",
+    "age": 51,
+    "ewsScore": 5,
+    "status": "Stable / Monitoring",
+    "trend": "Stable",
+    "initiatedBy": "Nurse",
+    "aiTriageScore": 4.5,
+    "aiEngagement": "Text - Awaiting Reply"
   }
 ]

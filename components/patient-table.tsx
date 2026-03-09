@@ -122,7 +122,9 @@ export function PatientTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {patients.map((patient: Patient) => {
+            {[...patients]
+              .sort((a, b) => (b.aiTriageScore || 0) - (a.aiTriageScore || 0))
+              .map((patient: Patient) => {
               const isSelected = selectedPatientId === patient.id;
               const isMenuOpen = contextMenuOpenId === patient.id;
               

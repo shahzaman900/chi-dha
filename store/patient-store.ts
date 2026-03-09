@@ -29,12 +29,10 @@ export type PatientAiEngagement =
   | null;
 
 export type PatientInitiatedBy =
-  | "System (Automated)"
   | "AI Engine"
   | "Patient (Self-Reported)"
   | "Caregiver / Family"
-  | "Nurse"
-  | "Physician";
+  | "Nurse";
 
 export type PatientEscalatedBy =
   | "AI System (Timeout)"
