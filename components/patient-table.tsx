@@ -285,7 +285,12 @@ export function PatientTable() {
 
                 const isCritical = ["Emergency Protocol", "Timeout Escalation", "Urgent Triage"].includes(patient.status);
                 const isAiActive = patient.aiEngagement?.includes("In Progress") || patient.aiEngagement?.includes("Active") || patient.aiEngagement?.includes("Awaiting");
-                const canAcknowledge = isCritical || patient.status === "AI Outreach";
+                
+                // If a Nurse initiated it, it's inherently acknowledged.
+                const isHumanInitiated = patient.initiatedBy === "Nurse" || patient.initiatedBy === "Caregiver / Family";
+                const isAlreadyHandled = ["Nurse Alerted", "Refer to Doctor", "Resolved", "Stable / Monitoring"].includes(patient.status);
+                
+                const canAcknowledge = !isAlreadyHandled && (!isHumanInitiated || patient.status === "Emergency Protocol" || patient.status === "Timeout Escalation");
 
                 return (
                   <>
