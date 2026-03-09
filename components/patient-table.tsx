@@ -37,6 +37,29 @@ export function PatientTable() {
   const [contextMenuOpenId, setContextMenuOpenId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
   const [timelineModalPatientId, setTimelineModalPatientId] = useState<string | null>(null)
+  
+  // Filtering State
+  const [activeFilter, setActiveFilter] = useState<'all' | 'needs_action' | 'in_progress' | 'resolved'>('all')
+
+  const getFilteredPatients = () => {
+    let filtered = [...patients];
+    
+    if (activeFilter === 'needs_action') {
+      filtered = filtered.filter(p => 
+        ["Emergency Protocol", "Timeout Escalation", "Urgent Triage", "AI Outreach"].includes(p.status)
+      );
+    } else if (activeFilter === 'in_progress') {
+      filtered = filtered.filter(p => 
+        ["Nurse Alerted", "Refer to Doctor"].includes(p.status)
+      );
+    } else if (activeFilter === 'resolved') {
+      filtered = filtered.filter(p => 
+        ["Resolved", "Stable / Monitoring"].includes(p.status)
+      );
+    }
+
+    return filtered.sort((a, b) => (b.aiTriageScore || 0) - (a.aiTriageScore || 0));
+  }
 
   const handleRowClick = (e: React.MouseEvent, id: string) => {
     // Only select if they specifically clicked the checkbox or if it's not a context menu interaction
@@ -94,14 +117,47 @@ export function PatientTable() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white w-full h-full relative" onClick={() => setContextMenuOpenId(null)}>
       
-      {/* Darker Header Above Table */}
+      {/* Darker Header Above Table with Filters */}
       <div className="bg-[#eaf3fd] h-14 border-b border-[#dce9f8] flex items-center justify-between px-6 rounded-t-lg shrink-0 w-full">
-        <div className="flex items-center gap-3">
-          <h2 className="font-bold text-slate-800 text-[15px]">EWS List</h2>
-          <Search className="h-4 w-4 text-slate-500 cursor-pointer hover:text-slate-700 transition" />
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <h2 className="font-bold text-slate-800 text-[15px]">EWS List</h2>
+            <Search className="h-4 w-4 text-slate-500 cursor-pointer hover:text-slate-700 transition" />
+          </div>
+          
+          <div className="h-8 flex items-center bg-white/60 border border-brand-100 rounded-md p-1">
+            <button 
+              onClick={(e) => { e.stopPropagation(); setActiveFilter('all'); }}
+              className={`px-3 py-1 text-xs font-semibold rounded ${activeFilter === 'all' ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              All
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setActiveFilter('needs_action'); }}
+              className={`px-3 py-1 text-xs font-semibold rounded flex items-center gap-1.5 ${activeFilter === 'needs_action' ? 'bg-red-50 text-red-700 shadow-sm border border-red-100' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+              Requires Action
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setActiveFilter('in_progress'); }}
+              className={`px-3 py-1 text-xs font-semibold rounded ${activeFilter === 'in_progress' ? 'bg-orange-50 text-orange-700 shadow-sm border border-orange-100' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              In Progress
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setActiveFilter('resolved'); }}
+              className={`px-3 py-1 text-xs font-semibold rounded ${activeFilter === 'resolved' ? 'bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Resolved / Stable
+            </button>
+          </div>
         </div>
-        <div className="text-slate-500 text-sm">
-          307 records
+        <div className="text-slate-500 text-sm font-medium">
+          {getFilteredPatients().length} records
         </div>
       </div>
 
@@ -122,9 +178,7 @@ export function PatientTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {[...patients]
-              .sort((a, b) => (b.aiTriageScore || 0) - (a.aiTriageScore || 0))
-              .map((patient: Patient) => {
+            {getFilteredPatients().map((patient: Patient) => {
               const isSelected = selectedPatientId === patient.id;
               const isMenuOpen = contextMenuOpenId === patient.id;
               
