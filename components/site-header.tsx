@@ -9,13 +9,13 @@ export function SiteHeader() {
   const { currentMainTab, setCurrentMainTab } = usePatientStore()
 
   const navLinks = [
-    { name: "Dashboard", href: "#" },
-    { name: "Patient Dashboard", href: "#" },
-    { name: "Appointments", href: "#" },
-    { name: "Availability", href: "#" },
     { name: "EWS", id: "ews", href: "#" },
-    { name: "Merge Patients", href: "#" },
     { name: "Encounters", id: "encounters", href: "#" },
+    { name: "Dashboard", href: "#" },
+    // { name: "Patient Dashboard", href: "#" },
+    // { name: "Appointments", href: "#" },
+    // { name: "Availability", href: "#" },
+    { name: "Merge Patients", href: "#" },
     { name: "Services", href: "#" },
     { name: "SOAP Note A...", href: "#" },
   ]
