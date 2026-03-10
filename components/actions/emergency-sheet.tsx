@@ -125,9 +125,7 @@ export function EmergencySheet({
           {/* Patient Info */}
           <div className="bg-red-50 rounded-xl border border-red-200 p-4 flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-lg text-red-900">
-                {patient.name}
-              </h3>
+              <h3 className="font-bold text-lg text-red-900">{patient.name}</h3>
               <p className="text-red-700 text-sm font-medium">
                 {patient.age}y &bull; MRN:{" "}
                 {patient.mrn || patient.id.padStart(6, "0")}
