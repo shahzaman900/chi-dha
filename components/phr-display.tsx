@@ -60,6 +60,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
   >(null);
   const [eventDetail, setEventDetail] = useState<TimelineEvent | null>(null);
   const [showVitalsGraph, setShowVitalsGraph] = useState(false);
+  const [showAllEvents, setShowAllEvents] = useState(false);
 
   if (!patient) {
     return (
@@ -85,6 +86,17 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
     storePatient?.timeline ||
     (patient.timeline as TimelineEvent[] | undefined) ||
     [];
+
+  // By default, only show significant events (abnormal vitals, triage alerts)
+  const filteredTimeline = showAllEvents
+    ? timeline
+    : timeline.filter(
+        (e) =>
+          e.type === "critical" ||
+          e.type === "critical-action" ||
+          e.type === "warning" ||
+          e.detailType != null,
+      );
 
   return (
     <div className="flex overflow-auto flex-col bg-card text-foreground h-full">
@@ -380,13 +392,27 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
             className={`bg-muted border ${borderColor} h-full flex flex-col`}
           >
             <CardHeader className="pb-2 shrink-0">
-              <CardTitle className="text-lg text-brand-600 flex items-center gap-2">
-                <Clock className="h-5 w-5" /> Timeline of Events
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg text-brand-600 flex items-center gap-2">
+                  <Clock className="h-5 w-5" /> Timeline of Events
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-7 px-2 text-xs font-semibold ${
+                    showAllEvents
+                      ? "text-brand-700 bg-brand-50"
+                      : "text-brand-600 hover:text-brand-700 hover:bg-brand-50"
+                  }`}
+                  onClick={() => setShowAllEvents(!showAllEvents)}
+                >
+                  {showAllEvents ? "Key Events" : "View All"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto max-h-[500px] custom-scrollbar pl-6">
               <div className="relative border-l-2 border-border ml-2 pl-6 space-y-8 py-2">
-                {timeline.map((event, i) => (
+                {filteredTimeline.map((event, i) => (
                   <div key={i} className="relative">
                     <div
                       className={`absolute -left-[31px] top-1 h-4 w-4 rounded-full border-4 border-border ${
