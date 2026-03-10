@@ -204,6 +204,47 @@ export function PatientTable() {
         </div>
       </div>
 
+      {/* Critical Alert Popup Banner */}
+      {(() => {
+        const criticalPatients = getFilteredPatients().filter(
+          (p) =>
+            p.aiTriageScore &&
+            p.aiTriageScore >= 9 &&
+            p.status !== "Nurse Alerted" &&
+            p.status !== "Refer to Doctor",
+        );
+        if (criticalPatients.length === 0) return null;
+        return (
+          <div className="bg-red-600 px-5 py-3 shrink-0 border-b border-red-700 shadow-md">
+            <div className="flex items-center gap-2 mb-2">
+              <Siren className="h-4 w-4 text-white animate-pulse" />
+              <span className="text-white font-bold text-sm">
+                {criticalPatients.length} Critical Alert
+                {criticalPatients.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {criticalPatients.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActionSheetPatientId(p.id);
+                  }}
+                  className="inline-flex items-center gap-2 bg-white/95 hover:bg-white text-red-700 rounded-lg px-3 py-1.5 text-sm font-semibold shadow-sm border border-red-300 transition-all hover:shadow-md cursor-pointer"
+                >
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  {p.name}
+                  <span className="bg-red-100 text-red-800 text-xs font-bold px-1.5 py-0.5 rounded">
+                    {p.aiTriageScore}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="flex-1 overflow-auto relative">
         <Table>
           <TableHeader className="bg-[#eaf3fd] sticky top-0 z-10 shadow-sm shadow-[#eaf3fd]/50">
@@ -279,12 +320,26 @@ export function PatientTable() {
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     {patient.aiTriageScore ? (
-                      <div
-                        className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded ${getAiTriageColorStyles(patient.aiTriageScore)}`}
-                      >
-                        {patient.aiTriageScore} (
-                        {getAiTriageStatus(patient.aiTriageScore)})
-                      </div>
+                      patient.aiTriageScore >= 9 ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActionSheetPatientId(patient.id);
+                          }}
+                          className="inline-flex items-center gap-1.5 font-bold border px-2.5 py-1 rounded-lg bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-300 transition-colors cursor-pointer animate-pulse"
+                        >
+                          <AlertCircle className="h-3.5 w-3.5" />
+                          {patient.aiTriageScore} (
+                          {getAiTriageStatus(patient.aiTriageScore)})
+                        </button>
+                      ) : (
+                        <div
+                          className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded ${getAiTriageColorStyles(patient.aiTriageScore)}`}
+                        >
+                          {patient.aiTriageScore} (
+                          {getAiTriageStatus(patient.aiTriageScore)})
+                        </div>
+                      )
                     ) : (
                       <div className="inline-flex items-center justify-center font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded">
                         -
