@@ -277,10 +277,6 @@ export function PatientTable() {
                 Initiated By{" "}
                 <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
               </TableHead>
-              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                Escalated By{" "}
-                <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -441,15 +437,6 @@ export function PatientTable() {
                   </TableCell>
                   <TableCell className="text-slate-600 whitespace-nowrap">
                     {patient.initiatedBy || "-"}
-                  </TableCell>
-                  <TableCell className="text-slate-600 whitespace-nowrap">
-                    {patient.escalatedBy ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium border border-red-200 bg-red-50 text-red-600">
-                        {patient.escalatedBy}
-                      </span>
-                    ) : (
-                      "-"
-                    )}
                   </TableCell>
                 </TableRow>
               );
