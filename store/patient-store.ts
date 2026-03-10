@@ -81,6 +81,8 @@ export interface Patient {
   vitalsTrend?: {
     hr: number[];
     spo2: number[];
+    rr: number[];
+    bp: number[];
   };
 }
 

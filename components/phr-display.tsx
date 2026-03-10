@@ -23,10 +23,9 @@ import { Separator } from "@/components/ui/separator";
 import { usePatientStore, TimelineEvent } from "@/store/patient-store";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Maximize2 } from "lucide-react";
+import { Maximize2, LineChart } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PhrModalDetails } from "./phr-modal-details";
-import { SparkLine } from "@/components/ui/sparkline";
 import { EmergencySheet } from "@/components/actions/emergency-sheet";
 import { EscalateSheet } from "@/components/actions/escalate-sheet";
 import { ResolveSheet } from "@/components/actions/resolve-sheet";
@@ -60,6 +59,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
     "emergency" | "escalate" | "resolve" | null
   >(null);
   const [eventDetail, setEventDetail] = useState<TimelineEvent | null>(null);
+  const [showVitalsGraph, setShowVitalsGraph] = useState(false);
 
   if (!patient) {
     return (
@@ -128,6 +128,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
             className="bg-brand-600 hover:bg-brand-700 text-white h-8 px-3 rounded-full text-[11px] font-semibold tracking-wide shadow-sm transition-all border-none"
             onClick={() => {
               initiateAiCheckIn(patientId, "text");
+              openPhrTab(patientId, storePatient?.name || "Patient", "copilot");
             }}
           >
             <MessageSquare className="h-3.5 w-3.5 mr-1.5" /> AI Text
@@ -136,6 +137,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
             className="bg-brand-600 hover:bg-brand-700 text-white h-8 px-3 rounded-full text-[11px] font-semibold tracking-wide shadow-sm transition-all border-none"
             onClick={() => {
               initiateAiCheckIn(patientId, "call");
+              openPhrTab(patientId, storePatient?.name || "Patient", "copilot");
             }}
           >
             <Phone className="h-3.5 w-3.5 mr-1.5" /> AI Call
@@ -146,6 +148,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
               toast.info("Calling patient...", {
                 description: `Dialing ${storePatient?.phone || "patient"}`,
               });
+              openPhrTab(patientId, storePatient?.name || "Patient", "copilot");
             }}
           >
             <Phone className="h-3.5 w-3.5 mr-1.5" /> Call Patient
@@ -255,9 +258,19 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
           {/* Vital Metrics Card */}
           <Card className={`bg-card shadow-sm border ${borderColor}`}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-brand-600">
-                Current Vitals
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg text-brand-600">
+                  Current Vitals
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-brand-600 hover:text-brand-700 hover:bg-brand-50"
+                  onClick={() => setShowVitalsGraph(true)}
+                >
+                  <LineChart className="h-3.5 w-3.5 mr-1" /> View Graph
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
               {Object.entries(patient.metrics).map(
@@ -285,54 +298,6 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
               )}
             </CardContent>
           </Card>
-
-          {/* Vitals Trend Sparklines */}
-          {storePatient?.vitalsTrend && (
-            <Card className={`bg-card shadow-sm border ${borderColor}`}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg text-brand-600">
-                  Vitals Trend
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 text-xs text-slate-500 font-bold uppercase mb-1">
-                      <Heart className="h-3.5 w-3.5 text-red-500" /> Heart Rate
-                    </div>
-                    <SparkLine
-                      data={storePatient.vitalsTrend.hr}
-                      width={200}
-                      height={40}
-                      color="#ef4444"
-                      fillColor="#ef4444"
-                    />
-                    <div className="text-xs text-slate-400 mt-1">
-                      Latest: {storePatient.vitalsTrend.hr.slice(-1)[0]} bpm
-                    </div>
-                  </div>
-                </div>
-                <Separator />
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 text-xs text-slate-500 font-bold uppercase mb-1">
-                      <Activity className="h-3.5 w-3.5 text-blue-500" /> SpO₂
-                    </div>
-                    <SparkLine
-                      data={storePatient.vitalsTrend.spo2}
-                      width={200}
-                      height={40}
-                      color="#3b82f6"
-                      fillColor="#3b82f6"
-                    />
-                    <div className="text-xs text-slate-400 mt-1">
-                      Latest: {storePatient.vitalsTrend.spo2.slice(-1)[0]}%
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Middle Column - Diagnosis */}
@@ -785,6 +750,166 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
         open={!!eventDetail}
         onClose={() => setEventDetail(null)}
       />
+
+      {/* Vitals History Graph Modal */}
+      <Dialog open={showVitalsGraph} onOpenChange={setShowVitalsGraph}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-0">
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-foreground mb-1">
+              Vitals History
+            </h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              {storePatient?.name} — Trend over last 8 readings
+            </p>
+            <div className="grid grid-cols-2 gap-6">
+              {(
+                [
+                  {
+                    key: "hr",
+                    label: "Heart Rate",
+                    unit: "bpm",
+                    color: "#ef4444",
+                    icon: <Heart className="h-4 w-4 text-red-500" />,
+                  },
+                  {
+                    key: "rr",
+                    label: "Respiratory Rate",
+                    unit: "br/min",
+                    color: "#f59e0b",
+                    icon: <Wind className="h-4 w-4 text-amber-500" />,
+                  },
+                  {
+                    key: "spo2",
+                    label: "SpO₂",
+                    unit: "%",
+                    color: "#3b82f6",
+                    icon: <Activity className="h-4 w-4 text-blue-500" />,
+                  },
+                  {
+                    key: "bp",
+                    label: "Blood Pressure (Systolic)",
+                    unit: "mmHg",
+                    color: "#8b5cf6",
+                    icon: <Droplets className="h-4 w-4 text-violet-500" />,
+                  },
+                ] as const
+              ).map(({ key, label, unit, color, icon }) => {
+                const data = storePatient?.vitalsTrend?.[key] || [];
+                if (data.length === 0) return null;
+                const min = Math.min(...data);
+                const max = Math.max(...data);
+                const range = max - min || 1;
+                const padding = range * 0.15;
+                const yMin = min - padding;
+                const yMax = max + padding;
+                const w = 320;
+                const h = 140;
+                const px = 40;
+                const py = 20;
+                const chartW = w - px * 2;
+                const chartH = h - py * 2;
+                const points = data.map((v, i) => ({
+                  x: px + (i / (data.length - 1)) * chartW,
+                  y: py + chartH - ((v - yMin) / (yMax - yMin)) * chartH,
+                }));
+                const polyline = points.map((p) => `${p.x},${p.y}`).join(" ");
+                const areaPath = `M${points[0].x},${py + chartH} ${points.map((p) => `L${p.x},${p.y}`).join(" ")} L${points[points.length - 1].x},${py + chartH} Z`;
+                const gridLines = 4;
+                return (
+                  <div key={key} className="bg-muted/50 rounded-xl border p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      {icon}
+                      <span className="text-sm font-semibold text-foreground">
+                        {label}
+                      </span>
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        Latest: {data[data.length - 1]} {unit}
+                      </span>
+                    </div>
+                    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto">
+                      {/* Grid lines */}
+                      {Array.from({ length: gridLines + 1 }).map((_, i) => {
+                        const y = py + (i / gridLines) * chartH;
+                        const val = Math.round(
+                          yMax - (i / gridLines) * (yMax - yMin),
+                        );
+                        return (
+                          <g key={i}>
+                            <line
+                              x1={px}
+                              y1={y}
+                              x2={w - px}
+                              y2={y}
+                              stroke="#e5e7eb"
+                              strokeWidth="0.5"
+                            />
+                            <text
+                              x={px - 6}
+                              y={y + 3}
+                              textAnchor="end"
+                              fontSize="8"
+                              fill="#9ca3af"
+                            >
+                              {val}
+                            </text>
+                          </g>
+                        );
+                      })}
+                      {/* Area fill */}
+                      <path d={areaPath} fill={color} opacity="0.08" />
+                      {/* Line */}
+                      <polyline
+                        points={polyline}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      {/* Data points */}
+                      {points.map((p, i) => (
+                        <g key={i}>
+                          <circle
+                            cx={p.x}
+                            cy={p.y}
+                            r="4"
+                            fill="white"
+                            stroke={color}
+                            strokeWidth="2"
+                          />
+                          <text
+                            x={p.x}
+                            y={p.y - 8}
+                            textAnchor="middle"
+                            fontSize="7"
+                            fill="#6b7280"
+                            fontWeight="600"
+                          >
+                            {data[i]}
+                          </text>
+                        </g>
+                      ))}
+                      {/* X-axis labels */}
+                      {points.map((p, i) => (
+                        <text
+                          key={i}
+                          x={p.x}
+                          y={h - 4}
+                          textAnchor="middle"
+                          fontSize="7"
+                          fill="#9ca3af"
+                        >
+                          T{i + 1}
+                        </text>
+                      ))}
+                    </svg>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
