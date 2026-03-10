@@ -94,6 +94,73 @@ export function PatientHealthRecordDisplay({ patientId }: { patientId: string })
           </div>
         </div>
 
+        {/* Medications & Allergies */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Medications Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 bg-blue-50 border-b border-blue-100">
+              <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2">
+                <div className="h-5 w-5 rounded bg-blue-500 text-white flex items-center justify-center text-[10px] font-black">Rx</div>
+                Active Medications
+                <span className="text-xs font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full">{patient.medications?.length || 0}</span>
+              </h3>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {patient.medications && patient.medications.length > 0 ? (
+                patient.medications.map((med, i) => (
+                  <div key={i} className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="h-2 w-2 rounded-full bg-blue-400 shrink-0"></div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">{med.name}</p>
+                        <p className="text-xs text-slate-500">{med.dose} • {med.frequency}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wider">{med.route}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="px-5 py-6 text-center text-sm text-slate-400">No medications on file</div>
+              )}
+            </div>
+          </div>
+
+          {/* Allergies Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 bg-red-50 border-b border-red-100">
+              <h3 className="text-sm font-bold text-red-900 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                Known Allergies
+                <span className="text-xs font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">{patient.allergies?.length || 0}</span>
+              </h3>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {patient.allergies && patient.allergies.length > 0 ? (
+                patient.allergies.map((allergy, i) => (
+                  <div key={i} className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-2 w-2 rounded-full shrink-0 ${
+                        allergy.severity === 'Severe' ? 'bg-red-500' : 
+                        allergy.severity === 'Moderate' ? 'bg-orange-400' : 'bg-yellow-400'
+                      }`}></div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">{allergy.name}</p>
+                        <p className="text-xs text-slate-500">Reaction: {allergy.reaction}</p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                      allergy.severity === 'Severe' ? 'text-red-700 bg-red-100' :
+                      allergy.severity === 'Moderate' ? 'text-orange-700 bg-orange-100' : 'text-yellow-700 bg-yellow-100'
+                    }`}>{allergy.severity}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="px-5 py-6 text-center text-sm text-slate-400">No known allergies</div>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="mt-6 flex flex-col md:flex-row gap-6 items-start h-[calc(100vh-280px)] min-h-[500px]">
            <div className="w-[260px] bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden shrink-0 pb-4 pt-10 relative">
                <div className="absolute top-4 right-4 h-8 w-8 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 cursor-pointer">

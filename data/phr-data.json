@@ -9,6 +9,19 @@
       "history": "Monitored for 6 months",
       "status": "Previously stable vitals"
     },
+    "medications": [
+      { "name": "Tiotropium (Spiriva)", "dose": "18 mcg", "frequency": "Once daily", "route": "Inhaler" },
+      { "name": "Albuterol (ProAir)", "dose": "90 mcg", "frequency": "PRN", "route": "Inhaler" },
+      { "name": "Lisinopril", "dose": "20 mg", "frequency": "Once daily", "route": "Oral" },
+      { "name": "Metformin", "dose": "500 mg", "frequency": "Twice daily", "route": "Oral" },
+      { "name": "Amlodipine", "dose": "5 mg", "frequency": "Once daily", "route": "Oral" },
+      { "name": "Atorvastatin", "dose": "40 mg", "frequency": "Once daily (bedtime)", "route": "Oral" }
+    ],
+    "allergies": [
+      { "name": "Penicillin", "severity": "Severe", "reaction": "Anaphylaxis" },
+      { "name": "Sulfa Drugs", "severity": "Moderate", "reaction": "Rash, hives" },
+      { "name": "Latex", "severity": "Mild", "reaction": "Contact dermatitis" }
+    ],
     "ews": {
       "score": 11,
       "status": "CRITICAL",
@@ -99,6 +112,17 @@
       "history": "Monitored for 8 months",
       "status": "Warning signs detected"
     },
+    "medications": [
+      { "name": "Furosemide (Lasix)", "dose": "40 mg", "frequency": "Once daily", "route": "Oral" },
+      { "name": "Lisinopril", "dose": "10 mg", "frequency": "Once daily", "route": "Oral" },
+      { "name": "Carvedilol", "dose": "12.5 mg", "frequency": "Twice daily", "route": "Oral" },
+      { "name": "Potassium Chloride", "dose": "20 mEq", "frequency": "Once daily", "route": "Oral" },
+      { "name": "Aspirin", "dose": "81 mg", "frequency": "Once daily", "route": "Oral" }
+    ],
+    "allergies": [
+      { "name": "ACE Inhibitors (Enalapril)", "severity": "Moderate", "reaction": "Angioedema" },
+      { "name": "Iodine Contrast Dye", "severity": "Mild", "reaction": "Nausea, flushing" }
+    ],
     "ews": {
       "score": 7,
       "status": "HIGH RISK",
@@ -327,6 +351,13 @@
       "history": "No major surgeries",
       "status": "Critical - ER Transport"
     },
+    "medications": [
+      { "name": "Ibuprofen", "dose": "400 mg", "frequency": "PRN (as needed)", "route": "Oral" },
+      { "name": "Multivitamin", "dose": "1 tablet", "frequency": "Once daily", "route": "Oral" }
+    ],
+    "allergies": [
+      { "name": "Codeine", "severity": "Severe", "reaction": "Respiratory depression" }
+    ],
     "ews": {
       "score": 9,
       "status": "CRITICAL",

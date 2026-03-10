@@ -21,6 +21,17 @@ export interface PhrData {
     history: string;
     status: string;
   };
+  medications?: Array<{
+    name: string;
+    dose: string;
+    frequency: string;
+    route: string;
+  }>;
+  allergies?: Array<{
+    name: string;
+    severity: "Severe" | "Moderate" | "Mild";
+    reaction: string;
+  }>;
   ews: {
     score: number;
     status: string;

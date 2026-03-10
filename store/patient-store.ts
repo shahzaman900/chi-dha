@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import patientsData from "@/data/patients.json";
+import { toast } from "sonner";
 export interface EncounterRecord {
   id: string;
   date: string;
@@ -56,6 +57,10 @@ export interface Patient {
   aiEngagement?: PatientAiEngagement;
   timeline?: any[];
   encounters?: EncounterRecord[];
+  vitalsTrend?: {
+    hr: number[];
+    spo2: number[];
+  };
 }
 
 export interface PhrTab {
@@ -188,6 +193,8 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   },
 
   acknowledgeAlert: (patientId, note) => {
+    const patientName =
+      get().patients.find((p) => p.id === patientId)?.name || "Patient";
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
@@ -214,16 +221,22 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         };
       }),
     }));
+    toast.success(`Alert Acknowledged — ${patientName}`, {
+      description:
+        "You have taken ownership of this alert. The patient is now under your watch.",
+    });
   },
 
   triggerEmergency: (patientId, dispatchRrt, dispatchPhysician) => {
+    const patientName =
+      get().patients.find((p) => p.id === patientId)?.name || "Patient";
+    const dispatches: string[] = [];
+    if (dispatchRrt) dispatches.push("RRT");
+    if (dispatchPhysician) dispatches.push("Attending");
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
 
-        const dispatches = [];
-        if (dispatchRrt) dispatches.push("RRT");
-        if (dispatchPhysician) dispatches.push("Attending");
         const dispatchText =
           dispatches.length > 0
             ? ` (Dispatched: ${dispatches.join(", ")})`
@@ -249,16 +262,21 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         };
       }),
     }));
+    toast.error(`🚨 EMERGENCY — ${patientName}`, {
+      description: `Emergency protocol activated.${dispatches.length > 0 ? ` Dispatched: ${dispatches.join(", ")}` : ""}`,
+      duration: 8000,
+    });
   },
 
   escalateToDoctor: (patientId, doctorId, assessment, recommendation) => {
+    const patientName =
+      get().patients.find((p) => p.id === patientId)?.name || "Patient";
+    const formattedDocName = doctorId
+      .replace("dr_", "Dr. ")
+      .replace(/^\w/, (c) => c.toUpperCase());
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
-
-        const formattedDocName = doctorId
-          .replace("dr_", "Dr. ")
-          .replace(/^\w/, (c) => c.toUpperCase());
 
         const newTimelineEvent = {
           time: new Date().toLocaleString("en-US", {
@@ -281,9 +299,14 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         };
       }),
     }));
+    toast.warning(`Escalated — ${patientName}`, {
+      description: `SBAR handoff sent to ${formattedDocName}. Awaiting physician response.`,
+    });
   },
 
   pauseAiOutreach: (patientId) => {
+    const patientName =
+      get().patients.find((p) => p.id === patientId)?.name || "Patient";
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
@@ -308,6 +331,9 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         };
       }),
     }));
+    toast.info(`AI Outreach Paused — ${patientName}`, {
+      description: "AI engagement has been paused for this patient.",
+    });
   },
 
   initiateAiCheckIn: (patientId, type) => {
@@ -339,6 +365,8 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   },
 
   markAsResolved: (patientId, reason, note) => {
+    const patientName =
+      get().patients.find((p) => p.id === patientId)?.name || "Patient";
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
@@ -365,6 +393,9 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         };
       }),
     }));
+    toast.success(`Resolved — ${patientName}`, {
+      description: `Encounter closed. Reason: ${reason}`,
+    });
   },
 
   // Main Navigation

@@ -1,0 +1,81 @@
+{
+  "transcript": [
+    {
+      "speaker": "ai",
+      "text": "Hello Emily, this is your care team's AI assistant checking in following your recent vital sign alert. Are you experiencing any new shortness of breath today?"
+    },
+    {
+      "speaker": "patient",
+      "text": "Yeah, a little bit. Especially when I walked to the kitchen earlier."
+    },
+    {
+      "speaker": "ai",
+      "text": "I see. Have you noticed any increased swelling in your ankles or rapid weight gain over the last 24 hours?"
+    },
+    {
+      "speaker": "patient",
+      "text": "My shoes did feel pretty tight this morning. And I'm just feeling very fatigued overall."
+    },
+    {
+      "speaker": "ai",
+      "text": "Thank you for sharing that. Are your joints aching as well, particularly your knees or wrists?"
+    }
+  ],
+  "suggestedQuestions": {
+    "sick": [
+      {
+        "text": "Could you describe the swelling in your ankles? Does it pit when you press on it, and how high up your leg does it go?",
+        "tags": ["Fluid Retention", "Edema Focus"]
+      },
+      {
+        "text": "When you felt short of breath earlier, were you lying completely flat or were you propped up on pillows?",
+        "tags": ["Orthopnea Check"]
+      },
+      {
+        "text": "Can you tell me more about the fatigue? Is it worse in the morning or does it progress throughout the day?",
+        "tags": ["Symptom Clarification"]
+      }
+    ],
+    "preventive": [
+      {
+        "text": "Have you been weighing yourself every morning as part of your fluid management plan?",
+        "tags": []
+      },
+      {
+        "text": "Are you up to date with your annual flu and pneumonia vaccinations?",
+        "tags": []
+      }
+    ]
+  },
+  "differentialDiagnosis": [
+    {
+      "name": "Heart Failure Exacerbation",
+      "probability": 40,
+      "color": "amber",
+      "isPrimary": true,
+      "reasoning": "Patient reports experiencing shortness of breath upon exertion accompanied by unexpected weight gain (swollen ankles) and generalized weakness. These symptoms strongly correlate with volume overload typical in HF exacerbation."
+    },
+    {
+      "name": "Fibromyalgia",
+      "probability": 25,
+      "color": "blue",
+      "isPrimary": false,
+      "reasoning": "Patient presents with joint pain in knees and wrists, fatigue, and general weakness, which are characteristic symptoms of fibromyalgia. The chronic nature referenced requires rule-out."
+    },
+    {
+      "name": "Viral Infection / Influenza",
+      "probability": 15,
+      "color": "slate",
+      "isPrimary": false,
+      "reasoning": "Generalized fatigue, shortness of breath, and aching joints may present as early signs of a systemic viral infection, though lack of fever reduces probability."
+    }
+  ],
+  "aiPredictions": {
+    "concludeConfidence": 80,
+    "emergency": 10,
+    "providerRequired": 2,
+    "nurseHandle": 80,
+    "falseAlarm": 0
+  },
+  "callDuration": "04:12"
+}
