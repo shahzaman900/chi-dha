@@ -43,10 +43,31 @@ export type PatientEscalatedBy =
   | "Patient"
   | null;
 
+export interface TimelineEvent {
+  time: string;
+  event: string;
+  type: "update" | "warning" | "system" | "critical" | "critical-action";
+  detailType?: "ai-assessment" | "emergency-protocol" | "escalation";
+  details?: {
+    initialDiagnosis?: Array<{ name: string; probability: number }>;
+    transcript?: Array<{ speaker: string; text: string }>;
+    updatedDiagnosis?: Array<{ name: string; probability: number }>;
+    transport?: { status: string; eta: string; actions: string[] };
+    erNotification?: { hospital: string; protocol: string; orders: string[] };
+    handoff?: { vitals: Record<string, string>; instructions: string[] };
+    doctor?: string;
+    assessment?: string;
+    recommendation?: string;
+  };
+}
+
 export interface Patient {
   id: string;
   name: string;
   age: number;
+  phone?: string;
+  mrn?: string;
+  gender?: "Male" | "Female" | "Other";
   ewsScore: number;
   status: PatientStatus;
   trend: string;
@@ -55,7 +76,7 @@ export interface Patient {
   escalatedBy?: PatientEscalatedBy;
   aiTriageScore?: number;
   aiEngagement?: PatientAiEngagement;
-  timeline?: any[];
+  timeline?: TimelineEvent[];
   encounters?: EncounterRecord[];
   vitalsTrend?: {
     hr: number[];
@@ -199,7 +220,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
 
-        const newTimelineEvent = {
+        const newTimelineEvent: TimelineEvent = {
           time: new Date().toLocaleString("en-US", {
             month: "short",
             day: "numeric",
@@ -225,6 +246,8 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       description:
         "You have taken ownership of this alert. The patient is now under your watch.",
     });
+    // Auto-open encounter
+    get().openPhrTab(patientId, patientName, "encounter");
   },
 
   triggerEmergency: (patientId, dispatchRrt, dispatchPhysician) => {
@@ -242,7 +265,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
             ? ` (Dispatched: ${dispatches.join(", ")})`
             : "";
 
-        const newTimelineEvent = {
+        const newTimelineEvent: TimelineEvent = {
           time: new Date().toLocaleString("en-US", {
             month: "short",
             day: "numeric",
@@ -253,6 +276,43 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           }),
           event: `EMERGENCY PROTOCOL triggered by Nurse.${dispatchText}`,
           type: "critical-action",
+          detailType: "emergency-protocol",
+          details: {
+            transport: {
+              status: "Dispatched",
+              eta: "8 minutes",
+              actions: [
+                "Ambulance Unit 7 en route",
+                "Paramedic team alerted",
+                ...(dispatchRrt ? ["Rapid Response Team mobilized"] : []),
+                ...(dispatchPhysician ? ["Attending physician paged"] : []),
+              ],
+            },
+            erNotification: {
+              hospital: "Dubai General Hospital — ER Bay 3",
+              protocol: "Code Blue — Cardiac Alert",
+              orders: [
+                "12-lead ECG on arrival",
+                "Troponin + BNP stat",
+                "Crash cart standby",
+                "IV access x2 large bore",
+              ],
+            },
+            handoff: {
+              vitals: {
+                HR: `${p.vitalsTrend?.hr?.slice(-1)[0] || "—"} bpm`,
+                SpO2: `${p.vitalsTrend?.spo2?.slice(-1)[0] || "—"}%`,
+                BP: "Pending",
+                EWS: `${p.ewsScore}`,
+              },
+              instructions: [
+                "Continuous telemetry monitoring",
+                "O2 titrate to SpO2 > 94%",
+                "NPO status",
+                "Prepare for possible intubation",
+              ],
+            },
+          },
         };
 
         return {
@@ -278,7 +338,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
 
-        const newTimelineEvent = {
+        const newTimelineEvent: TimelineEvent = {
           time: new Date().toLocaleString("en-US", {
             month: "short",
             day: "numeric",
@@ -289,6 +349,12 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           }),
           event: `Case escalated to ${formattedDocName}. Assessment: "${assessment}". Request: "${recommendation}".`,
           type: "critical",
+          detailType: "escalation",
+          details: {
+            doctor: formattedDocName,
+            assessment,
+            recommendation,
+          },
         };
 
         return {
@@ -311,7 +377,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
 
-        const newTimelineEvent = {
+        const newTimelineEvent: TimelineEvent = {
           time: new Date().toLocaleString("en-US", {
             month: "short",
             day: "numeric",
@@ -337,11 +403,13 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   },
 
   initiateAiCheckIn: (patientId, type) => {
+    const patientName =
+      get().patients.find((p) => p.id === patientId)?.name || "Patient";
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
 
-        const newTimelineEvent = {
+        const newTimelineEvent: TimelineEvent = {
           time: new Date().toLocaleString("en-US", {
             month: "short",
             day: "numeric",
@@ -352,6 +420,55 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           }),
           event: `AI Check-in (${type}) initiated manually.`,
           type: "update",
+          ...(type === "call"
+            ? {
+                detailType: "ai-assessment" as const,
+                details: {
+                  initialDiagnosis: [
+                    { name: "Acute Coronary Syndrome", probability: 45 },
+                    { name: "Hypertensive Crisis", probability: 30 },
+                    { name: "Anxiety / Panic Attack", probability: 15 },
+                    { name: "GERD Exacerbation", probability: 10 },
+                  ],
+                  transcript: [
+                    {
+                      speaker: "System",
+                      text: "Hello, this is your CHI health assistant. How are you feeling today?",
+                    },
+                    {
+                      speaker: "Patient",
+                      text: "I've been having chest tightness and some shortness of breath since this morning.",
+                    },
+                    {
+                      speaker: "System",
+                      text: "I'm sorry to hear that. On a scale of 1-10, how would you rate the pain?",
+                    },
+                    {
+                      speaker: "Patient",
+                      text: "About a 6. It gets worse when I try to walk around.",
+                    },
+                    {
+                      speaker: "System",
+                      text: "Is the pain radiating to your arm, jaw, or back?",
+                    },
+                    {
+                      speaker: "Patient",
+                      text: "A little bit into my left arm, yes.",
+                    },
+                    {
+                      speaker: "System",
+                      text: "Thank you. I'm updating your assessment now. A nurse will review your case shortly.",
+                    },
+                  ],
+                  updatedDiagnosis: [
+                    { name: "Acute Coronary Syndrome", probability: 62 },
+                    { name: "Unstable Angina", probability: 20 },
+                    { name: "Hypertensive Crisis", probability: 12 },
+                    { name: "Anxiety / Panic Attack", probability: 6 },
+                  ],
+                },
+              }
+            : {}),
         };
 
         return {
@@ -362,6 +479,15 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         };
       }),
     }));
+    toast.success(
+      `AI ${type === "call" ? "Call" : "Text"} Initiated — ${patientName}`,
+      {
+        description:
+          type === "call"
+            ? "AI voice agent is now calling the patient."
+            : "AI text conversation started with the patient.",
+      },
+    );
   },
 
   markAsResolved: (patientId, reason, note) => {
@@ -371,7 +497,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
 
-        const newTimelineEvent = {
+        const newTimelineEvent: TimelineEvent = {
           time: new Date().toLocaleString("en-US", {
             month: "short",
             day: "numeric",

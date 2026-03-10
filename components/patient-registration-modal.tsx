@@ -1,56 +1,57 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { usePatientStore, Patient } from "@/store/patient-store"
+import { useState } from "react";
+import { usePatientStore, Patient } from "@/store/patient-store";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 export function PatientRegistrationModal() {
-  const { isRegistrationOpen, setIsRegistrationOpen, addPatient } = usePatientStore()
-  
+  const { isRegistrationOpen, setIsRegistrationOpen, addPatient } =
+    usePatientStore();
+
   const [formData, setFormData] = useState<Omit<Patient, "id">>({
     name: "",
     age: 30,
     ewsScore: 0,
-    status: "Stable",
+    status: "Stable / Monitoring" as const,
     trend: "Stable",
-    initiatedBy: "System"
-  })
+    initiatedBy: "Nurse" as const,
+  });
 
   const handleChange = (field: keyof Omit<Patient, "id">, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!formData.name.trim()) return
-    
-    addPatient(formData)
+    e.preventDefault();
+
+    if (!formData.name.trim()) return;
+
+    addPatient(formData);
     setFormData({
       name: "",
       age: 30,
       ewsScore: 0,
-      status: "Stable",
+      status: "Stable / Monitoring" as const,
       trend: "Stable",
-      initiatedBy: "System"
-    })
-    setIsRegistrationOpen(false)
-  }
+      initiatedBy: "Nurse" as const,
+    });
+    setIsRegistrationOpen(false);
+  };
 
   return (
     <Dialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen}>
@@ -72,7 +73,7 @@ export function PatientRegistrationModal() {
               required
             />
           </div>
-          
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="age" className="text-right text-slate-700">
               Age
@@ -83,7 +84,9 @@ export function PatientRegistrationModal() {
               min="0"
               max="150"
               value={formData.age}
-              onChange={(e) => handleChange("age", parseInt(e.target.value) || 0)}
+              onChange={(e) =>
+                handleChange("age", parseInt(e.target.value) || 0)
+              }
               className="col-span-3 bg-white border-slate-200 focus-visible:ring-brand-500 shadow-sm"
               required
             />
@@ -99,7 +102,9 @@ export function PatientRegistrationModal() {
               min="0"
               max="20"
               value={formData.ewsScore}
-              onChange={(e) => handleChange("ewsScore", parseInt(e.target.value) || 0)}
+              onChange={(e) =>
+                handleChange("ewsScore", parseInt(e.target.value) || 0)
+              }
               className="col-span-3 bg-white border-slate-200 focus-visible:ring-brand-500 shadow-sm"
             />
           </div>
@@ -108,9 +113,9 @@ export function PatientRegistrationModal() {
             <Label htmlFor="status" className="text-right text-slate-700">
               Status
             </Label>
-            <Select 
-               value={formData.status} 
-               onValueChange={(val: string) => handleChange("status", val)}
+            <Select
+              value={formData.status}
+              onValueChange={(val: string) => handleChange("status", val)}
             >
               <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-brand-500">
                 <SelectValue placeholder="Select status" />
@@ -129,9 +134,9 @@ export function PatientRegistrationModal() {
             <Label htmlFor="trend" className="text-right text-slate-700">
               Trend
             </Label>
-            <Select 
-               value={formData.trend} 
-               onValueChange={(val: string) => handleChange("trend", val)}
+            <Select
+              value={formData.trend}
+              onValueChange={(val: string) => handleChange("trend", val)}
             >
               <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-brand-500">
                 <SelectValue placeholder="Select trend" />
@@ -149,9 +154,9 @@ export function PatientRegistrationModal() {
             <Label htmlFor="initiatedBy" className="text-right text-slate-700">
               Initiated By
             </Label>
-            <Select 
-               value={formData.initiatedBy} 
-               onValueChange={(val: string) => handleChange("initiatedBy", val)}
+            <Select
+              value={formData.initiatedBy}
+              onValueChange={(val: string) => handleChange("initiatedBy", val)}
             >
               <SelectTrigger className="col-span-3 bg-white border-slate-200 shadow-sm focus:ring-brand-500">
                 <SelectValue placeholder="Select initiator" />
@@ -166,20 +171,23 @@ export function PatientRegistrationModal() {
           </div>
 
           <div className="flex justify-end gap-3 mt-4">
-            <Button 
-               type="button" 
-               variant="ghost" 
-               onClick={() => setIsRegistrationOpen(false)}
-               className="text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsRegistrationOpen(false)}
+              className="text-slate-600 hover:text-slate-900 hover:bg-slate-100"
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-brand-600 hover:bg-brand-700 text-white">
+            <Button
+              type="submit"
+              className="bg-brand-600 hover:bg-brand-700 text-white"
+            >
               Register Patient
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

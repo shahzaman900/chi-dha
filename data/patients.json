@@ -3,6 +3,9 @@
     "id": "1",
     "name": "William Davis",
     "age": 75,
+    "phone": "+971-50-123-4567",
+    "mrn": "MRN-100001",
+    "gender": "Male",
     "ewsScore": 11,
     "status": "Emergency Protocol",
     "trend": "Escalating",
@@ -40,7 +43,44 @@
       {
         "time": "Jan 31, 2026 4:49 AM",
         "event": "AI called, no response (patient disoriented).",
-        "type": "critical-action"
+        "type": "critical-action",
+        "detailType": "ai-assessment",
+        "details": {
+          "initialDiagnosis": [
+            { "name": "Acute Heart Failure", "probability": 55 },
+            { "name": "Pulmonary Embolism", "probability": 25 },
+            { "name": "COPD Exacerbation", "probability": 15 },
+            { "name": "Pneumonia", "probability": 5 }
+          ],
+          "transcript": [
+            {
+              "speaker": "System",
+              "text": "Hello Mr. Davis, this is your CHI health assistant. How are you feeling?"
+            },
+            {
+              "speaker": "Patient",
+              "text": "(No clear response — heavy breathing detected)"
+            },
+            {
+              "speaker": "System",
+              "text": "I'm detecting irregular breathing. Can you tell me if you have chest pain?"
+            },
+            {
+              "speaker": "Patient",
+              "text": "(Unintelligible — possible disorientation)"
+            },
+            {
+              "speaker": "System",
+              "text": "Escalating to nurse immediately. Stay on the line."
+            }
+          ],
+          "updatedDiagnosis": [
+            { "name": "Acute Heart Failure", "probability": 68 },
+            { "name": "Cardiogenic Shock", "probability": 18 },
+            { "name": "Pulmonary Embolism", "probability": 10 },
+            { "name": "Respiratory Failure", "probability": 4 }
+          ]
+        }
       },
       {
         "time": "Jan 31, 2026 4:51 AM",
@@ -50,7 +90,43 @@
       {
         "time": "Jan 31, 2026 4:55 AM",
         "event": "Nurse escalated case and EMERGENCY services dispatched.",
-        "type": "critical-action"
+        "type": "critical-action",
+        "detailType": "emergency-protocol",
+        "details": {
+          "transport": {
+            "status": "Dispatched",
+            "eta": "6 minutes",
+            "actions": [
+              "Ambulance Unit 3 en route",
+              "Paramedic team alerted",
+              "Rapid Response Team mobilized"
+            ]
+          },
+          "erNotification": {
+            "hospital": "Dubai General Hospital — ER Bay 1",
+            "protocol": "Code Blue — Cardiac Alert",
+            "orders": [
+              "12-lead ECG on arrival",
+              "Troponin + BNP stat",
+              "Crash cart standby",
+              "IV access x2 large bore"
+            ]
+          },
+          "handoff": {
+            "vitals": {
+              "HR": "124 bpm",
+              "SpO2": "88%",
+              "BP": "85/55 mmHg",
+              "EWS": "11"
+            },
+            "instructions": [
+              "Continuous telemetry monitoring",
+              "O2 titrate to SpO2 > 94%",
+              "NPO status",
+              "Prepare for possible intubation"
+            ]
+          }
+        }
       }
     ],
     "encounters": [
@@ -77,64 +153,34 @@
       }
     ],
     "vitalsTrend": {
-      "hr": [
-        88,
-        92,
-        98,
-        105,
-        112,
-        118,
-        124,
-        124
-      ],
-      "spo2": [
-        96,
-        95,
-        94,
-        93,
-        91,
-        90,
-        89,
-        88
-      ]
+      "hr": [88, 92, 98, 105, 112, 118, 124, 124],
+      "spo2": [96, 95, 94, 93, 91, 90, 89, 88]
     }
   },
   {
     "id": "2",
     "name": "Robert Johnson",
     "age": 68,
+    "phone": "+971-50-234-5678",
+    "mrn": "MRN-100002",
+    "gender": "Male",
     "ewsScore": 7,
     "status": "Urgent Triage",
     "trend": "Rising",
     "initiatedBy": "Nurse",
     "aiTriageScore": 7.2,
     "vitalsTrend": {
-      "hr": [
-        82,
-        85,
-        88,
-        92,
-        95,
-        98,
-        100,
-        102
-      ],
-      "spo2": [
-        97,
-        97,
-        96,
-        96,
-        96,
-        95,
-        95,
-        95
-      ]
+      "hr": [82, 85, 88, 92, 95, 98, 100, 102],
+      "spo2": [97, 97, 96, 96, 96, 95, 95, 95]
     }
   },
   {
     "id": "3",
     "name": "Kylie James",
     "age": 32,
+    "phone": "+971-55-345-6789",
+    "mrn": "MRN-100003",
+    "gender": "Female",
     "ewsScore": 9,
     "status": "Timeout Escalation",
     "trend": "Escalating",
@@ -142,94 +188,49 @@
     "aiTriageScore": 8.8,
     "aiEngagement": "Text - Active Chat",
     "vitalsTrend": {
-      "hr": [
-        78,
-        82,
-        88,
-        95,
-        100,
-        108,
-        112,
-        115
-      ],
-      "spo2": [
-        99,
-        99,
-        98,
-        98,
-        97,
-        97,
-        96,
-        96
-      ]
+      "hr": [78, 82, 88, 95, 100, 108, 112, 115],
+      "spo2": [99, 99, 98, 98, 97, 97, 96, 96]
     }
   },
   {
     "id": "4",
     "name": "Sarah Chen",
     "age": 72,
+    "phone": "+971-50-456-7890",
+    "mrn": "MRN-100004",
+    "gender": "Female",
     "ewsScore": 3,
     "status": "Stable / Monitoring",
     "trend": "Stable",
     "aiTriageScore": 2.1,
     "vitalsTrend": {
-      "hr": [
-        72,
-        74,
-        73,
-        75,
-        74,
-        73,
-        72,
-        74
-      ],
-      "spo2": [
-        98,
-        98,
-        99,
-        98,
-        98,
-        99,
-        98,
-        98
-      ]
+      "hr": [72, 74, 73, 75, 74, 73, 72, 74],
+      "spo2": [98, 98, 99, 98, 98, 99, 98, 98]
     }
   },
   {
     "id": "5",
     "name": "Maria Garcia",
     "age": 65,
+    "phone": "+971-55-567-8901",
+    "mrn": "MRN-100005",
+    "gender": "Female",
     "ewsScore": 2,
     "status": "Stable / Monitoring",
     "trend": "Stable",
     "aiTriageScore": 1.5,
     "vitalsTrend": {
-      "hr": [
-        68,
-        70,
-        69,
-        71,
-        70,
-        68,
-        69,
-        70
-      ],
-      "spo2": [
-        99,
-        99,
-        99,
-        98,
-        99,
-        99,
-        99,
-        99
-      ]
+      "hr": [68, 70, 69, 71, 70, 68, 69, 70],
+      "spo2": [99, 99, 99, 98, 99, 99, 99, 99]
     }
   },
   {
     "id": "6",
     "name": "David Thomson",
     "age": 45,
+    "phone": "+971-50-678-9012",
+    "mrn": "MRN-100006",
+    "gender": "Male",
     "ewsScore": 8,
     "status": "Nurse Alerted",
     "trend": "Rising",
@@ -244,32 +245,17 @@
       }
     ],
     "vitalsTrend": {
-      "hr": [
-        80,
-        84,
-        88,
-        92,
-        96,
-        100,
-        104,
-        106
-      ],
-      "spo2": [
-        97,
-        96,
-        95,
-        94,
-        93,
-        92,
-        91,
-        90
-      ]
+      "hr": [80, 84, 88, 92, 96, 100, 104, 106],
+      "spo2": [97, 96, 95, 94, 93, 92, 91, 90]
     }
   },
   {
     "id": "7",
     "name": "Evelyn Carter",
     "age": 82,
+    "phone": "+971-55-789-0123",
+    "mrn": "MRN-100007",
+    "gender": "Female",
     "ewsScore": 6,
     "status": "AI Outreach",
     "trend": "Up",
@@ -277,32 +263,17 @@
     "aiTriageScore": 6.5,
     "aiEngagement": "Call - In Progress",
     "vitalsTrend": {
-      "hr": [
-        78,
-        82,
-        85,
-        88,
-        86,
-        84,
-        82,
-        80
-      ],
-      "spo2": [
-        96,
-        95,
-        94,
-        93,
-        94,
-        95,
-        96,
-        96
-      ]
+      "hr": [78, 82, 85, 88, 86, 84, 82, 80],
+      "spo2": [96, 95, 94, 93, 94, 95, 96, 96]
     }
   },
   {
     "id": "8",
     "name": "James Wilson",
     "age": 59,
+    "phone": "+971-50-890-1234",
+    "mrn": "MRN-100008",
+    "gender": "Male",
     "ewsScore": 10,
     "status": "Refer to Doctor",
     "trend": "Escalating",
@@ -311,32 +282,17 @@
     "aiTriageScore": 9.2,
     "aiEngagement": "App Notification - Sent",
     "vitalsTrend": {
-      "hr": [
-        90,
-        95,
-        102,
-        108,
-        114,
-        120,
-        126,
-        130
-      ],
-      "spo2": [
-        95,
-        94,
-        93,
-        91,
-        90,
-        88,
-        87,
-        86
-      ]
+      "hr": [90, 95, 102, 108, 114, 120, 126, 130],
+      "spo2": [95, 94, 93, 91, 90, 88, 87, 86]
     }
   },
   {
     "id": "9",
     "name": "Anita Patel",
     "age": 38,
+    "phone": "+971-55-901-2345",
+    "mrn": "MRN-100009",
+    "gender": "Female",
     "ewsScore": 4,
     "status": "Resolved",
     "trend": "Stable",
@@ -356,32 +312,17 @@
       }
     ],
     "vitalsTrend": {
-      "hr": [
-        74,
-        76,
-        75,
-        77,
-        76,
-        74,
-        75,
-        76
-      ],
-      "spo2": [
-        98,
-        98,
-        97,
-        98,
-        98,
-        97,
-        98,
-        98
-      ]
+      "hr": [74, 76, 75, 77, 76, 74, 75, 76],
+      "spo2": [98, 98, 97, 98, 98, 97, 98, 98]
     }
   },
   {
     "id": "10",
     "name": "Michael Lee",
     "age": 51,
+    "phone": "+971-50-012-3456",
+    "mrn": "MRN-100010",
+    "gender": "Male",
     "ewsScore": 5,
     "status": "Stable / Monitoring",
     "trend": "Stable",
@@ -389,26 +330,8 @@
     "aiTriageScore": 4.5,
     "aiEngagement": "Text - Awaiting Reply",
     "vitalsTrend": {
-      "hr": [
-        76,
-        78,
-        80,
-        82,
-        84,
-        86,
-        85,
-        84
-      ],
-      "spo2": [
-        98,
-        97,
-        97,
-        96,
-        96,
-        96,
-        96,
-        96
-      ]
+      "hr": [76, 78, 80, 82, 84, 86, 85, 84],
+      "spo2": [98, 97, 97, 96, 96, 96, 96, 96]
     }
   }
 ]
