@@ -39,6 +39,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
     patients,
     openPhrTab,
     initiateAiCheckIn,
+    callPatient,
     triggerEmergency,
     escalateToDoctor,
     markAsResolved,
@@ -152,9 +153,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
           <Button
             className="bg-slate-600 hover:bg-slate-700 text-white h-8 px-3 rounded-full text-[11px] font-semibold tracking-wide shadow-sm transition-all border-none"
             onClick={() => {
-              toast.info("Calling patient...", {
-                description: `Dialing ${storePatient?.phone || "patient"}`,
-              });
+              callPatient(patientId);
               openPhrTab(patientId, storePatient?.name || "Patient", "copilot");
             }}
           >

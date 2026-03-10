@@ -142,6 +142,7 @@ interface PatientStore {
   ) => void;
   pauseAiOutreach: (patientId: string) => void;
   initiateAiCheckIn: (patientId: string, type: "call" | "text") => void;
+  callPatient: (patientId: string) => void;
   markAsResolved: (patientId: string, reason: string, note: string) => void;
 
   // Main Navigation
@@ -435,10 +436,10 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           }),
           event: `AI Check-in (${type}) initiated manually.`,
           type: "update",
-          ...(type === "call"
-            ? {
-                detailType: "ai-assessment" as const,
-                details: {
+          detailType: "ai-assessment" as const,
+          details:
+            type === "call"
+              ? {
                   initialDiagnosis: [
                     { name: "Acute Coronary Syndrome", probability: 45 },
                     { name: "Hypertensive Crisis", probability: 30 },
@@ -481,9 +482,51 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
                     { name: "Hypertensive Crisis", probability: 12 },
                     { name: "Anxiety / Panic Attack", probability: 6 },
                   ],
+                }
+              : {
+                  initialDiagnosis: [
+                    { name: "Acute Coronary Syndrome", probability: 45 },
+                    { name: "Hypertensive Crisis", probability: 30 },
+                    { name: "Anxiety / Panic Attack", probability: 15 },
+                    { name: "GERD Exacerbation", probability: 10 },
+                  ],
+                  transcript: [
+                    {
+                      speaker: "System",
+                      text: "Hi, this is your CHI health assistant. How are you feeling today?",
+                    },
+                    {
+                      speaker: "Patient",
+                      text: "Not great. I have been feeling tightness in my chest.",
+                    },
+                    {
+                      speaker: "System",
+                      text: "I am sorry to hear that. Can you describe any other symptoms?",
+                    },
+                    {
+                      speaker: "Patient",
+                      text: "Some dizziness and I feel short of breath when I move.",
+                    },
+                    {
+                      speaker: "System",
+                      text: "Thank you for sharing. Are you currently taking your prescribed medications?",
+                    },
+                    {
+                      speaker: "Patient",
+                      text: "I missed my dose yesterday.",
+                    },
+                    {
+                      speaker: "System",
+                      text: "Understood. A nurse will review your case shortly. Please rest and avoid exertion.",
+                    },
+                  ],
+                  updatedDiagnosis: [
+                    { name: "Acute Coronary Syndrome", probability: 55 },
+                    { name: "Hypertensive Crisis", probability: 25 },
+                    { name: "Medication Non-Adherence", probability: 12 },
+                    { name: "Anxiety / Panic Attack", probability: 8 },
+                  ],
                 },
-              }
-            : {}),
         };
 
         return {
@@ -503,6 +546,68 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
             : "AI text conversation started with the patient.",
       },
     );
+  },
+
+  callPatient: (patientId) => {
+    const patientName =
+      get().patients.find((p) => p.id === patientId)?.name || "Patient";
+    const patientPhone =
+      get().patients.find((p) => p.id === patientId)?.phone || "unknown";
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent: TimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: `Direct phone call initiated to patient (${patientPhone}).`,
+          type: "update",
+          detailType: "ai-assessment",
+          details: {
+            transcript: [
+              {
+                speaker: "Nurse",
+                text: `Calling ${patientName} at ${patientPhone}...`,
+              },
+              {
+                speaker: "System",
+                text: "Call connected. Duration: ongoing.",
+              },
+              {
+                speaker: "Nurse",
+                text: "Hello, this is your care team calling to check on you. How are you feeling?",
+              },
+              {
+                speaker: "Patient",
+                text: "I have been feeling worse since this morning. The pain is still there.",
+              },
+              {
+                speaker: "Nurse",
+                text: "I understand. We are reviewing your vitals now. Can you describe the pain?",
+              },
+              {
+                speaker: "Patient",
+                text: "It is a dull ache in my chest, sometimes sharp when I breathe deeply.",
+              },
+            ],
+          },
+        };
+
+        return {
+          ...p,
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+    toast.info(`Calling ${patientName}...`, {
+      description: `Dialing ${patientPhone}`,
+    });
   },
 
   markAsResolved: (patientId, reason, note) => {
