@@ -87,16 +87,11 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
     (patient.timeline as TimelineEvent[] | undefined) ||
     [];
 
-  // By default, only show significant events (abnormal vitals, triage alerts)
+  // By default, only show significant events (actions, alerts, escalations)
+  // Hide routine info events unless "View All" is toggled
   const filteredTimeline = showAllEvents
     ? timeline
-    : timeline.filter(
-        (e) =>
-          e.type === "critical" ||
-          e.type === "critical-action" ||
-          e.type === "warning" ||
-          e.detailType != null,
-      );
+    : timeline.filter((e) => e.type !== "info");
 
   return (
     <div className="flex overflow-auto flex-col bg-card text-foreground h-full">

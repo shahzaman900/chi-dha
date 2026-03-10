@@ -16,6 +16,7 @@ import {
   Bot,
   User,
   Activity,
+  CheckCircle2,
 } from "lucide-react";
 
 interface EventDetailModalProps {
@@ -53,6 +54,12 @@ export function EventDetailModal({
                 Details
               </>
             )}
+            {event.detailType === "resolution" && (
+              <>
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" /> Resolution
+                Details
+              </>
+            )}
           </DialogTitle>
           <p className="text-xs text-slate-500 mt-1">{event.time}</p>
         </DialogHeader>
@@ -66,6 +73,9 @@ export function EventDetailModal({
           )}
           {event.detailType === "escalation" && (
             <EscalationView details={event.details} />
+          )}
+          {event.detailType === "resolution" && (
+            <ResolutionView details={event.details} />
           )}
         </div>
       </DialogContent>
@@ -360,6 +370,50 @@ function EscalationView({
             </span>
             <p className="text-sm text-slate-700 mt-2 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
               {details.recommendation}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResolutionView({
+  details,
+}: {
+  details: NonNullable<TimelineEvent["details"]>;
+}) {
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="border border-emerald-200 rounded-xl overflow-hidden">
+        <div className="bg-emerald-50 px-6 py-4 border-b border-emerald-200">
+          <h3 className="font-bold text-emerald-800 text-sm uppercase tracking-wide flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" /> Encounter Resolution Summary
+          </h3>
+        </div>
+        <div className="p-6 space-y-5">
+          <div>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Resolved By
+            </span>
+            <p className="text-lg font-bold text-emerald-700 mt-1">
+              {details.resolvedBy}
+            </p>
+          </div>
+          <div className="border-t border-slate-200 pt-4">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Reason for Resolution
+            </span>
+            <p className="text-sm text-slate-700 mt-2 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
+              {details.reason}
+            </p>
+          </div>
+          <div className="border-t border-slate-200 pt-4">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Clinical Notes
+            </span>
+            <p className="text-sm text-slate-700 mt-2 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
+              {details.note}
             </p>
           </div>
         </div>

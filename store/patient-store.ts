@@ -46,8 +46,18 @@ export type PatientEscalatedBy =
 export interface TimelineEvent {
   time: string;
   event: string;
-  type: "update" | "warning" | "system" | "critical" | "critical-action";
-  detailType?: "ai-assessment" | "emergency-protocol" | "escalation";
+  type:
+    | "update"
+    | "warning"
+    | "system"
+    | "critical"
+    | "critical-action"
+    | "info";
+  detailType?:
+    | "ai-assessment"
+    | "emergency-protocol"
+    | "escalation"
+    | "resolution";
   details?: {
     initialDiagnosis?: Array<{ name: string; probability: number }>;
     transcript?: Array<{ speaker: string; text: string }>;
@@ -58,6 +68,9 @@ export interface TimelineEvent {
     doctor?: string;
     assessment?: string;
     recommendation?: string;
+    reason?: string;
+    note?: string;
+    resolvedBy?: string;
   };
 }
 
@@ -508,8 +521,14 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
             minute: "2-digit",
             hour12: true,
           }),
-          event: `Encounter marked as Resolved. Reason: ${reason}. Note: "${note}"`,
+          event: `Encounter marked as Resolved. Reason: ${reason}.`,
           type: "system",
+          detailType: "resolution",
+          details: {
+            reason,
+            note: note || "No additional notes.",
+            resolvedBy: "Triage Nurse",
+          },
         };
 
         return {
