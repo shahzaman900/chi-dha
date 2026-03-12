@@ -339,38 +339,186 @@ function EscalationView({
 }: {
   details: NonNullable<TimelineEvent["details"]>;
 }) {
-  return (
-    <div className="max-w-2xl mx-auto">
-      <div className="border border-indigo-200 rounded-xl overflow-hidden">
-        <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-200">
-          <h3 className="font-bold text-indigo-800 text-sm uppercase tracking-wide flex items-center gap-2">
-            <Stethoscope className="h-4 w-4" /> SBAR Clinical Handoff
-          </h3>
+  const soap = details.soapNote;
+
+  if (!soap) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="border border-indigo-200 rounded-xl overflow-hidden">
+          <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-200">
+            <h3 className="font-bold text-indigo-800 text-sm uppercase tracking-wide flex items-center gap-2">
+              <Stethoscope className="h-4 w-4" /> Escalation Details
+            </h3>
+          </div>
+          <div className="p-6 space-y-5">
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Assigned Physician
+              </span>
+              <p className="text-lg font-bold text-indigo-700 mt-1">
+                {details.doctor}
+              </p>
+            </div>
+            {details.assessment && (
+              <div className="border-t border-slate-200 pt-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Assessment
+                </span>
+                <p className="text-sm text-slate-700 mt-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  {details.assessment}
+                </p>
+              </div>
+            )}
+            {details.recommendation && (
+              <div className="border-t border-slate-200 pt-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Recommendation
+                </span>
+                <p className="text-sm text-slate-700 mt-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  {details.recommendation}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="p-6 space-y-5">
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white">
+            <Stethoscope className="h-5 w-5" />
+          </div>
           <div>
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Assigned Physician
-            </span>
-            <p className="text-lg font-bold text-indigo-700 mt-1">
-              {details.doctor}
-            </p>
+            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Target Physician</div>
+            <div className="text-lg font-bold text-indigo-800 leading-tight">{details.doctor}</div>
           </div>
-          <div className="border-t border-slate-200 pt-4">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Assessment (SBAR)
-            </span>
-            <p className="text-sm text-slate-700 mt-2 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
-              {details.assessment}
-            </p>
+        </div>
+        <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-none">Clinical Escalation</Badge>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Subjective */}
+        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+          <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center gap-2">
+            <User className="h-4 w-4 text-slate-500" />
+            <h3 className="font-bold text-slate-700 text-sm">Subjective</h3>
           </div>
-          <div className="border-t border-slate-200 pt-4">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Recommendation
-            </span>
-            <p className="text-sm text-slate-700 mt-2 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
-              {details.recommendation}
-            </p>
+          <div className="p-4 space-y-4">
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chief Complaint</span>
+              <p className="text-sm text-slate-700 mt-1 font-medium">{soap.subjective?.chiefComplaint || "—"}</p>
+            </div>
+            {soap.subjective?.hpi?.details && (
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HPI Details</span>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">{soap.subjective.hpi.details}</p>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Medical History</span>
+                <div className="mt-1 space-y-1">
+                  {soap.subjective?.pastMedicalHistory?.map((h, i) => (
+                    <div key={i} className="text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-100">{h.condition}</div>
+                  )) || <div className="text-xs text-slate-400 italic">None reported</div>}
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Meds</span>
+                <div className="mt-1 space-y-1">
+                  {soap.subjective?.medications?.map((m, i) => (
+                    <div key={i} className="text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-100">{m.name}</div>
+                  )) || <div className="text-xs text-slate-400 italic">None reported</div>}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Objective */}
+        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+          <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center gap-2">
+            <Activity className="h-4 w-4 text-slate-500" />
+            <h3 className="font-bold text-slate-700 text-sm">Objective</h3>
+          </div>
+          <div className="p-4 space-y-4">
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: "Temp", val: soap.objective?.vitals?.temp, unit: "°F" },
+                { label: "HR", val: soap.objective?.vitals?.hr, unit: "bpm" },
+                { label: "RR", val: soap.objective?.vitals?.rr, unit: "rpm" },
+                { label: "SpO2", val: soap.objective?.vitals?.spo2, unit: "%" }
+              ].map(v => (
+                <div key={v.label} className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                  <div className="text-[9px] text-slate-400 font-bold uppercase">{v.label}</div>
+                  <div className="text-sm font-bold text-slate-800">{v.val || "—"}{v.val && v.unit}</div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Physical Exam</span>
+              <p className="text-xs text-slate-600 mt-1 border-l-2 border-slate-100 pl-3 leading-relaxed">
+                {soap.objective?.physicalExam?.examDetails || soap.objective?.comments || "No findings recorded."}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Assessment */}
+        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+          <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center gap-2">
+            <Stethoscope className="h-4 w-4 text-slate-500" />
+            <h3 className="font-bold text-slate-700 text-sm">Assessment</h3>
+          </div>
+          <div className="p-4">
+            <div className="space-y-3">
+              {soap.assessment?.differentialDiagnosis?.map((d, i) => (
+                <div key={i} className="flex items-center justify-between group">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-semibold text-slate-800">{d.diagnosis}</span>
+                      <span className="text-xs font-bold text-indigo-600">{d.likelihood}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-indigo-500 rounded-full" 
+                        style={{ width: `${d.likelihood}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              )) || <div className="text-xs text-slate-400 italic">No DDx provided.</div>}
+            </div>
+          </div>
+        </div>
+
+        {/* Plan */}
+        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+          <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center gap-2">
+            <Bot className="h-4 w-4 text-slate-500" />
+            <h3 className="font-bold text-slate-700 text-sm">Plan</h3>
+          </div>
+          <div className="p-4 space-y-4">
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Immediate Actions</span>
+              <p className="text-xs text-slate-700 mt-1 font-medium bg-blue-50/50 p-2 rounded border border-blue-100/50">
+                {soap.plan?.immediateActions || "No immediate actions specified."}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Follow Up</span>
+                <p className="text-xs text-slate-600 mt-1">{soap.plan?.followUp || "Routine"}</p>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Referrals</span>
+                <p className="text-xs text-slate-600 mt-1">{soap.plan?.referrals?.list?.length || 0} active</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -43,6 +43,82 @@ export type PatientEscalatedBy =
   | "Patient"
   | null;
 
+export interface SoapNote {
+  subjective?: {
+    chiefComplaint?: string;
+    hpi?: {
+      onset?: string;
+      location?: string;
+      duration?: string;
+      character?: string;
+      aggravating?: string;
+      relieving?: string;
+      timing?: string;
+      severity?: string;
+      radiation?: string;
+      associatedSymptoms?: string;
+      pastEpisodes?: string;
+      details?: string;
+    };
+    pastMedicalHistory?: Array<{ condition: string; details: string }>;
+    surgicalHistory?: Array<{ surgery: string; details: string }>;
+    medications?: Array<{ name: string; route: string; frequency: string; instruction: string }>;
+    allergies?: { nkda: boolean; list: Array<{ substance: string; type: string; code: string; reaction: string }> };
+    screenings?: Array<{ type: string; date: string; performed: boolean; details: string }>;
+    vaccinations?: Array<{ type: string; date: string }>;
+    lmp?: string;
+    familyHistory?: Array<{ relation: string; details: string }>;
+    socialHistory?: Array<{ type: string; details: string }>;
+    ros?: Record<string, "Normal" | "Abnormal" | "---">;
+  };
+  objective?: {
+    physicalExam?: {
+      generalAppearance?: string;
+      examDetails?: string;
+      systems?: Record<string, string>;
+    };
+    vitals?: {
+      temp?: string;
+      hr?: string;
+      rr?: string;
+      spo2?: string;
+      bpSystolic?: string;
+      bpDiastolic?: string;
+      height?: string;
+      weight?: string;
+      bmi?: string;
+    };
+    labs?: {
+      results?: string;
+      imaging?: string;
+      other?: string;
+    };
+    comments?: string;
+  };
+  assessment?: {
+    differentialDiagnosis?: Array<{ diagnosis: string; icd10: string; likelihood: number; risk: number; group: string }>;
+    problemList?: Array<{ diagnosis: string; icd10: string; status: string; actionPlan: string }>;
+    preventive?: Array<{ name: string; icd10: string; specifics: string }>;
+    comments?: string;
+  };
+  plan?: {
+    immediateActions?: string;
+    medications?: Array<{ name: string; status: string; route: string; frequency: string; instruction: string }>;
+    labOrders?: Array<{ name: string; details: string }>;
+    imagingOrders?: Array<{ type: string; bodyPart: string; details: string }>;
+    procedureOrders?: Array<{ name: string; details: string }>;
+    referrals?: {
+      state?: string;
+      city?: string;
+      list?: Array<{ specialist: string; referredTo: string; details: string }>;
+    };
+    vaccinations?: Array<{ type: string; details: string }>;
+    education?: string;
+    followUp?: string;
+    comments?: string;
+  };
+}
+
 export interface TimelineEvent {
   time: string;
   event: string;
@@ -66,6 +142,7 @@ export interface TimelineEvent {
     erNotification?: { hospital: string; protocol: string; orders: string[] };
     handoff?: { vitals: Record<string, string>; instructions: string[] };
     doctor?: string;
+    soapNote?: SoapNote;
     assessment?: string;
     recommendation?: string;
     reason?: string;
@@ -98,6 +175,7 @@ export interface Patient {
     bp: number[];
   };
   isNurseActiveInCopilot?: boolean;
+  draftSoapNote?: SoapNote;
 }
 
 export interface PhrTab {
@@ -138,8 +216,7 @@ interface PatientStore {
   escalateToDoctor: (
     patientId: string,
     doctorId: string,
-    assessment: string,
-    recommendation: string,
+    soapNote: SoapNote,
   ) => void;
   pauseAiOutreach: (patientId: string) => void;
   initiateAiCheckIn: (patientId: string, type: "call" | "text") => void;
@@ -346,7 +423,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     });
   },
 
-  escalateToDoctor: (patientId, doctorId, assessment, recommendation) => {
+  escalateToDoctor: (patientId, doctorId, soapNote) => {
     const patientName =
       get().patients.find((p) => p.id === patientId)?.name || "Patient";
     const formattedDocName = doctorId
@@ -365,13 +442,12 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
             minute: "2-digit",
             hour12: true,
           }),
-          event: `Case escalated to ${formattedDocName}. Assessment: "${assessment}". Request: "${recommendation}".`,
+          event: `Case escalated to ${formattedDocName}. Detailed SOAP Note attached.`,
           type: "critical",
           detailType: "escalation",
           details: {
             doctor: formattedDocName,
-            assessment,
-            recommendation,
+            soapNote,
           },
         };
 
