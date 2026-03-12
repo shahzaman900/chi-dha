@@ -97,6 +97,7 @@ export interface Patient {
     rr: number[];
     bp: number[];
   };
+  isNurseActiveInCopilot?: boolean;
 }
 
 export interface PhrTab {
@@ -143,6 +144,7 @@ interface PatientStore {
   pauseAiOutreach: (patientId: string) => void;
   initiateAiCheckIn: (patientId: string, type: "call" | "text") => void;
   callPatient: (patientId: string) => void;
+  toggleCopilotTakeover: (patientId: string, takeover: boolean) => void;
   markAsResolved: (patientId: string, reason: string, note: string) => void;
 
   // Main Navigation
@@ -608,6 +610,46 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     toast.info(`Calling ${patientName}...`, {
       description: `Dialing ${patientPhone}`,
     });
+  },
+
+  toggleCopilotTakeover: (patientId, takeover) => {
+    const patientName =
+      get().patients.find((p) => p.id === patientId)?.name || "Patient";
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent: TimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: takeover
+            ? "Nurse took over communication."
+            : "Communication handed back to AI.",
+          type: "system",
+        };
+
+        return {
+          ...p,
+          isNurseActiveInCopilot: takeover,
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+    if (takeover) {
+      toast.success(`Nurse Takeover — ${patientName}`, {
+        description: "You are now communicating directly with the patient.",
+      });
+    } else {
+      toast.info(`AI Handoff — ${patientName}`, {
+        description: "The AI agent has resumed the conversation.",
+      });
+    }
   },
 
   markAsResolved: (patientId, reason, note) => {

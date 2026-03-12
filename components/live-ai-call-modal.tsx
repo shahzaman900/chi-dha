@@ -145,8 +145,14 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
               </Badge>
               <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                LIVE CALL IN PROGRESS
+                {patient.aiEngagement?.includes("Text") ? "LIVE CHAT IN PROGRESS" : "LIVE CALL IN PROGRESS"}
               </div>
+              {patient.isNurseActiveInCopilot && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-white bg-indigo-600 px-2 py-0.5 rounded-full border border-indigo-700 shadow-sm animate-in fade-in zoom-in duration-300">
+                  <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>
+                  NURSE HAS TAKEN OVER
+                </div>
+              )}
             </div>
             <p className="text-sm text-slate-500 flex items-center gap-4 mt-0.5">
               <span>{patient.age} yrs • Male</span>
@@ -197,8 +203,10 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
         <div className="w-[35%] flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="h-14 border-b border-slate-100 flex items-center justify-between px-5 bg-white shrink-0">
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <Activity className="h-4 w-4 text-blue-600" />
-              Live Transcript: AI &amp; Patient
+              <Activity
+                className={`h-4 w-4 ${patient.isNurseActiveInCopilot ? "text-indigo-600" : "text-blue-600"}`}
+              />
+              Live Transcript: {patient.isNurseActiveInCopilot ? "Nurse" : "AI"} &amp; Patient
             </h3>
             <Badge variant="secondary" className="bg-slate-100 text-slate-600">
               {callDuration}
@@ -235,17 +243,29 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
 
           {/* Input & Join Action */}
           <div className="p-4 bg-white border-t border-slate-200 flex gap-3 items-center">
-            <Button
-              size="lg"
-              className="bg-red-600 hover:bg-red-700 text-white shadow-md font-bold text-base h-12 px-6 shrink-0 flex items-center gap-2 rounded-xl"
-            >
-              <AlertTriangle className="h-5 w-5" />
-              JOIN CALL
-            </Button>
+            {!patient.isNurseActiveInCopilot ? (
+              <Button
+                size="lg"
+                onClick={() => usePatientStore.getState().toggleCopilotTakeover(patient.id, true)}
+                className="bg-red-600 hover:bg-red-700 text-white shadow-md font-bold text-[13px] h-12 px-4 shrink-0 flex items-center gap-1.5 rounded-xl"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                {patient.aiEngagement?.includes("Text") ? "TAKE OVER CHAT" : "JOIN CALL"}
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                onClick={() => usePatientStore.getState().toggleCopilotTakeover(patient.id, false)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md font-bold text-[13px] h-12 px-4 shrink-0 flex items-center gap-1.5 rounded-xl"
+              >
+                <RefreshCw className="h-4 w-4" />
+                HANDOFF AI
+              </Button>
+            )}
             <div className="relative flex-1">
               <Input
-                placeholder="Type a message to inject into AI prompt..."
-                className="pr-10 h-12 rounded-xl bg-slate-50 border-slate-300 focus-visible:ring-blue-500"
+                placeholder={patient.isNurseActiveInCopilot ? "Type your message to patient..." : "Type a message to inject into AI prompt..."}
+                className="pr-10 h-12 rounded-xl bg-slate-50 border-slate-300 focus-visible:ring-blue-500 text-sm"
                 value={nurseInput}
                 onChange={(e) => setNurseInput(e.target.value)}
               />

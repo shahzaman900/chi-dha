@@ -104,7 +104,7 @@ export function PatientTable() {
   const handleViewPhr = (
     patientId: string,
     patientName: string,
-    type: "encounter" | "phr" = "encounter",
+    type: "encounter" | "phr" | "copilot" = "encounter",
   ) => {
     openPhrTab(patientId, patientName, type);
     setContextMenuOpenId(null);
@@ -503,6 +503,22 @@ export function PatientTable() {
                       </div>
                     )}
                     <div>
+                      {patient.status === "AI Outreach" && (
+                        <div
+                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md mb-0.5"
+                          onClick={() =>
+                            handleViewPhr(patient.id, patient.name, "copilot")
+                          }
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <MessageSquare className="h-4 w-4 text-slate-500" />
+                            <span>View Communication</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">
+                            C
+                          </span>
+                        </div>
+                      )}
                       <div
                         className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
                         onClick={() =>
