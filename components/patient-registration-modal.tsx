@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,9 @@ export function PatientRegistrationModal() {
       <DialogContent className="sm:max-w-[425px] bg-white border-slate-200 text-slate-900">
         <DialogHeader>
           <DialogTitle className="text-xl">Register New Patient</DialogTitle>
+          <DialogDescription>
+            Enter the patient's basic information to add them to the monitoring dashboard.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

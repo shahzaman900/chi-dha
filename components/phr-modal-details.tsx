@@ -7,7 +7,9 @@ import { PhrData } from "@/store/phr-store"
 
 export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrData, view?: 'assessment' | 'treatment' | 'default' }) {
     const [showDiagnosisDetails, setShowDiagnosisDetails] = useState(false);
-    if (patient.patientId === '1') {
+    
+    // Maria Garcia - Critical Scenario
+    if (patient.patientId === '4' && view !== 'assessment') {
         return (
             <div className="bg-muted p-6 rounded-lg h-full overflow-y-auto custom-scrollbar flex flex-col gap-6">
                 <div className="flex items-center justify-between">
@@ -136,10 +138,10 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
 
         )
     }
-
-
-    if (patient.patientId === '2' || patient.patientId === '3') {
-        const isEmergency = patient.patientId === '3';
+    
+    // Sarah, Robert, and Maria (Assessment view)
+    if (patient.patientId === '2' || patient.patientId === '3' || patient.patientId === '4') {
+        const isEmergency = patient.patientId === '4' || patient.patientId === '3';
 
         return (
             <div className="bg-muted p-6 rounded-lg h-full overflow-y-auto custom-scrollbar flex flex-col gap-6">
@@ -244,12 +246,12 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                            <div className="text-red-700 font-bold text-lg mb-1">Ambulance Dispatched</div>
                                            <div className="text-red-500 font-medium text-sm">ETA: 8 Minutes</div>
                                        </div>
-                                       {patient.treatmentPlan?.actions.map((action: string, i: number) => (
-                                           <div key={i} className="flex gap-3">
-                                               <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-red-500 shrink-0"></div>
-                                               <p className="text-muted-foreground text-sm">{action}</p>
-                                           </div>
-                                       ))}
+                                        {patient.treatmentPlan?.actions?.map((action: string, i: number) => (
+                                            <div key={i} className="flex gap-3">
+                                                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-red-500 shrink-0"></div>
+                                                <p className="text-muted-foreground text-sm">{action}</p>
+                                            </div>
+                                        ))}
                                    </CardContent>
                               </Card>
 
@@ -296,12 +298,12 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                             </div>
                                         </div>
                                         <Separator className="bg-muted mb-4" />
-                                        {patient.treatmentPlan?.nurseDispatch.map((step: string, i: number) => (
-                                           <div key={i} className="flex gap-3">
-                                               <CheckCircle2 className="h-4 w-4 text-brand-500 shrink-0 mt-0.5" />
-                                               <p className="text-muted-foreground text-sm">{step}</p>
-                                           </div>
-                                       ))}
+                                         {patient.treatmentPlan?.nurseDispatch?.map((step: string, i: number) => (
+                                            <div key={i} className="flex gap-3">
+                                                <CheckCircle2 className="h-4 w-4 text-brand-500 shrink-0 mt-0.5" />
+                                                <p className="text-muted-foreground text-sm">{step}</p>
+                                            </div>
+                                        ))}
                                    </CardContent>
                               </Card>
                            </>
@@ -313,12 +315,12 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                        <CardTitle className="text-sm text-brand-600 font-bold uppercase tracking-wide">Approved Treatment Actions</CardTitle>
                                    </CardHeader>
                                    <CardContent className="pt-3 space-y-3">
-                                       {patient.treatmentPlan?.actions.map((action: string, i: number) => (
-                                           <div key={i} className="flex gap-3">
-                                               <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500 shrink-0"></div>
-                                               <p className="text-muted-foreground text-sm">{action}</p>
-                                           </div>
-                                       ))}
+                                        {patient.treatmentPlan?.actions?.map((action: string, i: number) => (
+                                            <div key={i} className="flex gap-3">
+                                                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-500 shrink-0"></div>
+                                                <p className="text-muted-foreground text-sm">{action}</p>
+                                            </div>
+                                        ))}
                                    </CardContent>
                                </Card>
 
@@ -343,12 +345,12 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                        <CardTitle className="text-sm text-emerald-400 font-bold uppercase tracking-wide">Medication Delivery Workflow</CardTitle>
                                    </CardHeader>
                                    <CardContent className="pt-3 space-y-3">
-                                       {patient.treatmentPlan?.nurseDispatch.map((step: string, i: number) => (
-                                           <div key={i} className="flex gap-3">
-                                               <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                                               <p className="text-muted-foreground text-sm">{step}</p>
-                                           </div>
-                                       ))}
+                                        {patient.treatmentPlan?.nurseDispatch?.map((step: string, i: number) => (
+                                            <div key={i} className="flex gap-3">
+                                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                                                <p className="text-muted-foreground text-sm">{step}</p>
+                                            </div>
+                                        ))}
                                    </CardContent>
                                </Card>
                            </>

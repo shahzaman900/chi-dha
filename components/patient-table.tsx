@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePatientStore, Patient } from "@/store/patient-store";
+import { usePatientStore, Patient, getAiTriageStatus } from "@/store/patient-store";
 import { Button } from "./ui/button";
 import {
   ChevronLeft,
@@ -41,6 +41,8 @@ export function PatientTable() {
     acknowledgeAlert,
     currentMainTab,
     setCurrentMainTab,
+    activeFilter,
+    getFilteredPatients,
   } = usePatientStore();
 
   // Context Menu State
@@ -54,37 +56,7 @@ export function PatientTable() {
     string | null
   >(null);
 
-  // Filtering State
-  const [activeFilter, setActiveFilter] = useState<
-    "all" | "needs_action" | "in_progress" | "resolved"
-  >("all");
 
-  const getFilteredPatients = () => {
-    let filtered = [...patients];
-
-    if (activeFilter === "needs_action") {
-      filtered = filtered.filter((p) =>
-        [
-          "Emergency Protocol",
-          "Timeout Escalation",
-          "Urgent Triage",
-          "AI Outreach",
-        ].includes(p.status),
-      );
-    } else if (activeFilter === "in_progress") {
-      filtered = filtered.filter((p) =>
-        ["Nurse Alerted", "Refer to Doctor"].includes(p.status),
-      );
-    } else if (activeFilter === "resolved") {
-      filtered = filtered.filter((p) =>
-        ["Resolved", "Stable / Monitoring"].includes(p.status),
-      );
-    }
-
-    return filtered.sort(
-      (a, b) => (b.aiTriageScore || 0) - (a.aiTriageScore || 0),
-    );
-  };
 
   const handleRowClick = (e: React.MouseEvent, id: string) => {
     // Only select if they specifically clicked the checkbox or if it's not a context menu interaction
@@ -129,17 +101,13 @@ export function PatientTable() {
     }
   };
 
-  const getAiTriageStatus = (score: number) => {
-    if (score >= 9) return "critical";
-    if (score >= 7) return "high risk";
-    if (score >= 5) return "medium risk";
-    return "stable";
-  };
+
 
   const getAiTriageColorStyles = (score: number) => {
     if (score >= 9) return "text-red-700 bg-red-50 border-red-200";
     if (score >= 7) return "text-orange-700 bg-orange-50 border-orange-200";
     if (score >= 5) return "text-yellow-700 bg-yellow-50 border-yellow-200";
+    if (score >= 3) return "text-blue-700 bg-blue-50 border-blue-200";
     return "text-emerald-700 bg-emerald-50 border-emerald-200";
   };
 
@@ -152,51 +120,13 @@ export function PatientTable() {
       <div className="bg-[#eaf3fd] h-14 border-b border-[#dce9f8] flex items-center justify-between px-6 rounded-t-lg shrink-0 w-full">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <h2 className="font-bold text-slate-800 text-[15px]">EWS List</h2>
+            <h2 className="font-bold text-slate-800 text-[15px]">
+              {activeFilter === "all" ? "All Patients" : 
+               activeFilter === "ai_outreach" ? "AI Outreach List" :
+               activeFilter === "needs_action" ? "Action Required" :
+               activeFilter === "in_progress" ? "In Progress cases" : "Resolved Cases"}
+            </h2>
             <Search className="h-4 w-4 text-slate-500 cursor-pointer hover:text-slate-700 transition" />
-          </div>
-
-          <div className="h-8 flex items-center bg-white/60 border border-brand-100 rounded-md p-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveFilter("all");
-              }}
-              className={`px-3 py-1 text-xs font-semibold rounded ${activeFilter === "all" ? "bg-white text-brand-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-            >
-              All
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveFilter("needs_action");
-              }}
-              className={`px-3 py-1 text-xs font-semibold rounded flex items-center gap-1.5 ${activeFilter === "needs_action" ? "bg-red-50 text-red-700 shadow-sm border border-red-100" : "text-slate-500 hover:text-slate-700"}`}
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-              </span>
-              Requires Action
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveFilter("in_progress");
-              }}
-              className={`px-3 py-1 text-xs font-semibold rounded ${activeFilter === "in_progress" ? "bg-orange-50 text-orange-700 shadow-sm border border-orange-100" : "text-slate-500 hover:text-slate-700"}`}
-            >
-              In Progress
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveFilter("resolved");
-              }}
-              className={`px-3 py-1 text-xs font-semibold rounded ${activeFilter === "resolved" ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100" : "text-slate-500 hover:text-slate-700"}`}
-            >
-              Resolved / Stable
-            </button>
           </div>
         </div>
         <div className="text-slate-500 text-sm font-medium">
@@ -273,6 +203,11 @@ export function PatientTable() {
                 AI Engagement{" "}
                 <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
               </TableHead>
+              {activeFilter === "ai_outreach" && (
+                <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
+                  Last Activity
+                </TableHead>
+              )}
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
                 Initiated By{" "}
                 <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
@@ -314,34 +249,34 @@ export function PatientTable() {
                     {patient.name}{" "}
                     <span className="text-slate-400">({patient.age}y)</span>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {patient.aiTriageScore ? (
-                      patient.aiTriageScore >= 9 ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActionSheetPatientId(patient.id);
-                          }}
-                          className="inline-flex items-center gap-1.5 font-bold border px-2.5 py-1 rounded-lg bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-300 transition-colors cursor-pointer animate-pulse"
-                        >
-                          <AlertCircle className="h-3.5 w-3.5" />
-                          {patient.aiTriageScore} (
-                          {getAiTriageStatus(patient.aiTriageScore)})
-                        </button>
+                    <TableCell className="whitespace-nowrap">
+                      {patient.aiTriageScore ? (
+                        patient.aiTriageScore >= 9 ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActionSheetPatientId(patient.id);
+                            }}
+                            className="inline-flex items-center gap-1.5 font-bold border px-2.5 py-1 rounded-lg bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-300 transition-colors cursor-pointer animate-pulse"
+                          >
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            {patient.aiTriageScore} (
+                            {getAiTriageStatus(patient.aiTriageScore)})
+                          </button>
+                        ) : (
+                          <div
+                            className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded ${getAiTriageColorStyles(patient.aiTriageScore)}`}
+                          >
+                            {patient.aiTriageScore} (
+                            {getAiTriageStatus(patient.aiTriageScore)})
+                          </div>
+                        )
                       ) : (
-                        <div
-                          className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded ${getAiTriageColorStyles(patient.aiTriageScore)}`}
-                        >
-                          {patient.aiTriageScore} (
-                          {getAiTriageStatus(patient.aiTriageScore)})
+                        <div className="inline-flex items-center justify-center font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded">
+                          -
                         </div>
-                      )
-                    ) : (
-                      <div className="inline-flex items-center justify-center font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded">
-                        -
-                      </div>
-                    )}
-                  </TableCell>
+                      )}
+                    </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center text-slate-700">
                       {getStatusIcon(patient.status)}
@@ -366,43 +301,43 @@ export function PatientTable() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <div className="inline-flex items-center justify-center font-medium bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-700">
-                      {patient.ewsScore}
-                    </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {patient.vitalsTrend ? (
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col items-center">
-                          <SparkLine
-                            data={patient.vitalsTrend.hr}
-                            width={64}
-                            height={24}
-                            color="#ef4444"
-                            fillColor="#ef4444"
-                          />
-                          <span className="text-[9px] text-slate-400 font-medium mt-0.5">
-                            HR
-                          </span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <SparkLine
-                            data={patient.vitalsTrend.spo2}
-                            width={64}
-                            height={24}
-                            color="#3b82f6"
-                            fillColor="#3b82f6"
-                          />
-                          <span className="text-[9px] text-slate-400 font-medium mt-0.5">
-                            SpO₂
-                          </span>
-                        </div>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="inline-flex items-center justify-center font-medium bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-700">
+                        {patient.ewsScore}
                       </div>
-                    ) : (
-                      <span className="text-slate-400 text-xs">—</span>
-                    )}
-                  </TableCell>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {patient.vitalsTrend ? (
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col items-center">
+                            <SparkLine
+                              data={patient.vitalsTrend.hr}
+                              width={64}
+                              height={24}
+                              color="#ef4444"
+                              fillColor="#ef4444"
+                            />
+                            <span className="text-[9px] text-slate-400 font-medium mt-0.5">
+                              HR
+                            </span>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <SparkLine
+                              data={patient.vitalsTrend.spo2}
+                              width={64}
+                              height={24}
+                              color="#3b82f6"
+                              fillColor="#3b82f6"
+                            />
+                            <span className="text-[9px] text-slate-400 font-medium mt-0.5">
+                              SpO₂
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 text-xs">—</span>
+                      )}
+                    </TableCell>
                   <TableCell className="whitespace-nowrap">
                     {patient.aiEngagement ? (
                       <div
@@ -435,6 +370,11 @@ export function PatientTable() {
                       <span className="text-slate-400 font-medium">-</span>
                     )}
                   </TableCell>
+                  {activeFilter === "ai_outreach" && (
+                    <TableCell className="text-slate-600 whitespace-nowrap">
+                      {patient.timeline?.[patient.timeline.length - 1]?.time || "No activity"}
+                    </TableCell>
+                  )}
                   <TableCell className="text-slate-600 whitespace-nowrap">
                     {patient.initiatedBy || "-"}
                   </TableCell>

@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import {
   Select,
@@ -68,10 +69,10 @@ export function TimelineModal({ patientId, isOpen, onClose }: TimelineModalProps
             <DialogTitle className="text-xl text-brand-600 flex items-center gap-2">
               <Clock className="h-5 w-5" /> 
               Timeline of Events
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                 - {patient.name}
-              </span>
             </DialogTitle>
+            <DialogDescription className="text-sm font-normal text-muted-foreground ml-2">
+               - {patient.name}
+            </DialogDescription>
             
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />

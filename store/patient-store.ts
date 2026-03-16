@@ -178,6 +178,14 @@ export interface Patient {
   draftSoapNote?: SoapNote;
 }
 
+export const getAiTriageStatus = (score: number) => {
+  if (score >= 9) return "critical";
+  if (score >= 7) return "high risk";
+  if (score >= 5) return "medium risk";
+  if (score >= 3) return "low risk";
+  return "stable";
+};
+
 export interface PhrTab {
   id: string;
   patientId: string;
@@ -227,6 +235,9 @@ interface PatientStore {
   // Main Navigation
   currentMainTab: "ews" | "encounters";
   setCurrentMainTab: (tab: "ews" | "encounters") => void;
+  activeFilter: "all" | "needs_action" | "ai_outreach" | "in_progress" | "resolved";
+  setActiveFilter: (filter: "all" | "needs_action" | "ai_outreach" | "in_progress" | "resolved") => void;
+  getFilteredPatients: () => Patient[];
 }
 
 export const usePatientStore = create<PatientStore>((set, get) => ({
@@ -771,4 +782,41 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   // Main Navigation
   currentMainTab: "ews",
   setCurrentMainTab: (tab) => set({ currentMainTab: tab }),
+  activeFilter: "all",
+  setActiveFilter: (filter) => set({ activeFilter: filter }),
+  getFilteredPatients: () => {
+    const { patients, activeFilter } = get();
+    let filtered = [...patients];
+
+    if (activeFilter === "needs_action") {
+      filtered = filtered.filter((p) => {
+        const score = p.aiTriageScore || 0;
+        const status = getAiTriageStatus(score);
+        const engagement = p.aiEngagement || "";
+
+        if (status === "critical" && !engagement) return true;
+        if (status === "high risk" && !engagement) return true;
+        if (status === "medium risk" && engagement === "Call - Completed") return true;
+        if (status === "low risk" && engagement === "Text - Completed") return true;
+
+        return false;
+      });
+    } else if (activeFilter === "ai_outreach") {
+      filtered = filtered.filter((p) => {
+        const status = getAiTriageStatus(p.aiTriageScore || 0);
+        const engagement = p.aiEngagement || "";
+        return (status === "low risk" || status === "medium risk") && !engagement.includes("Completed");
+      });
+    } else if (activeFilter === "in_progress") {
+      filtered = filtered.filter((p) =>
+        ["Nurse Alerted", "Refer to Doctor"].includes(p.status),
+      );
+    } else if (activeFilter === "resolved") {
+      filtered = filtered.filter((p) =>
+        ["Resolved", "Stable / Monitoring"].includes(p.status),
+      );
+    }
+
+    return filtered.sort((a, b) => (b.aiTriageScore || 0) - (a.aiTriageScore || 0));
+  },
 }));

@@ -24,7 +24,7 @@ import { usePatientStore, TimelineEvent } from "@/store/patient-store";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Maximize2, LineChart } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { PhrModalDetails } from "./phr-modal-details";
 import { EmergencySheet } from "@/components/actions/emergency-sheet";
 import { EscalateSheet } from "@/components/actions/escalate-sheet";
@@ -503,6 +503,12 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
         }
       >
         <DialogContent className="max-w-[95vw] h-[90vh] p-0 border-border bg-muted">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Patient Details</DialogTitle>
+            <DialogDescription>
+              Detailed view of patient health record and assessment.
+            </DialogDescription>
+          </DialogHeader>
           <PhrModalDetails patient={patient} view={activeModal.view} />
         </DialogContent>
       </Dialog>
@@ -774,6 +780,12 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
       {/* Vitals History Graph Modal */}
       <Dialog open={showVitalsGraph} onOpenChange={setShowVitalsGraph}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Vitals History Graph</DialogTitle>
+            <DialogDescription>
+              Historical trend of patient vitals measurements.
+            </DialogDescription>
+          </DialogHeader>
           <div className="p-6">
             <h2 className="text-xl font-bold text-foreground mb-1">
               Vitals History

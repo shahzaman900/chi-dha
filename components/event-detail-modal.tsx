@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -61,7 +62,7 @@ export function EventDetailModal({
               </>
             )}
           </DialogTitle>
-          <p className="text-xs text-slate-500 mt-1">{event.time}</p>
+          <DialogDescription className="text-xs text-slate-500 mt-1">{event.time}</DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-6">

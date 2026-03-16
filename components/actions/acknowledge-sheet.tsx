@@ -59,7 +59,11 @@ export function AcknowledgeSheet({ patient, open, onClose, onConfirm }: Acknowle
               <p className="text-sm font-medium text-slate-700 mb-1">Trigger Event</p>
               <p className="text-sm text-slate-600 bg-orange-50/50 p-3 rounded-md border border-orange-100 flex items-start gap-2">
                 <Siren className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
-                <span>SpO2 dropped to 88% over the last 2 hours. Heart rate showing rising trend.</span>
+                <span>
+                  {patient.status === "Emergency Protocol" || patient.ewsScore >= 9
+                    ? `Critical EWS triggered (${patient.ewsScore}). AI detecting physiological distress.`
+                    : `${patient.trend} trend detected. AI monitoring initiated for ${patient.name}.`}
+                </span>
               </p>
             </div>
           </div>
@@ -74,27 +78,37 @@ export function AcknowledgeSheet({ patient, open, onClose, onConfirm }: Acknowle
               <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">Heart Rate</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg font-bold text-slate-900">112</span>
+                  <span className="text-lg font-bold text-slate-900">
+                    {patient.draftSoapNote?.objective?.vitals?.hr || patient.vitalsTrend?.hr?.[patient.vitalsTrend.hr.length - 1] || "—"}
+                  </span>
                   <span className="text-xs text-red-500 font-bold">↑</span>
                 </div>
               </div>
               <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">SpO2</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg font-bold text-red-600">88%</span>
+                  <span className={`text-lg font-bold ${(Number(patient.draftSoapNote?.objective?.vitals?.spo2) || 0) < 90 ? "text-red-600" : "text-slate-900"}`}>
+                    {patient.draftSoapNote?.objective?.vitals?.spo2 || patient.vitalsTrend?.spo2?.[patient.vitalsTrend.spo2.length - 1] || "—"}%
+                  </span>
                   <span className="text-xs text-red-500 font-bold">↓</span>
                 </div>
               </div>
               <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">Blood Press.</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg font-bold text-slate-900">145/90</span>
+                  <span className="text-lg font-bold text-slate-900">
+                    {patient.draftSoapNote?.objective?.vitals?.bpSystolic 
+                      ? `${patient.draftSoapNote.objective.vitals.bpSystolic}/${patient.draftSoapNote.objective.vitals.bpDiastolic}`
+                      : "—"}
+                  </span>
                 </div>
               </div>
               <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between">
                 <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">Temp</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg font-bold text-slate-900">38.2°</span>
+                  <span className="text-lg font-bold text-slate-900">
+                    {patient.draftSoapNote?.objective?.vitals?.temp || "—"}°
+                  </span>
                 </div>
               </div>
             </div>

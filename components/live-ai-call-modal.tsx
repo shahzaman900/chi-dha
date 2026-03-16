@@ -93,15 +93,34 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
     toast.success("Patient successfully referred to doctor.");
   };
 
-  // Destructure imported data
-  const transcript = copilotData.transcript as TranscriptMessage[];
-  const sickQuestions = copilotData.suggestedQuestions
-    .sick as SuggestedQuestion[];
-  const preventiveQuestions = copilotData.suggestedQuestions
-    .preventive as SuggestedQuestion[];
-  const ddxItems = copilotData.differentialDiagnosis as DdxItem[];
-  const predictions = copilotData.aiPredictions;
-  const callDuration = copilotData.callDuration;
+  // Destructure imported data & handle patient-specific overrides
+  const transcript = (patient as any)?.copilotData?.transcript || (copilotData.transcript as TranscriptMessage[]);
+  const sickQuestions = (patient as any)?.copilotData?.suggestedQuestions?.sick || (copilotData.suggestedQuestions.sick as SuggestedQuestion[]);
+  const preventiveQuestions = (patient as any)?.copilotData?.suggestedQuestions?.preventive || (copilotData.suggestedQuestions.preventive as SuggestedQuestion[]);
+  
+  // Use patient-specific DDx if available, fallback to mock
+  const ddxItems = patient?.draftSoapNote?.assessment?.differentialDiagnosis 
+    ? patient.draftSoapNote.assessment.differentialDiagnosis.map((d, i) => ({
+        name: d.diagnosis,
+        probability: d.likelihood,
+        color: i === 0 ? "amber" : i === 1 ? "blue" : "slate",
+        isPrimary: i === 0,
+        reasoning: i === 0 
+          ? `High clinical correlation with current ${patient.draftSoapNote?.subjective?.chiefComplaint || "symptoms"}.` 
+          : "Consider as secondary possibility."
+      }))
+    : (copilotData.differentialDiagnosis as DdxItem[]);
+
+  // Calculate dynamic predictions based on EWS
+  const predictions = (patient as any)?.copilotData?.aiPredictions || {
+    concludeConfidence: patient?.ewsScore && patient.ewsScore >= 9 ? 95 : 80,
+    emergency: patient?.ewsScore && patient.ewsScore >= 9 ? 98 : (patient?.ewsScore && patient.ewsScore >= 6 ? 40 : 10),
+    providerRequired: patient?.ewsScore && patient.ewsScore >= 9 ? 90 : (patient?.ewsScore && patient.ewsScore >= 6 ? 60 : 2),
+    nurseHandle: patient?.ewsScore && patient.ewsScore >= 9 ? 10 : 80,
+    falseAlarm: 0
+  };
+
+  const callDuration = (patient as any)?.copilotData?.callDuration || copilotData.callDuration;
 
   // Auto-scroll to bottom of transcript
   useEffect(() => {
@@ -223,11 +242,11 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
             </Badge>
           </div>
           <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50">
-            {transcript.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex gap-3 ${msg.speaker === "patient" ? "flex-row-reverse" : ""}`}
-              >
+            {transcript.map((msg: TranscriptMessage, i: number) => (
+                  <div
+                    key={i}
+                    className={`flex ${msg.speaker === "ai" ? "justify-start" : "justify-end"}`}
+                  >
                 {msg.speaker === "ai" ? (
                   <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
                     <Activity className="h-4 w-4 text-white" />
@@ -324,7 +343,7 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
 
             <div className="space-y-3">
               {(activeTab === "sick" ? sickQuestions : preventiveQuestions).map(
-                (q, i) => (
+                (q: SuggestedQuestion, i: number) => (
                   <div
                     key={i}
                     className={`bg-white border text-left p-4 rounded-xl shadow-sm transition-colors cursor-pointer group ${
@@ -338,7 +357,7 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
                     </p>
                     {q.tags.length > 0 && (
                       <div className="mt-3 flex gap-2">
-                        {q.tags.map((tag, j) => (
+                        {q.tags.map((tag: string, j: number) => (
                           <Badge
                             key={j}
                             variant="outline"
@@ -458,19 +477,29 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
                     </div>
                     <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
                       <div className="text-xs font-bold text-slate-500 mb-1">Chief Complaint</div>
-                      <p className="text-sm text-slate-800 font-medium">Chest pain with shortness of breath</p>
+                      <p className="text-sm text-slate-800 font-medium">
+                        {patient?.draftSoapNote?.subjective?.chiefComplaint || "Gathering info..."}
+                      </p>
                       
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-3 mb-1">HPI Elements</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                          <div className="text-[9px] text-slate-400 uppercase">Onset</div>
-                          <div className="text-xs text-slate-700">Sudden, 45 mins ago</div>
-                        </div>
-                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                          <div className="text-[9px] text-slate-400 uppercase">Character</div>
-                          <div className="text-xs text-slate-700">Crushing, heavy</div>
-                        </div>
-                      </div>
+                      {patient?.draftSoapNote?.subjective?.hpi && (
+                        <>
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-3 mb-1">HPI Elements</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {patient.draftSoapNote.subjective.hpi.onset && (
+                              <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                                <div className="text-[9px] text-slate-400 uppercase">Onset</div>
+                                <div className="text-xs text-slate-700">{patient.draftSoapNote.subjective.hpi.onset}</div>
+                              </div>
+                            )}
+                            {patient.draftSoapNote.subjective.hpi.character && (
+                              <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                                <div className="text-[9px] text-slate-400 uppercase">Character</div>
+                                <div className="text-xs text-slate-700">{patient.draftSoapNote.subjective.hpi.character}</div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -481,17 +510,24 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
                     </div>
                     <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
                       <div className="grid grid-cols-4 gap-2">
-                        {[{l: "HR", v: "112"}, {l: "SpO2", v: "94%"}, {l: "RR", v: "22"}, {l: "BP", v: "155/95"}].map(v => (
+                        {[
+                          {l: "HR", v: patient?.draftSoapNote?.objective?.vitals?.hr || "—"},
+                          {l: "SpO2", v: (patient?.draftSoapNote?.objective?.vitals?.spo2 ? `${patient.draftSoapNote.objective.vitals.spo2}%` : "—")},
+                          {l: "RR", v: patient?.draftSoapNote?.objective?.vitals?.rr || "—"},
+                          {l: "BP", v: (patient?.draftSoapNote?.objective?.vitals?.bpSystolic ? `${patient.draftSoapNote.objective.vitals.bpSystolic}/${patient.draftSoapNote.objective.vitals.bpDiastolic}` : "—")}
+                        ].map(v => (
                           <div key={v.l} className="text-center bg-slate-50 py-1.5 rounded border border-slate-100">
                             <div className="text-[9px] text-slate-400 uppercase font-bold">{v.l}</div>
                             <div className="text-xs font-bold text-slate-800">{v.v}</div>
                           </div>
                         ))}
                       </div>
-                      <div className="mt-3">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Observation</div>
-                        <p className="text-xs text-slate-600 italic">Patient appearing diaphoretic and anxious.</p>
-                      </div>
+                      {patient?.draftSoapNote?.objective?.physicalExam?.examDetails && (
+                        <div className="mt-3">
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Observation</div>
+                          <p className="text-xs text-slate-600 italic">{patient.draftSoapNote.objective.physicalExam.examDetails}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -502,14 +538,14 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
                     </div>
                     <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-700">1. ACS / Unstable Angina</span>
-                          <span className="text-[10px] font-bold text-rose-600 px-1.5 py-0.5 bg-rose-50 rounded border border-rose-100 uppercase">High Risk</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-700">2. Pulmonary Embolism</span>
-                          <span className="text-[10px] font-bold text-amber-600 px-1.5 py-0.5 bg-amber-50 rounded border border-amber-100 uppercase">Consider</span>
-                        </div>
+                        {patient?.draftSoapNote?.assessment?.differentialDiagnosis?.slice(0, 2).map((d, i) => (
+                          <div key={i} className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-700">{i + 1}. {d.diagnosis}</span>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase ${d.likelihood > 70 ? "bg-rose-50 text-rose-600 border-rose-100" : "bg-amber-50 text-amber-600 border-amber-100"}`}>
+                              {d.likelihood > 70 ? "High Risk" : "Consider"}
+                            </span>
+                          </div>
+                        )) || <p className="text-xs text-slate-400 italic">Analyzing diagnostic possibilities...</p>}
                       </div>
                     </div>
                   </div>
@@ -519,17 +555,25 @@ export function LiveAiCopilotDashboard({ patientId }: { patientId: string }) {
                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                       <div className="h-1 w-1 rounded-full bg-slate-300"></div> Plan
                     </div>
-                    <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 shadow-sm">
-                      <ul className="space-y-2">
-                        <li className="flex items-start gap-2 text-xs text-indigo-800">
-                          <div className="h-1.5 w-1.5 rounded-full bg-indigo-400 mt-1 shrink-0"></div>
-                          Obtain immediate 12-lead EKG
-                        </li>
-                        <li className="flex items-start gap-2 text-xs text-indigo-800">
-                          <div className="h-1.5 w-1.5 rounded-full bg-indigo-400 mt-1 shrink-0"></div>
-                          Administer 324mg Aspirin
-                        </li>
-                      </ul>
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 shadow-sm space-y-2">
+                      <p className="text-xs text-indigo-800 font-bold">
+                        {patient?.draftSoapNote?.plan?.immediateActions || "Formulating care plan..."}
+                      </p>
+                      
+                      {patient?.draftSoapNote?.plan?.medications && patient.draftSoapNote.plan.medications.length > 0 && (
+                        <div className="pt-1 border-t border-indigo-200/50">
+                          <div className="text-[9px] text-indigo-400 font-bold uppercase mb-1">Suggested Rx</div>
+                          {patient.draftSoapNote.plan.medications.map((m: any, i: number) => (
+                            <div key={i} className="text-[11px] text-indigo-700 font-semibold">• {m.name}</div>
+                          ))}
+                        </div>
+                      )}
+
+                      {patient?.draftSoapNote?.plan?.followUp && (
+                        <div className="text-[10px] text-indigo-500 italic">
+                          Follow-up: {patient.draftSoapNote.plan.followUp}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
