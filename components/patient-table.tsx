@@ -30,7 +30,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { AcknowledgeSheet } from "@/components/actions/acknowledge-sheet";
+import { TransferModal } from "@/components/actions/transfer-modal";
 import { SparkLine } from "@/components/ui/sparkline";
+import { ArrowRightLeft } from "lucide-react";
 
 export function PatientTable() {
   const {
@@ -43,6 +45,7 @@ export function PatientTable() {
     setCurrentMainTab,
     activeFilter,
     getFilteredPatients,
+    transferPatient,
   } = usePatientStore();
 
   // Context Menu State
@@ -53,6 +56,9 @@ export function PatientTable() {
 
   // Action Sheet State
   const [actionSheetPatientId, setActionSheetPatientId] = useState<
+    string | null
+  >(null);
+  const [transferModalPatientId, setTransferModalPatientId] = useState<
     string | null
   >(null);
 
@@ -203,6 +209,11 @@ export function PatientTable() {
                 AI Engagement{" "}
                 <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
               </TableHead>
+              {activeFilter === "needs_action" && (
+                <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
+                  Next Action
+                </TableHead>
+              )}
               {activeFilter === "ai_outreach" && (
                 <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
                   Last Activity
@@ -370,6 +381,27 @@ export function PatientTable() {
                       <span className="text-slate-400 font-medium">-</span>
                     )}
                   </TableCell>
+                  {activeFilter === "needs_action" && (
+                    <TableCell className="whitespace-nowrap">
+                      {patient.nextAction ? (
+                        <div
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                            patient.nextAction === "emergency"
+                              ? "bg-red-50 border-red-200 text-red-700 animate-pulse"
+                              : patient.nextAction === "required provider"
+                                ? "bg-orange-50 border-orange-200 text-orange-700"
+                                : patient.nextAction === "nurse handleable"
+                                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                                  : "bg-slate-50 border-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {patient.nextAction.toUpperCase()}
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 font-medium">-</span>
+                      )}
+                    </TableCell>
+                  )}
                   {activeFilter === "ai_outreach" && (
                     <TableCell className="text-slate-600 whitespace-nowrap">
                       {patient.timeline?.[patient.timeline.length - 1]?.time || "No activity"}
@@ -473,22 +505,36 @@ export function PatientTable() {
                           E
                         </span>
                       </div>
-                      <div
-                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md mt-0.5"
-                        onClick={() =>
-                          handleViewPhr(patient.id, patient.name, "phr")
-                        }
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <FileText className="h-4 w-4 text-slate-500" />
-                          <span>View PHR</span>
+                        <div
+                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md mt-0.5"
+                          onClick={() =>
+                            handleViewPhr(patient.id, patient.name, "phr")
+                          }
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <FileText className="h-4 w-4 text-slate-500" />
+                            <span>View PHR</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">
+                            P
+                          </span>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">
-                          P
-                        </span>
                       </div>
-                    </div>
-                  </>
+                      <div className="pt-1 mt-1 border-t border-slate-100">
+                        <div
+                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-brand-600 transition-colors rounded-md"
+                          onClick={() => {
+                            setTransferModalPatientId(patient.id);
+                            setContextMenuOpenId(null);
+                          }}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <ArrowRightLeft className="h-4 w-4" />
+                            <span className="font-bold">Transfer to</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
                 );
               })()}
             </div>
@@ -509,6 +555,12 @@ export function PatientTable() {
         open={!!actionSheetPatientId}
         onClose={() => setActionSheetPatientId(null)}
         onConfirm={acknowledgeAlert}
+      />
+      <TransferModal
+        patient={patients.find((p) => p.id === transferModalPatientId)}
+        open={!!transferModalPatientId}
+        onClose={() => setTransferModalPatientId(null)}
+        onConfirm={transferPatient}
       />
       <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-slate-200 text-sm text-slate-500 w-full shrink-0">
         <div className="flex items-center gap-3">

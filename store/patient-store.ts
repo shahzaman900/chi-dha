@@ -176,6 +176,7 @@ export interface Patient {
   };
   isNurseActiveInCopilot?: boolean;
   draftSoapNote?: SoapNote;
+  nextAction?: "false alarm" | "required provider" | "nurse handleable" | "emergency";
 }
 
 export const getAiTriageStatus = (score: number) => {
@@ -230,7 +231,8 @@ interface PatientStore {
   initiateAiCheckIn: (patientId: string, type: "call" | "text") => void;
   callPatient: (patientId: string) => void;
   toggleCopilotTakeover: (patientId: string, takeover: boolean) => void;
-  markAsResolved: (patientId: string, reason: string, note: string) => void;
+  markAsResolved: (patientId: string, reason: string, note?: string) => void;
+  transferPatient: (patientId: string, targetTab: "needs_action" | "in_progress" | "resolved") => void;
 
   // Main Navigation
   currentMainTab: "ews" | "encounters";
@@ -778,6 +780,39 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       description: `Encounter closed. Reason: ${reason}`,
     });
   },
+  
+  transferPatient: (patientId, targetTab) => {
+    const patientName = get().patients.find(p => p.id === patientId)?.name || "Patient";
+    const statusMap = {
+      needs_action: "Urgent Triage",
+      in_progress: "Nurse Alerted",
+      resolved: "Resolved"
+    };
+    
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+        
+        let newEngagement = p.aiEngagement;
+        // If moving back to needs_action, we might need to mock engagement to satisfy getFilteredPatients
+        if (targetTab === "needs_action") {
+          const status = getAiTriageStatus(p.aiTriageScore || 0);
+          if (status === "medium risk") newEngagement = "Call - Completed";
+          if (status === "low risk") newEngagement = "Text - Completed";
+        }
+
+        return {
+          ...p,
+          status: statusMap[targetTab] as PatientStatus,
+          aiEngagement: newEngagement
+        };
+      }),
+    }));
+    
+    toast.success(`Transferred — ${patientName}`, {
+      description: `Patient moved to ${targetTab.replace("_", " ")} tab.`,
+    });
+  },
 
   // Main Navigation
   currentMainTab: "ews",
@@ -798,6 +833,9 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         if (status === "high risk" && !engagement) return true;
         if (status === "medium risk" && engagement === "Call - Completed") return true;
         if (status === "low risk" && engagement === "Text - Completed") return true;
+        
+        // Manual override
+        if (p.status === "Urgent Triage") return true;
 
         return false;
       });

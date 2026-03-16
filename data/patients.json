@@ -11,6 +11,7 @@
     "trend": "Escalating",
     "aiTriageScore": 9.5,
     "aiEngagement": null,
+    "nextAction": "emergency",
     "vitalsTrend": {
       "hr": [95, 105, 115, 125, 130, 135, 140, 140],
       "spo2": [94, 93, 91, 89, 88, 87, 86, 86],
@@ -30,6 +31,7 @@
     "trend": "Rising",
     "aiTriageScore": 7.8,
     "aiEngagement": null,
+    "nextAction": "required provider",
     "vitalsTrend": {
       "hr": [88, 92, 94, 98, 102, 105, 108, 108],
       "spo2": [96, 95, 95, 94, 93, 93, 92, 92],
@@ -45,10 +47,11 @@
     "mrn": "MRN-300003",
     "gender": "Male",
     "ewsScore": 5,
-    "status": "Stable / Monitoring",
+    "status": "AI Outreach",
     "trend": "Stable",
     "aiTriageScore": 5.2,
     "aiEngagement": "Call - Completed",
+    "nextAction": "false alarm",
     "vitalsTrend": {
       "hr": [78, 80, 82, 81, 80, 79, 81, 81],
       "spo2": [98, 98, 97, 98, 98, 98, 97, 97],
@@ -64,10 +67,11 @@
     "mrn": "MRN-300004",
     "gender": "Female",
     "ewsScore": 3,
-    "status": "Stable / Monitoring",
+    "status": "AI Outreach",
     "trend": "Stable",
     "aiTriageScore": 3.4,
     "aiEngagement": "Text - Completed",
+    "nextAction": "nurse handleable",
     "vitalsTrend": {
       "hr": [72, 74, 73, 75, 74, 73, 74, 74],
       "spo2": [99, 99, 98, 99, 99, 99, 98, 98],
