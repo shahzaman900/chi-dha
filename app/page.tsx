@@ -37,15 +37,15 @@ export default function Home() {
            <div className="flex flex-col flex-1 overflow-hidden p-6 pt-8 max-w-[1700px] mx-auto w-full">
              <div className="flex items-center justify-between mb-2">
                <h1 className="text-2xl font-bold text-slate-800">
-                 {currentMainTab === "ews" ? "Early Warning System" : "Patient Encounters"}
+                 {currentMainTab === "encounters" ? "Patient Encounters" : "Early Warning System"}
                </h1>
                <PracticeHeader />
              </div>
              
-             {currentMainTab === "ews" && <FilterTabs />}
+             {currentMainTab !== "encounters" && <FilterTabs />}
 
              <div className="flex-1 overflow-hidden bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col relative w-full h-[calc(100vh-140px)]">
-               {currentMainTab === "ews" ? <PatientTable /> : <EncountersTable />}
+               {currentMainTab === "encounters" ? <EncountersTable /> : <PatientTable />}
              </div>
            </div>
          )}

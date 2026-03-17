@@ -9,7 +9,8 @@ export function SiteHeader() {
   const { currentMainTab, setCurrentMainTab } = usePatientStore()
 
   const navLinks = [
-    { name: "EWS", id: "ews", href: "#" },
+    { name: "Nurse (EWS)", id: "nurse", href: "#" },
+    { name: "Doctor", id: "doctor", href: "#" },
     { name: "Encounters", id: "encounters", href: "#" },
     { name: "Dashboard", href: "#" },
     // { name: "Patient Dashboard", href: "#" },
@@ -48,7 +49,7 @@ export function SiteHeader() {
                     onClick={(e) => {
                       if (link.id) {
                         e.preventDefault()
-                        setCurrentMainTab(link.id as "ews" | "encounters")
+                        setCurrentMainTab(link.id as "nurse" | "doctor" | "ews" | "encounters")
                       }
                     }}
                     className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${

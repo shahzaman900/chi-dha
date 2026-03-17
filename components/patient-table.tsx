@@ -10,12 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePatientStore, Patient, getAiTriageStatus } from "@/store/patient-store";
+import { usePatientStore, Patient, getAiTriageStatus, getEwsColorStyles } from "@/store/patient-store";
 import { Button } from "./ui/button";
+import { ConditionModal } from "@/components/actions/condition-modal";
 import {
   ChevronLeft,
   ChevronRight,
-  Siren,
   AlertTriangle,
   Check,
   Search,
@@ -27,12 +27,42 @@ import {
   MessageSquare,
   AlertCircle,
   FileText,
+  User,
+  History as HistoryIcon,
+  Pencil,
+  Users,
+  Calculator,
+  BarChart3,
+  Siren,
+  ArrowRightLeft,
 } from "lucide-react";
 import { useState } from "react";
 import { AcknowledgeSheet } from "@/components/actions/acknowledge-sheet";
 import { TransferModal } from "@/components/actions/transfer-modal";
 import { SparkLine } from "@/components/ui/sparkline";
-import { ArrowRightLeft } from "lucide-react";
+
+const formatRelativeTime = (timestamp?: string) => {
+  if (!timestamp) return "";
+  const diff = Date.now() - new Date(timestamp).getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+
+  if (hours > 0) return `${hours} hr${hours > 1 ? "s" : ""} ago`;
+  if (minutes > 0) return `${minutes} min ago`;
+  return "Just now";
+};
+
+const formatDateTime = (timestamp?: string) => {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 export function PatientTable() {
   const {
@@ -46,6 +76,7 @@ export function PatientTable() {
     activeFilter,
     getFilteredPatients,
     transferPatient,
+    changeCondition,
   } = usePatientStore();
 
   // Context Menu State
@@ -59,6 +90,9 @@ export function PatientTable() {
     string | null
   >(null);
   const [transferModalPatientId, setTransferModalPatientId] = useState<
+    string | null
+  >(null);
+  const [conditionModalPatientId, setConditionModalPatientId] = useState<
     string | null
   >(null);
 
@@ -189,39 +223,25 @@ export function PatientTable() {
                 <Checkbox className="border-slate-400 bg-white data-[state=checked]:bg-[#0f62fe] data-[state=checked]:border-[#0f62fe] rounded-sm" />
               </TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                Patient
+                MR No
               </TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                AI Triage score{" "}
-                <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
+                Patient Name
               </TableHead>
-              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                Status{" "}
-                <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
-              </TableHead>
-              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap text-center">
                 EWS Score
               </TableHead>
-              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                Vitals Trend
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap text-center">
+                Triage Score
+              </TableHead>
+              <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap text-center">
+                Peak Triage
               </TableHead>
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                AI Engagement{" "}
-                <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
+                Condition
               </TableHead>
-              {activeFilter === "needs_action" && (
-                <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                  Next Action
-                </TableHead>
-              )}
-              {activeFilter === "ai_outreach" && (
-                <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                  Last Activity
-                </TableHead>
-              )}
               <TableHead className="text-slate-800 font-bold text-[13px] whitespace-nowrap">
-                Initiated By{" "}
-                <Filter className="h-3 w-3 inline ml-0.5 text-slate-400" />
+                Transfer
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -256,159 +276,102 @@ export function PatientTable() {
                       onClick={(e) => handleCheckboxClick(e, patient.id)}
                     />
                   </TableCell>
-                  <TableCell className="text-slate-700 whitespace-nowrap">
+                  <TableCell className="text-slate-500 font-medium whitespace-nowrap">
+                    #{patient.mrn || "2024-" + patient.id.slice(0, 4)}
+                  </TableCell>
+                  <TableCell className="text-slate-700 whitespace-nowrap font-semibold">
                     {patient.name}{" "}
-                    <span className="text-slate-400">({patient.age}y)</span>
+                    <span className="text-slate-400 font-normal">({patient.age}y)</span>
                   </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {patient.aiTriageScore ? (
-                        patient.aiTriageScore >= 9 ? (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActionSheetPatientId(patient.id);
-                            }}
-                            className="inline-flex items-center gap-1.5 font-bold border px-2.5 py-1 rounded-lg bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-300 transition-colors cursor-pointer animate-pulse"
-                          >
-                            <AlertCircle className="h-3.5 w-3.5" />
-                            {patient.aiTriageScore} (
-                            {getAiTriageStatus(patient.aiTriageScore)})
-                          </button>
-                        ) : (
-                          <div
-                            className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded ${getAiTriageColorStyles(patient.aiTriageScore)}`}
-                          >
-                            {patient.aiTriageScore} (
-                            {getAiTriageStatus(patient.aiTriageScore)})
-                          </div>
-                        )
-                      ) : (
-                        <div className="inline-flex items-center justify-center font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded">
-                          -
-                        </div>
-                      )}
-                    </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <div className="flex items-center text-slate-700">
-                      {getStatusIcon(patient.status)}
-                      <span
-                        className={
-                          ["Emergency Protocol", "Timeout Escalation"].includes(
-                            patient.status,
-                          )
-                            ? "text-red-500 font-medium"
-                            : [
-                                  "Urgent Triage",
-                                  "Nurse Alerted",
-                                  "Refer to Doctor",
-                                ].includes(patient.status)
-                              ? "text-orange-500 font-medium"
-                              : patient.status === "AI Outreach"
-                                ? "text-blue-500 font-medium"
-                                : "text-emerald-500 font-medium"
-                        }
-                      >
-                        {patient.status}
-                      </span>
-                    </div>
-                  </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="inline-flex items-center justify-center font-medium bg-slate-50 border border-slate-100 px-2 py-0.5 rounded text-slate-700">
+                  <TableCell className="whitespace-nowrap text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded min-w-[32px] ${getEwsColorStyles(patient.ewsScore)}`}>
                         {patient.ewsScore}
                       </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {patient.vitalsTrend ? (
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col items-center">
-                            <SparkLine
-                              data={patient.vitalsTrend.hr}
-                              width={64}
-                              height={24}
-                              color="#ef4444"
-                              fillColor="#ef4444"
-                            />
-                            <span className="text-[9px] text-slate-400 font-medium mt-0.5">
-                              HR
-                            </span>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <SparkLine
-                              data={patient.vitalsTrend.spo2}
-                              width={64}
-                              height={24}
-                              color="#3b82f6"
-                              fillColor="#3b82f6"
-                            />
-                            <span className="text-[9px] text-slate-400 font-medium mt-0.5">
-                              SpO₂
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 text-xs">—</span>
-                      )}
-                    </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {patient.aiEngagement ? (
-                      <div
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                          patient.aiEngagement.includes("Call")
-                            ? "bg-blue-50 border-blue-200 text-blue-700"
-                            : patient.aiEngagement.includes("Text")
-                              ? "bg-indigo-50 border-indigo-200 text-indigo-700"
-                              : "bg-slate-50 border-slate-200 text-slate-700"
-                        } border`}
-                      >
-                        {patient.aiEngagement.includes("Call") ? (
-                          <Phone className="h-3 w-3" />
-                        ) : patient.aiEngagement.includes("Text") ? (
-                          <MessageSquare className="h-3 w-3" />
-                        ) : null}
-                        <span
-                          className={
-                            patient.aiEngagement.includes("In Progress") ||
-                            patient.aiEngagement.includes("Active") ||
-                            patient.aiEngagement.includes("Awaiting")
-                              ? "animate-pulse"
-                              : ""
-                          }
-                        >
-                          {patient.aiEngagement}
+                      {patient.ewsLastUpdated && (
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {formatRelativeTime(patient.ewsLastUpdated)}
                         </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-center">
+                    {patient.aiTriageScore ? (
+                      <div className="flex flex-col items-center gap-1">
+                        <div
+                          className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded min-w-[32px] ${getAiTriageColorStyles(patient.aiTriageScore)}`}
+                        >
+                          {patient.aiTriageScore}
+                        </div>
+                        <div className="flex flex-col items-center leading-tight">
+                          <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                            {formatDateTime(patient.triageLastUpdated)}
+                          </span>
+                          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                            By {patient.triageTriggeredBy || "AI"}
+                          </span>
+                        </div>
                       </div>
                     ) : (
-                      <span className="text-slate-400 font-medium">-</span>
+                      <span className="text-slate-400">-</span>
                     )}
                   </TableCell>
-                  {activeFilter === "needs_action" && (
-                    <TableCell className="whitespace-nowrap">
-                      {patient.nextAction ? (
-                        <div
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                            patient.nextAction === "emergency"
-                              ? "bg-red-50 border-red-200 text-red-700 animate-pulse"
-                              : patient.nextAction === "required provider"
-                                ? "bg-orange-50 border-orange-200 text-orange-700"
-                                : patient.nextAction === "nurse handleable"
-                                  ? "bg-blue-50 border-blue-200 text-blue-700"
-                                  : "bg-slate-50 border-slate-200 text-slate-700"
-                          }`}
-                        >
-                          {patient.nextAction.toUpperCase()}
+                  <TableCell className="whitespace-nowrap text-center">
+                    {patient.peakAiTriageScore ? (
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <div
+                            className={`inline-flex items-center justify-center font-bold border px-2 py-0.5 rounded min-w-[32px] ${getAiTriageColorStyles(patient.peakAiTriageScore)}`}
+                          >
+                            {patient.peakAiTriageScore}
+                          </div>
+                          {patient.peakAiTriageScore > (patient.aiTriageScore || 0) && (
+                            <AlertTriangle className="h-3 w-3 text-red-500" />
+                          )}
                         </div>
-                      ) : (
-                        <span className="text-slate-400 font-medium">-</span>
-                      )}
-                    </TableCell>
-                  )}
-                  {activeFilter === "ai_outreach" && (
-                    <TableCell className="text-slate-600 whitespace-nowrap">
-                      {patient.timeline?.[patient.timeline.length - 1]?.time || "No activity"}
-                    </TableCell>
-                  )}
-                  <TableCell className="text-slate-600 whitespace-nowrap">
-                    {patient.initiatedBy || "-"}
+                        <div className="flex flex-col items-center leading-tight">
+                          <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                            {formatDateTime(patient.peakTriageLastUpdated)}
+                          </span>
+                          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                            By {patient.peakTriageTriggeredBy || "AI"}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <div className="flex flex-col gap-1">
+                      <div className={`
+                        inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border w-fit
+                        ${patient.aiTriageScore && patient.aiTriageScore >= 9 ? "bg-red-50 border-red-200 text-red-700" :
+                          patient.aiTriageScore && patient.aiTriageScore >= 7 ? "bg-orange-50 border-orange-200 text-orange-700" :
+                          patient.aiTriageScore && patient.aiTriageScore >= 5 ? "bg-yellow-50 border-yellow-200 text-yellow-700" :
+                          patient.aiTriageScore && patient.aiTriageScore >= 3 ? "bg-blue-50 border-blue-200 text-blue-700" :
+                          "bg-emerald-50 border-emerald-200 text-emerald-700"}
+                      `}>
+                        {getAiTriageStatus(patient.aiTriageScore || 0).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col leading-tight">
+                        <div className="text-[11px] text-slate-700 font-semibold flex items-center gap-1">
+                          {patient.conditionChangedBy}
+                          <span className="text-[10px] text-slate-400 font-normal">({patient.conditionChangedByRole})</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {formatDateTime(patient.conditionChangedAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                       <div className={`w-2 h-2 rounded-full ${patient.toUser ? "bg-orange-400" : "bg-blue-400"}`} />
+                       <span className="font-medium text-slate-700">
+                         {patient.toUser ? patient.toUser : (patient.toActorType || "SYSTEM")}
+                       </span>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -417,7 +380,7 @@ export function PatientTable() {
             {/* Added empty spacer to ensure table items don't hide behind floating button */}
             <TableRow className="border-transparent hover:bg-transparent">
               <TableCell
-                colSpan={7}
+                colSpan={8}
                 className="h-16 cursor-default"
               ></TableCell>
             </TableRow>
@@ -458,83 +421,146 @@ export function PatientTable() {
 
                 return (
                   <>
-                    {canAcknowledge && (
+                    {(canAcknowledge || patient.status === "AI Outreach") && (
                       <div className="pb-1 mb-1 border-b border-slate-100">
-                        <div
-                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-orange-50 focus:bg-orange-50 text-[13px] text-orange-700 transition-colors rounded-md font-medium"
-                          onClick={() => {
-                            setActionSheetPatientId(patient.id);
-                            setContextMenuOpenId(null);
-                          }}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <AlertCircle className="h-4 w-4" />
-                            <span>Acknowledge Alert</span>
+                        {canAcknowledge && (
+                          <div
+                            className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-orange-50 focus:bg-orange-50 text-[13px] text-orange-700 transition-colors rounded-md font-medium"
+                            onClick={() => {
+                              setActionSheetPatientId(patient.id);
+                              setContextMenuOpenId(null);
+                            }}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <AlertCircle className="h-4 w-4" />
+                              <span>Acknowledge Alert</span>
+                            </div>
                           </div>
-                        </div>
+                        )}
+                        {patient.status === "AI Outreach" && (
+                          <div
+                            className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                            onClick={() => {
+                              handleViewPhr(patient.id, patient.name, "copilot");
+                              setContextMenuOpenId(null);
+                            }}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <MessageSquare className="h-4 w-4 text-slate-500" />
+                              <span>View Communication</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">
+                              C
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
-                    <div>
-                      {patient.status === "AI Outreach" && (
-                        <div
-                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md mb-0.5"
-                          onClick={() =>
-                            handleViewPhr(patient.id, patient.name, "copilot")
-                          }
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <MessageSquare className="h-4 w-4 text-slate-500" />
-                            <span>View Communication</span>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">
-                            C
-                          </span>
-                        </div>
-                      )}
+
+                    <div className="pb-1 mb-1 border-b border-slate-100">
                       <div
                         className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
-                        onClick={() =>
-                          handleViewPhr(patient.id, patient.name, "encounter")
-                        }
+                        onClick={() => {
+                          handleViewPhr(patient.id, patient.name, "phr");
+                          setContextMenuOpenId(null);
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <User className="h-4 w-4 text-slate-500" />
+                          <span>View PHR</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium px-1 underline underline-offset-2">
+                          P
+                        </span>
+                      </div>
+                      <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                        onClick={() => setContextMenuOpenId(null)}
                       >
                         <div className="flex items-center gap-2.5">
                           <Activity className="h-4 w-4 text-slate-500" />
-                          <span>View Encounter</span>
+                          <span>View Vitals</span>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] text-slate-400 font-medium px-1 underline underline-offset-2">
+                          V
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pb-1 mb-1 border-b border-slate-100">
+                      {[
+                        "Triage Scores History",
+                        "EWS Scores History",
+                        "Patient Condition History",
+                        "Transfer History"
+                      ].map((item) => (
+                        <div
+                          key={item}
+                          className="flex items-center justify-between px-3 py-1.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                          onClick={() => setContextMenuOpenId(null)}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <HistoryIcon className="h-4 w-4 text-slate-500" />
+                            <span>{item}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="pb-1 mb-1 border-b border-slate-100">
+                      <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                        onClick={() => {
+                          setConditionModalPatientId(patient.id);
+                          setContextMenuOpenId(null);
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Pencil className="h-4 w-4 text-slate-500" />
+                          <span>Change Condition</span>
+                        </div>
+                      </div>
+                      <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                        onClick={() => {
+                          setTransferModalPatientId(patient.id);
+                          setContextMenuOpenId(null);
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <ArrowRightLeft className="h-4 w-4 text-slate-500" />
+                          <span>Change Assignment</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                        onClick={() => setContextMenuOpenId(null)}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Calculator className="h-4 w-4 text-slate-500" />
+                          <span>Calculate EWS</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium px-1 underline underline-offset-2">
                           E
                         </span>
                       </div>
-                        <div
-                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md mt-0.5"
-                          onClick={() =>
-                            handleViewPhr(patient.id, patient.name, "phr")
-                          }
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <FileText className="h-4 w-4 text-slate-500" />
-                            <span>View PHR</span>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">
-                            P
-                          </span>
+                      <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                        onClick={() => setContextMenuOpenId(null)}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <BarChart3 className="h-4 w-4 text-slate-500" />
+                          <span>Calculate Triage Score</span>
                         </div>
+                        <span className="text-[10px] text-slate-400 font-medium px-1 underline underline-offset-2">
+                          T
+                        </span>
                       </div>
-                      <div className="pt-1 mt-1 border-t border-slate-100">
-                        <div
-                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-brand-600 transition-colors rounded-md"
-                          onClick={() => {
-                            setTransferModalPatientId(patient.id);
-                            setContextMenuOpenId(null);
-                          }}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <ArrowRightLeft className="h-4 w-4" />
-                            <span className="font-bold">Transfer to</span>
-                          </div>
-                        </div>
-                      </div>
-                    </>
+                    </div>
+                  </>
                 );
               })()}
             </div>
@@ -561,6 +587,13 @@ export function PatientTable() {
         open={!!transferModalPatientId}
         onClose={() => setTransferModalPatientId(null)}
         onConfirm={transferPatient}
+      />
+      <ConditionModal
+        patient={patients.find((p) => p.id === conditionModalPatientId)}
+        open={!!conditionModalPatientId}
+        onClose={() => setConditionModalPatientId(null)}
+        onConfirm={changeCondition}
+        role={currentMainTab === "doctor" ? "Doctor" : "Nurse"}
       />
       <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-slate-200 text-sm text-slate-500 w-full shrink-0">
         <div className="flex items-center gap-3">

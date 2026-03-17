@@ -151,6 +151,8 @@ export interface TimelineEvent {
   };
 }
 
+export type ActorType = "SYSTEM" | "AI" | "NURSE" | "PROVIDER";
+
 export interface Patient {
   id: string;
   name: string;
@@ -176,15 +178,32 @@ export interface Patient {
   };
   isNurseActiveInCopilot?: boolean;
   draftSoapNote?: SoapNote;
-  nextAction?: "false alarm" | "required provider" | "nurse handleable" | "emergency";
+  peakAiTriageScore?: number;
+  isAwaitingAcknowledge?: boolean;
+  toActorType?: ActorType | null;
+  toUser?: string | null;
+  ewsLastUpdated?: string;
+  triageLastUpdated?: string;
+  triageTriggeredBy?: "Vitals" | "Nurse" | "Provider" | "AI";
+  peakTriageLastUpdated?: string;
+  peakTriageTriggeredBy?: "Vitals" | "Nurse" | "Provider" | "AI";
+  conditionChangedBy?: string;
+  conditionChangedAt?: string;
+  conditionChangedByRole?: "Nurse" | "Doctor" | "AI" | "System";
 }
-
 export const getAiTriageStatus = (score: number) => {
   if (score >= 9) return "critical";
   if (score >= 7) return "high risk";
   if (score >= 5) return "medium risk";
   if (score >= 3) return "low risk";
   return "stable";
+};
+
+export const getEwsColorStyles = (score: number) => {
+  if (score >= 7) return "bg-red-50 border-red-200 text-red-700";
+  if (score >= 5) return "bg-orange-50 border-orange-200 text-orange-700";
+  if (score >= 3) return "bg-yellow-50 border-yellow-200 text-yellow-700";
+  return "bg-emerald-50 border-emerald-200 text-emerald-700";
 };
 
 export interface PhrTab {
@@ -233,17 +252,39 @@ interface PatientStore {
   toggleCopilotTakeover: (patientId: string, takeover: boolean) => void;
   markAsResolved: (patientId: string, reason: string, note?: string) => void;
   transferPatient: (patientId: string, targetTab: "needs_action" | "in_progress" | "resolved") => void;
+  changeCondition: (patientId: string, newScore: number, role: "Nurse" | "Doctor") => void;
 
   // Main Navigation
-  currentMainTab: "ews" | "encounters";
-  setCurrentMainTab: (tab: "ews" | "encounters") => void;
-  activeFilter: "all" | "needs_action" | "ai_outreach" | "in_progress" | "resolved";
-  setActiveFilter: (filter: "all" | "needs_action" | "ai_outreach" | "in_progress" | "resolved") => void;
+  currentMainTab: "nurse" | "doctor" | "ews" | "encounters";
+  setCurrentMainTab: (tab: "nurse" | "doctor" | "ews" | "encounters") => void;
+  loggedInUser: string;
+  activeFilter: string;
+  setActiveFilter: (filter: string) => void;
   getFilteredPatients: () => Patient[];
 }
 
+const initializePatients = (data: any[]): Patient[] => {
+  return data.map(p => ({
+    ...p,
+    peakAiTriageScore: p.peakAiTriageScore || p.aiTriageScore || 0,
+    // If they are critical/high risk and not already being handled, mark as awaiting ack
+    isAwaitingAcknowledge: p.isAwaitingAcknowledge ?? (p.aiTriageScore >= 7 && !["Nurse Alerted", "Refer to Doctor", "Resolved"].includes(p.status)),
+    // Mock data for new actor types
+    toActorType: p.toActorType || (p.aiTriageScore >= 9 ? "AI" : p.ewsScore > 5 ? "NURSE" : "SYSTEM"),
+    toUser: p.toUser || null,
+    ewsLastUpdated: p.ewsLastUpdated || new Date(Date.now() - Math.floor(Math.random() * 7200000)).toISOString(),
+    triageLastUpdated: p.triageLastUpdated || new Date(Date.now() - Math.floor(Math.random() * 3600000)).toISOString(),
+    triageTriggeredBy: p.triageTriggeredBy || (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
+    peakTriageLastUpdated: p.peakTriageLastUpdated || new Date(Date.now() - Math.floor(Math.random() * 86400000)).toISOString(),
+    peakTriageTriggeredBy: p.peakTriageTriggeredBy || (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
+    conditionChangedBy: p.conditionChangedBy || (Math.random() > 0.5 ? "Dr. Sarah" : "Nurse Emma"),
+    conditionChangedAt: p.conditionChangedAt || new Date(Date.now() - Math.floor(Math.random() * 43200000)).toISOString(), // Last 12 hours
+    conditionChangedByRole: p.conditionChangedByRole || (Math.random() > 0.5 ? "Doctor" : "Nurse")
+  }));
+};
+
 export const usePatientStore = create<PatientStore>((set, get) => ({
-  patients: patientsData as Patient[],
+  patients: initializePatients(patientsData),
   setPatients: (patients) => set({ patients }),
   selectedPatientId: null,
   setSelectedPatientId: (id) => set({ selectedPatientId: id }),
@@ -315,9 +356,16 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   // Patient Actions
   updatePatientStatus: (patientId, status) => {
     set((state) => ({
-      patients: state.patients.map((p) =>
-        p.id === patientId ? { ...p, status } : p,
-      ),
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+        // If status changes to something considered "handled", clear the ack flag
+        const isHandled = ["Nurse Alerted", "Refer to Doctor", "Resolved"].includes(status);
+        return { 
+          ...p, 
+          status,
+          isAwaitingAcknowledge: isHandled ? false : p.isAwaitingAcknowledge
+        };
+      }),
     }));
   },
 
@@ -346,6 +394,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         return {
           ...p,
           status: "Nurse Alerted",
+          isAwaitingAcknowledge: false,
           timeline: [...(p.timeline || []), newTimelineEvent],
         };
       }),
@@ -801,10 +850,25 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           if (status === "low risk") newEngagement = "Text - Completed";
         }
 
+        const newTimelineEvent: TimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          event: `Patient transferred to ${targetTab.replace("_", " ")} queue.`,
+          type: "system",
+        };
+
         return {
           ...p,
           status: statusMap[targetTab] as PatientStatus,
-          aiEngagement: newEngagement
+          aiEngagement: newEngagement,
+          isAwaitingAcknowledge: false,
+          timeline: [...(p.timeline || []), newTimelineEvent],
         };
       }),
     }));
@@ -814,47 +878,99 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     });
   },
 
+  changeCondition: (patientId, newScore, role) => {
+    const { patients, loggedInUser } = get();
+    const patient = patients.find(p => p.id === patientId);
+    if (!patient) return;
+
+    const newStatus = getAiTriageStatus(newScore);
+    const oldStatus = getAiTriageStatus(patient.aiTriageScore || 0);
+
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const now = new Date().toISOString();
+        
+        // Routing logic: if downgraded to stable, move to SYSTEM. 
+        // If upgraded, usually stays with the person who changed it or goes to assigned actor.
+        // For this demo, let's say if it's stable, actor is SYSTEM. Otherwise, it's the role that changed it.
+        const newActorType: ActorType = newStatus === "stable" ? "SYSTEM" : (role === "Doctor" ? "PROVIDER" : "NURSE");
+
+        const newTimelineEvent: TimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+          }),
+          event: `Condition changed from ${oldStatus.toUpperCase()} to ${newStatus.toUpperCase()} by ${loggedInUser} (${role}).`,
+          type: "system",
+        };
+
+        return {
+          ...p,
+          aiTriageScore: newScore,
+          conditionChangedBy: loggedInUser,
+          conditionChangedByRole: role,
+          conditionChangedAt: now,
+          toActorType: newActorType,
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+
+    toast.success(`Condition Updated`, {
+      description: `${patient.name} is now ${newStatus.toUpperCase()}.`,
+    });
+  },
+
   // Main Navigation
-  currentMainTab: "ews",
-  setCurrentMainTab: (tab) => set({ currentMainTab: tab }),
+  currentMainTab: "nurse",
+  setCurrentMainTab: (tab) => set({ currentMainTab: tab, activeFilter: "all" }),
+  loggedInUser: "Nurse Sarah",
   activeFilter: "all",
   setActiveFilter: (filter) => set({ activeFilter: filter }),
   getFilteredPatients: () => {
-    const { patients, activeFilter } = get();
+    const { patients, activeFilter, currentMainTab, loggedInUser } = get();
     let filtered = [...patients];
 
-    if (activeFilter === "needs_action") {
-      filtered = filtered.filter((p) => {
-        const score = p.aiTriageScore || 0;
-        const status = getAiTriageStatus(score);
-        const engagement = p.aiEngagement || "";
-
-        if (status === "critical" && !engagement) return true;
-        if (status === "high risk" && !engagement) return true;
-        if (status === "medium risk" && engagement === "Call - Completed") return true;
-        if (status === "low risk" && engagement === "Text - Completed") return true;
-        
-        // Manual override
-        if (p.status === "Urgent Triage") return true;
-
-        return false;
-      });
-    } else if (activeFilter === "ai_outreach") {
-      filtered = filtered.filter((p) => {
-        const status = getAiTriageStatus(p.aiTriageScore || 0);
-        const engagement = p.aiEngagement || "";
-        return (status === "low risk" || status === "medium risk") && !engagement.includes("Completed");
-      });
-    } else if (activeFilter === "in_progress") {
-      filtered = filtered.filter((p) =>
-        ["Nurse Alerted", "Refer to Doctor"].includes(p.status),
-      );
-    } else if (activeFilter === "resolved") {
-      filtered = filtered.filter((p) =>
-        ["Resolved", "Stable / Monitoring"].includes(p.status),
-      );
+    if (activeFilter === "all") {
+       // Just returning all for now, but following categories might be better
+    } else if (currentMainTab === "nurse") {
+      if (activeFilter === "require_action") {
+        filtered = filtered.filter(p => (!p.toActorType || p.toActorType === "NURSE") && !p.toUser);
+      } else if (activeFilter === "ai") {
+        filtered = filtered.filter(p => p.toActorType === "AI");
+      } else if (activeFilter === "in_progress") {
+        filtered = filtered.filter(p => p.toUser === loggedInUser);
+      } else if (activeFilter === "stable") {
+        filtered = filtered.filter(p => p.toActorType === "SYSTEM");
+      }
+    } else if (currentMainTab === "doctor") {
+      if (activeFilter === "require_action") {
+        filtered = filtered.filter(p => (!p.toActorType || p.toActorType === "PROVIDER") && !p.toUser);
+      } else if (activeFilter === "ai") {
+        filtered = filtered.filter(p => p.toActorType === "AI");
+      } else if (activeFilter === "nurse") {
+        filtered = filtered.filter(p => p.toActorType === "NURSE");
+      } else if (activeFilter === "in_progress") {
+        filtered = filtered.filter(p => p.toUser === loggedInUser);
+      } else if (activeFilter === "stable") {
+        filtered = filtered.filter(p => p.toActorType === "SYSTEM");
+      }
     }
 
-    return filtered.sort((a, b) => (b.aiTriageScore || 0) - (a.aiTriageScore || 0));
+    // Sort by actor priority: SYSTEM -> AI -> NURSE -> PROVIDER
+    const actorPriority: Record<string, number> = {
+      "SYSTEM": 0,
+      "AI": 1,
+      "NURSE": 2,
+      "PROVIDER": 3
+    };
+
+    return filtered.sort((a, b) => {
+      const prioA = actorPriority[a.toActorType || "SYSTEM"];
+      const prioB = actorPriority[b.toActorType || "SYSTEM"];
+      if (prioA !== prioB) return prioA - prioB;
+      return (b.aiTriageScore || 0) - (a.aiTriageScore || 0);
+    });
   },
 }));
