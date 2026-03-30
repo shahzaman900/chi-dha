@@ -9,6 +9,16 @@ export interface EncounterRecord {
   type: string;
 }
 
+export interface Clinician {
+  id: string;
+  name: string;
+  role: "Nurse" | "Doctor";
+  isSupervisor?: boolean;
+  workload: number;
+  status: "Available" | "Busy" | "On Break";
+  avatar?: string;
+}
+
 export type PatientStatus =
   | "Stable / Monitoring"
   | "AI Outreach"
@@ -182,6 +192,7 @@ export interface Patient {
   isAwaitingAcknowledge?: boolean;
   toActorType?: ActorType | null;
   toUser?: string | null;
+  toUserRole?: string | null;
   ewsLastUpdated?: string;
   triageLastUpdated?: string;
   triageTriggeredBy?: "Vitals" | "Nurse" | "Provider" | "AI";
@@ -253,34 +264,165 @@ interface PatientStore {
   markAsResolved: (patientId: string, reason: string, note?: string) => void;
   transferPatient: (patientId: string, targetTab: "needs_action" | "in_progress" | "resolved") => void;
   changeCondition: (patientId: string, newScore: number, role: "Nurse" | "Doctor") => void;
+  assignToActor: (patientId: string, actorType: ActorType, clinicianId?: string) => void;
+
+  // Clinician Registry
+  currentUser: Clinician | null;
+  availableClinicians: Clinician[];
+  setCurrentUser: (user: Clinician | null) => void;
 
   // Main Navigation
-  currentMainTab: "nurse" | "doctor" | "ews" | "encounters";
-  setCurrentMainTab: (tab: "nurse" | "doctor" | "ews" | "encounters") => void;
-  loggedInUser: string;
+  currentMainTab: "nurse" | "doctor" | "ews" | "encounters" | "rpm-dashboard";
+  setCurrentMainTab: (tab: "nurse" | "doctor" | "ews" | "encounters" | "rpm-dashboard") => void;
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
   getFilteredPatients: () => Patient[];
 }
 
+const mockClinicians: Clinician[] = [
+  { id: "nurse-1", name: "Nurse Sarah", role: "Nurse", workload: 0, status: "Available", isSupervisor: true },
+  { id: "nurse-2", name: "Nurse Emma", role: "Nurse", workload: 0, status: "Available" },
+  { id: "nurse-3", name: "Nurse John", role: "Nurse", workload: 0, status: "Available" },
+  { id: "doctor-1", name: "Dr. Ahmed", role: "Doctor", workload: 0, status: "Available" },
+  { id: "doctor-2", name: "Dr. Sarah", role: "Doctor", workload: 0, status: "Available" },
+];
+
 const initializePatients = (data: any[]): Patient[] => {
-  return data.map(p => ({
+  const seededPatients: Patient[] = [
+    // 2 Patients in AI (Medium and Low Risk)
+    {
+      id: "demo-ai-1",
+      name: "Marcus Aurelius",
+      age: 65,
+      status: "AI Outreach" as PatientStatus,
+      aiTriageScore: 5,
+      toActorType: "AI" as ActorType,
+      toUser: null,
+      ewsScore: 4,
+      trend: "Stable",
+      timeline: []
+    },
+    {
+      id: "demo-ai-2",
+      name: "Elena Gilbert",
+      age: 24,
+      status: "AI Outreach" as PatientStatus,
+      aiTriageScore: 3,
+      toActorType: "AI" as ActorType,
+      toUser: null,
+      ewsScore: 2,
+      trend: "Improving",
+      timeline: []
+    },
+    // 4 Patients in Action Required (Critical, High, Medium, Low)
+    {
+      id: "demo-act-1",
+      name: "Arthur Morgan",
+      age: 42,
+      status: "Urgent Triage" as PatientStatus,
+      aiTriageScore: 9,
+      toActorType: "PROVIDER" as ActorType,
+      toUser: null,
+      ewsScore: 8,
+      trend: "Declining",
+      timeline: []
+    },
+    {
+      id: "demo-act-2",
+      name: "Sadie Adler",
+      age: 35,
+      status: "Nurse Alerted" as PatientStatus,
+      aiTriageScore: 7,
+      toActorType: "PROVIDER" as ActorType,
+      toUser: null,
+      ewsScore: 6,
+      trend: "Declining",
+      timeline: []
+    },
+    {
+      id: "demo-act-3",
+      name: "John Marston",
+      age: 38,
+      status: "Stable / Monitoring" as PatientStatus,
+      aiTriageScore: 5,
+      toActorType: "NURSE" as ActorType,
+      toUser: null,
+      ewsScore: 4,
+      trend: "Stable",
+      timeline: []
+    },
+    {
+      id: "demo-act-4",
+      name: "Charles Smith",
+      age: 30,
+      status: "AI Outreach" as PatientStatus,
+      aiTriageScore: 3,
+      toActorType: "NURSE" as ActorType,
+      toUser: null,
+      ewsScore: 2,
+      trend: "Stable",
+      timeline: []
+    },
+    // 2 Patients in Stable Filter
+    {
+      id: "demo-stable-1",
+      name: "Abigail Marston",
+      age: 32,
+      status: "Resolved" as PatientStatus,
+      aiTriageScore: 0,
+      toActorType: "SYSTEM" as ActorType,
+      toUser: null,
+      ewsScore: 0,
+      trend: "Stable",
+      timeline: []
+    },
+    {
+      id: "demo-stable-2",
+      name: "Jack Marston",
+      age: 12,
+      status: "Stable / Monitoring" as PatientStatus,
+      aiTriageScore: 0,
+      toActorType: "SYSTEM" as ActorType,
+      toUser: null,
+      ewsScore: 1,
+      trend: "Improving",
+      timeline: []
+    }
+  ].map(p => ({
     ...p,
-    peakAiTriageScore: p.peakAiTriageScore || p.aiTriageScore || 0,
-    // If they are critical/high risk and not already being handled, mark as awaiting ack
-    isAwaitingAcknowledge: p.isAwaitingAcknowledge ?? (p.aiTriageScore >= 7 && !["Nurse Alerted", "Refer to Doctor", "Resolved"].includes(p.status)),
-    // Mock data for new actor types
-    toActorType: p.toActorType || (p.aiTriageScore >= 9 ? "AI" : p.ewsScore > 5 ? "NURSE" : "SYSTEM"),
-    toUser: p.toUser || null,
-    ewsLastUpdated: p.ewsLastUpdated || new Date(Date.now() - Math.floor(Math.random() * 7200000)).toISOString(),
-    triageLastUpdated: p.triageLastUpdated || new Date(Date.now() - Math.floor(Math.random() * 3600000)).toISOString(),
-    triageTriggeredBy: p.triageTriggeredBy || (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
-    peakTriageLastUpdated: p.peakTriageLastUpdated || new Date(Date.now() - Math.floor(Math.random() * 86400000)).toISOString(),
-    peakTriageTriggeredBy: p.peakTriageTriggeredBy || (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
-    conditionChangedBy: p.conditionChangedBy || (Math.random() > 0.5 ? "Dr. Sarah" : "Nurse Emma"),
-    conditionChangedAt: p.conditionChangedAt || new Date(Date.now() - Math.floor(Math.random() * 43200000)).toISOString(), // Last 12 hours
-    conditionChangedByRole: p.conditionChangedByRole || (Math.random() > 0.5 ? "Doctor" : "Nurse")
+    peakAiTriageScore: p.aiTriageScore,
+    isAwaitingAcknowledge: p.aiTriageScore >= 7,
+    ewsLastUpdated: new Date().toISOString(),
+    triageLastUpdated: new Date().toISOString(),
+    triageTriggeredBy: "AI" as const,
+    peakTriageLastUpdated: new Date().toISOString(),
+    peakTriageTriggeredBy: "AI" as const,
+    conditionChangedBy: "Dr. Ahmed",
+    conditionChangedAt: new Date().toISOString(),
+    conditionChangedByRole: "Doctor" as const,
+    toUser: "Nurse Sarah",
+    toUserRole: "Nurse"
   }));
+
+  const remainingPatients = data.slice(0, 10).map((p, idx) => ({
+    ...p,
+    id: `p-rand-${idx}`,
+    peakAiTriageScore: p.peakAiTriageScore || p.aiTriageScore || 0,
+    isAwaitingAcknowledge: p.isAwaitingAcknowledge ?? (p.aiTriageScore >= 7 && !["Nurse Alerted", "Refer to Doctor", "Resolved"].includes(p.status)),
+    toActorType: p.toActorType || (p.aiTriageScore >= 9 ? "AI" : "NURSE"),
+    toUser: "Nurse Sarah",
+    toUserRole: "Nurse",
+    ewsLastUpdated: new Date(Date.now() - Math.floor(Math.random() * 7200000)).toISOString(),
+    triageLastUpdated: new Date(Date.now() - Math.floor(Math.random() * 3600000)).toISOString(),
+    triageTriggeredBy: (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
+    peakTriageLastUpdated: new Date(Date.now() - Math.floor(Math.random() * 86400000)).toISOString(),
+    peakTriageTriggeredBy: (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
+    conditionChangedBy: (Math.random() > 0.5 ? "Dr. Ahmed" : "Nurse Sarah"),
+    conditionChangedAt: new Date(Date.now() - Math.floor(Math.random() * 43200000)).toISOString(),
+    conditionChangedByRole: (Math.random() > 0.5 ? "Doctor" : "Nurse")
+  }));
+
+  return [...seededPatients, ...remainingPatients];
 };
 
 export const usePatientStore = create<PatientStore>((set, get) => ({
@@ -370,24 +512,22 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   },
 
   acknowledgeAlert: (patientId, note) => {
+    const { currentUser } = get();
+    const userName = currentUser?.name || "Clinic Staff";
     const patientName =
       get().patients.find((p) => p.id === patientId)?.name || "Patient";
+    
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
 
         const newTimelineEvent: TimelineEvent = {
           time: new Date().toLocaleString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
+            month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
           }),
           event: note
-            ? `Alert acknowledged by Nurse. Note: "${note}"`
-            : "Alert acknowledged by Nurse.",
+            ? `Alert acknowledged by ${userName}. Note: "${note}"`
+            : `Alert acknowledged by ${userName}.`,
           type: "system",
         };
 
@@ -395,13 +535,16 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           ...p,
           status: "Nurse Alerted",
           isAwaitingAcknowledge: false,
+          toUser: userName,
+          toUserRole: currentUser?.role || "Nurse",
+          toActorType: currentUser?.role === "Doctor" ? "PROVIDER" : "NURSE",
           timeline: [...(p.timeline || []), newTimelineEvent],
         };
       }),
     }));
     toast.success(`Alert Acknowledged — ${patientName}`, {
       description:
-        "You have taken ownership of this alert. The patient is now under your watch.",
+        `${userName} has taken ownership of this alert.`,
     });
     // Auto-open encounter
     get().openPhrTab(patientId, patientName, "encounter");
@@ -879,7 +1022,8 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   },
 
   changeCondition: (patientId, newScore, role) => {
-    const { patients, loggedInUser } = get();
+    const { patients, currentUser } = get();
+    const userName = currentUser?.name || "Clinic Staff";
     const patient = patients.find(p => p.id === patientId);
     if (!patient) return;
 
@@ -901,14 +1045,14 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           time: new Date().toLocaleString("en-US", {
             month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
           }),
-          event: `Condition changed from ${oldStatus.toUpperCase()} to ${newStatus.toUpperCase()} by ${loggedInUser} (${role}).`,
+          event: `Condition changed from ${oldStatus.toUpperCase()} to ${newStatus.toUpperCase()} by ${userName} (${role}).`,
           type: "system",
         };
 
         return {
           ...p,
           aiTriageScore: newScore,
-          conditionChangedBy: loggedInUser,
+          conditionChangedBy: userName,
           conditionChangedByRole: role,
           conditionChangedAt: now,
           toActorType: newActorType,
@@ -922,39 +1066,132 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     });
   },
 
+  assignToActor: (patientId, actorType, clinicianId) => {
+    const { patients, availableClinicians, currentUser } = get();
+    const patient = patients.find(p => p.id === patientId);
+    if (!patient) return;
+
+    let targetName = actorType as string;
+    let targetActor = actorType;
+
+    if (clinicianId) {
+      const clinician = availableClinicians.find(c => c.id === clinicianId);
+      if (clinician) {
+        targetName = clinician.name;
+        targetActor = clinician.role === "Doctor" ? "PROVIDER" : "NURSE";
+      }
+    } else {
+      // General assignments
+      if (actorType === "PROVIDER") targetName = "Triage Physician";
+      if (actorType === "NURSE") targetName = "Triage Nurse";
+      if (actorType === "AI") targetName = "AI Engine";
+      if (actorType === "SYSTEM") targetName = "Automated Monitoring";
+    }
+
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent: TimelineEvent = {
+          time: new Date().toLocaleString("en-US", {
+            month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+          }),
+          event: `Patient assigned to ${targetName} by ${currentUser?.name || "System"}.`,
+          type: "system",
+        };
+
+        return {
+          ...p,
+          toUser: clinicianId ? targetName : null,
+          toUserRole: clinicianId ? (availableClinicians.find(c => c.id === clinicianId)?.role || null) : null,
+          toActorType: targetActor,
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+      // Update workload only if clinicianId provided
+      availableClinicians: clinicianId ? state.availableClinicians.map(c => 
+        c.id === clinicianId ? { ...c, workload: c.workload + 1 } : c
+      ) : state.availableClinicians
+    }));
+
+    toast.success(`Assignment Updated`, {
+      description: `${patient.name} assigned to ${targetName}.`,
+    });
+  },
+
+  // Clinician Registry
+  currentUser: mockClinicians[0], // Nurse Sarah (Supervisor)
+  availableClinicians: mockClinicians,
+  setCurrentUser: (user) => set({ currentUser: user }),
+
   // Main Navigation
   currentMainTab: "nurse",
   setCurrentMainTab: (tab) => set({ currentMainTab: tab, activeFilter: "all" }),
-  loggedInUser: "Nurse Sarah",
   activeFilter: "all",
   setActiveFilter: (filter) => set({ activeFilter: filter }),
   getFilteredPatients: () => {
-    const { patients, activeFilter, currentMainTab, loggedInUser } = get();
+    const { patients, activeFilter, currentMainTab, currentUser } = get();
+    const loggedInUser = currentUser?.name || "Nurse Sarah";
+    const isSupervisor = loggedInUser === "Nurse Sarah";
+    
     let filtered = [...patients];
 
+    // 1. Primary Filter: Regular Clinicians ONLY see what is explicitly assigned to them
+    // Supervisor sees EVERYTHING for triage and oversight
+    if (!isSupervisor) {
+      filtered = filtered.filter(p => p.toUser === loggedInUser);
+    }
+
+    // 2. Tab-Specific & Action Filtering
     if (activeFilter === "all") {
-       // Just returning all for now, but following categories might be better
+      // If not supervisor, already filtered to user. 
+      // If supervisor, shows everything (global oversight)
     } else if (currentMainTab === "nurse") {
       if (activeFilter === "require_action") {
-        filtered = filtered.filter(p => (!p.toActorType || p.toActorType === "NURSE") && !p.toUser);
+        if (isSupervisor) {
+          // Supervisor see everything requiring routing
+          filtered = filtered.filter(p => (!p.toUser || p.toUser === "Nurse Sarah") && (!p.toActorType || p.toActorType === "NURSE" || p.toActorType === "PROVIDER"));
+        } else {
+          // Individual nurse seeing what they need to acknowledge
+          filtered = filtered.filter(p => (p.status === "Nurse Alerted" || p.status === "Urgent Triage"));
+        }
       } else if (activeFilter === "ai") {
-        filtered = filtered.filter(p => p.toActorType === "AI");
+        // PERSONALIZED: Show AI patients assigned to the specific user
+        filtered = filtered.filter(p => p.toActorType === "AI" && p.toUser === loggedInUser);
       } else if (activeFilter === "in_progress") {
-        filtered = filtered.filter(p => p.toUser === loggedInUser);
+        // PERSONALIZED: Show In Progress patients assigned to the specific user
+        // EXCLUDE: Anything that belongs in AI, Stable, or Action Required buckets
+        filtered = filtered.filter(p => 
+          p.toUser === loggedInUser && 
+          p.toActorType !== "AI" && 
+          p.toActorType !== "SYSTEM" && 
+          !["Urgent Triage", "Nurse Alerted", "Refer to Doctor", "AI Outreach", "Resolved", "Stable / Monitoring"].includes(p.status)
+        );
       } else if (activeFilter === "stable") {
-        filtered = filtered.filter(p => p.toActorType === "SYSTEM");
+        // PERSONALIZED: Show Stable patients assigned to the specific user
+        filtered = filtered.filter(p => p.toActorType === "SYSTEM" && p.toUser === loggedInUser);
       }
     } else if (currentMainTab === "doctor") {
       if (activeFilter === "require_action") {
-        filtered = filtered.filter(p => (!p.toActorType || p.toActorType === "PROVIDER") && !p.toUser);
+        if (isSupervisor) {
+          filtered = filtered.filter(p => (!p.toUser || p.toUser === "Nurse Sarah") && (!p.toActorType || p.toActorType === "PROVIDER"));
+        } else {
+          // Doctors see what's in their queue
+          filtered = filtered.filter(p => p.status === "Refer to Doctor" || p.status === "Urgent Triage");
+        }
       } else if (activeFilter === "ai") {
-        filtered = filtered.filter(p => p.toActorType === "AI");
+        filtered = filtered.filter(p => p.toActorType === "AI" && p.toUser === loggedInUser);
       } else if (activeFilter === "nurse") {
-        filtered = filtered.filter(p => p.toActorType === "NURSE");
+        filtered = filtered.filter(p => p.toActorType === "NURSE" && (isSupervisor || p.toUser === loggedInUser));
       } else if (activeFilter === "in_progress") {
-        filtered = filtered.filter(p => p.toUser === loggedInUser);
+        filtered = filtered.filter(p => 
+          p.toUser === loggedInUser && 
+          p.toActorType !== "AI" && 
+          p.toActorType !== "SYSTEM" &&
+          !["Urgent Triage", "Nurse Alerted", "Refer to Doctor", "AI Outreach", "Resolved", "Stable / Monitoring"].includes(p.status)
+        );
       } else if (activeFilter === "stable") {
-        filtered = filtered.filter(p => p.toActorType === "SYSTEM");
+        filtered = filtered.filter(p => p.toActorType === "SYSTEM" && p.toUser === loggedInUser);
       }
     }
 

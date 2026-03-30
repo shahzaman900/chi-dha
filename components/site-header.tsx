@@ -6,16 +6,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { usePatientStore } from "@/store/patient-store"
 
 export function SiteHeader() {
-  const { currentMainTab, setCurrentMainTab } = usePatientStore()
+  const { currentMainTab, setCurrentMainTab, currentUser, setCurrentUser, availableClinicians } = usePatientStore()
 
   const navLinks = [
     { name: "Nurse (EWS)", id: "nurse", href: "#" },
     { name: "Doctor", id: "doctor", href: "#" },
     { name: "Encounters", id: "encounters", href: "#" },
-    { name: "Dashboard", href: "#" },
-    // { name: "Patient Dashboard", href: "#" },
-    // { name: "Appointments", href: "#" },
-    // { name: "Availability", href: "#" },
+    { name: "RPM AI", id: "rpm-dashboard", href: "#" },
     { name: "Merge Patients", href: "#" },
     { name: "Services", href: "#" },
     { name: "SOAP Note A...", href: "#" },
@@ -49,7 +46,7 @@ export function SiteHeader() {
                     onClick={(e) => {
                       if (link.id) {
                         e.preventDefault()
-                        setCurrentMainTab(link.id as "nurse" | "doctor" | "ews" | "encounters")
+                        setCurrentMainTab(link.id as "nurse" | "doctor" | "ews" | "encounters" | "rpm-dashboard")
                       }
                     }}
                     className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
@@ -88,11 +85,41 @@ export function SiteHeader() {
             Today
           </Button>
           
-          <Avatar className="h-9 w-9 ring-2 ring-white cursor-pointer hover:bg-slate-100">
-            <AvatarFallback className="bg-slate-100 text-slate-600">
-              <User className="h-5 w-5 fill-slate-800 text-slate-800" />
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end leading-tight">
+              <span className="text-[13px] font-bold text-slate-900">{currentUser?.name}</span>
+              <span className="text-[11px] text-brand-600 font-bold uppercase tracking-wider">
+                {currentUser?.isSupervisor ? "Supervisor" : currentUser?.role}
+              </span>
+            </div>
+            
+            <div className="group relative">
+              <Avatar className="h-9 w-9 ring-2 ring-white cursor-pointer hover:bg-slate-100 border border-slate-200 shadow-sm">
+                <AvatarFallback className="bg-brand-50 text-brand-700 font-bold">
+                  {currentUser?.name.split(" ").map(n => n[0]).join("")}
+                </AvatarFallback>
+              </Avatar>
+
+              {/* Fast User Switcher for Demo */}
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-2 flex flex-col gap-1">
+                  <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Switch Professional</div>
+                  {availableClinicians.map((clinician) => (
+                    <button
+                      key={clinician.id}
+                      onClick={() => setCurrentUser(clinician)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13px] transition-colors ${
+                        currentUser?.id === clinician.id ? "bg-brand-50 text-brand-700 font-bold" : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span>{clinician.name}</span>
+                      <span className="text-[10px] opacity-60 uppercase">{clinician.role === "Doctor" ? "MD" : clinician.isSupervisor ? "Sup" : "RN"}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import { usePatientStore, Patient, getAiTriageStatus, getEwsColorStyles } from "@/store/patient-store";
 import { Button } from "./ui/button";
-import { ConditionModal } from "@/components/actions/condition-modal";
 import {
   ChevronLeft,
   ChevronRight,
@@ -35,10 +34,16 @@ import {
   BarChart3,
   Siren,
   ArrowRightLeft,
+  ShieldCheck,
+  Brain,
+  Monitor,
+  Stethoscope,
 } from "lucide-react";
 import { useState } from "react";
 import { AcknowledgeSheet } from "@/components/actions/acknowledge-sheet";
 import { TransferModal } from "@/components/actions/transfer-modal";
+import { ConditionModal } from "@/components/actions/condition-modal";
+import { AssignmentModal } from "@/components/actions/assignment-modal";
 import { SparkLine } from "@/components/ui/sparkline";
 
 const formatRelativeTime = (timestamp?: string) => {
@@ -77,6 +82,9 @@ export function PatientTable() {
     getFilteredPatients,
     transferPatient,
     changeCondition,
+    assignToActor,
+    availableClinicians,
+    currentUser,
   } = usePatientStore();
 
   // Context Menu State
@@ -93,6 +101,9 @@ export function PatientTable() {
     string | null
   >(null);
   const [conditionModalPatientId, setConditionModalPatientId] = useState<
+    string | null
+  >(null);
+  const [assignmentModalPatientId, setAssignmentModalPatientId] = useState<
     string | null
   >(null);
 
@@ -163,10 +174,16 @@ export function PatientTable() {
             <h2 className="font-bold text-slate-800 text-[15px]">
               {activeFilter === "all" ? "All Patients" : 
                activeFilter === "ai_outreach" ? "AI Outreach List" :
-               activeFilter === "needs_action" ? "Action Required" :
+               activeFilter === "require_action" ? "Action Required" :
                activeFilter === "in_progress" ? "In Progress cases" : "Resolved Cases"}
             </h2>
             <Search className="h-4 w-4 text-slate-500 cursor-pointer hover:text-slate-700 transition" />
+            {currentUser?.isSupervisor && (
+              <div className="flex items-center gap-1.5 bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full border border-brand-100">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f62fe]">Supervisor Mode</span>
+              </div>
+            )}
           </div>
         </div>
         <div className="text-slate-500 text-sm font-medium">
@@ -366,11 +383,48 @@ export function PatientTable() {
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                       <div className={`w-2 h-2 rounded-full ${patient.toUser ? "bg-orange-400" : "bg-blue-400"}`} />
-                       <span className="font-medium text-slate-700">
-                         {patient.toUser ? patient.toUser : (patient.toActorType || "SYSTEM")}
-                       </span>
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-bold border-2 border-white shadow-sm ${
+                          patient.toActorType === "AI" ? "bg-purple-100 text-purple-600" :
+                          patient.toActorType === "SYSTEM" ? "bg-slate-100 text-slate-600" :
+                          patient.toActorType === "PROVIDER" ? "bg-brand-100 text-brand-700" :
+                          "bg-blue-100 text-blue-700"
+                        }`}>
+                          {patient.toActorType === "AI" ? <Brain className="h-4 w-4" /> :
+                           patient.toActorType === "SYSTEM" ? <Monitor className="h-4 w-4" /> :
+                           patient.toUser ? patient.toUser.split(" ").map(n => n[0]).join("") : 
+                           patient.toActorType === "PROVIDER" ? <Stethoscope className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                        </div>
+                        {patient.toUser && (
+                          <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col leading-tight">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-700 text-[12px] whitespace-nowrap leading-none">
+                            {patient.toUser ? (
+                              `${patient.toUserRole || (patient.toActorType === "PROVIDER" ? "Provider" : "Nurse")}: ${patient.toUser}`
+                            ) : (
+                              patient.toActorType === "AI" ? "AI Engine: Active" : 
+                              patient.toActorType === "SYSTEM" ? "System: Monitoring" :
+                              patient.toActorType === "PROVIDER" ? "Provider: Pending" : "Nurse: Pending"
+                            )}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-normal italic leading-none mt-1">
+                            {patient.toUser ? "Assigned Clinician" : "Awaiting Routing"}
+                          </span>
+                        </div>
+                        <div className={`text-[9px] font-bold uppercase tracking-wider px-1 py-0 rounded w-fit mt-0.5 ${
+                          patient.toActorType === "AI" ? "text-purple-600 bg-purple-50" :
+                          patient.toActorType === "SYSTEM" ? "text-slate-500 bg-slate-100" :
+                          patient.toActorType === "PROVIDER" ? "text-brand-700 bg-brand-50" :
+                          "text-blue-700 bg-blue-50"
+                        }`}>
+                          {patient.toActorType}
+                        </div>
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -520,18 +574,20 @@ export function PatientTable() {
                           <span>Change Condition</span>
                         </div>
                       </div>
-                      <div
-                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
-                        onClick={() => {
-                          setTransferModalPatientId(patient.id);
-                          setContextMenuOpenId(null);
-                        }}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <ArrowRightLeft className="h-4 w-4 text-slate-500" />
-                          <span>Change Assignment</span>
+                      {currentUser?.isSupervisor && (
+                        <div
+                          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
+                          onClick={() => {
+                            setAssignmentModalPatientId(patient.id);
+                            setContextMenuOpenId(null);
+                          }}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <ArrowRightLeft className="h-4 w-4 text-slate-500" />
+                            <span>Change Assignment</span>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     <div>
@@ -594,6 +650,13 @@ export function PatientTable() {
         onClose={() => setConditionModalPatientId(null)}
         onConfirm={changeCondition}
         role={currentMainTab === "doctor" ? "Doctor" : "Nurse"}
+      />
+      <AssignmentModal
+        patient={patients.find((p) => p.id === assignmentModalPatientId)}
+        open={!!assignmentModalPatientId}
+        onClose={() => setAssignmentModalPatientId(null)}
+        onConfirm={assignToActor}
+        clinicians={availableClinicians}
       />
       <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-slate-200 text-sm text-slate-500 w-full shrink-0">
         <div className="flex items-center gap-3">
