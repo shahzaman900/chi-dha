@@ -146,7 +146,12 @@ export interface TimelineEvent {
     | "resolution";
   details?: {
     initialDiagnosis?: Array<{ name: string; probability: number }>;
-    transcript?: Array<{ speaker: string; text: string }>;
+    transcript?: Array<{ 
+      speaker: string; 
+      text: string; 
+      isSuggestion?: boolean; 
+      suggestedBy?: string;
+    }>;
     updatedDiagnosis?: Array<{ name: string; probability: number }>;
     transport?: { status: string; eta: string; actions: string[] };
     erNotification?: { hospital: string; protocol: string; orders: string[] };
@@ -201,6 +206,9 @@ export interface Patient {
   conditionChangedBy?: string;
   conditionChangedAt?: string;
   conditionChangedByRole?: "Nurse" | "Doctor" | "AI" | "System";
+  activeOwner: "AI" | "NURSE";
+  handoffNote?: string;
+  isHandoffPending?: boolean;
 }
 export const getAiTriageStatus = (score: number) => {
   if (score >= 9) return "critical";
@@ -265,6 +273,9 @@ interface PatientStore {
   transferPatient: (patientId: string, targetTab: "needs_action" | "in_progress" | "resolved") => void;
   changeCondition: (patientId: string, newScore: number, role: "Nurse" | "Doctor") => void;
   assignToActor: (patientId: string, actorType: ActorType, clinicianId?: string) => void;
+  takeOwnership: (patientId: string) => void;
+  handoverToAi: (patientId: string, note: string) => void;
+  addMessage: (patientId: string, text: string, speaker: string, isSuggestion?: boolean) => void;
 
   // Clinician Registry
   currentUser: Clinician | null;
@@ -401,7 +412,8 @@ const initializePatients = (data: any[]): Patient[] => {
     conditionChangedAt: new Date().toISOString(),
     conditionChangedByRole: "Doctor" as const,
     toUser: "Nurse Sarah",
-    toUserRole: "Nurse"
+    toUserRole: "Nurse",
+    activeOwner: "AI"
   }));
 
   const remainingPatients = data.slice(0, 10).map((p, idx) => ({
@@ -419,7 +431,8 @@ const initializePatients = (data: any[]): Patient[] => {
     peakTriageTriggeredBy: (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
     conditionChangedBy: (Math.random() > 0.5 ? "Dr. Ahmed" : "Nurse Sarah"),
     conditionChangedAt: new Date(Date.now() - Math.floor(Math.random() * 43200000)).toISOString(),
-    conditionChangedByRole: (Math.random() > 0.5 ? "Doctor" : "Nurse")
+    conditionChangedByRole: (Math.random() > 0.5 ? "Doctor" : "Nurse"),
+    activeOwner: "AI"
   }));
 
   return [...seededPatients, ...remainingPatients];
@@ -511,6 +524,108 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }));
   },
 
+  takeOwnership: (patientId) => {
+    const { currentUser } = get();
+    if (currentUser?.role !== "Nurse") {
+      toast.error("Ownership Transfer Failed", {
+        description: "Only nurses can take direct ownership of conversations.",
+      });
+      return;
+    }
+
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent: TimelineEvent = {
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          event: `Ownership transferred to ${currentUser.name}. (Clinical Responsibility Accepted)`,
+          type: "system",
+        };
+
+        return {
+          ...p,
+          activeOwner: "NURSE",
+          toUser: currentUser.name,
+          toUserRole: "Nurse",
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+    toast.success("Ownership Accepted", {
+      description: `You are now the active owner for this patient.`,
+    });
+  },
+
+  handoverToAi: (patientId, note) => {
+    const { currentUser } = get();
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const newTimelineEvent: TimelineEvent = {
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          event: `Ownership returned to AI. Handover note: "${note}"`,
+          type: "system",
+        };
+
+        return {
+          ...p,
+          activeOwner: "AI",
+          handoffNote: note,
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
+      }),
+    }));
+    toast.info("Handed over to AI", {
+      description: "AI assistant has resumed primary communication.",
+    });
+  },
+
+  addMessage: (patientId, text, speaker, isSuggestion = false) => {
+    const { currentUser } = get();
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        // Find the last timeline event that has a transcript, or create a new one
+        const timeline = [...(p.timeline || [])];
+        const lastAiEventIndex = [...timeline].reverse().findIndex(e => e.detailType === "ai-assessment");
+        
+        if (lastAiEventIndex !== -1) {
+          const index = timeline.length - 1 - lastAiEventIndex;
+          const event = timeline[index];
+          const transcript = [...(event.details?.transcript || [])];
+          transcript.push({ 
+            speaker, 
+            text, 
+            isSuggestion, 
+            suggestedBy: isSuggestion ? currentUser?.name : undefined 
+          });
+          timeline[index] = { ...event, details: { ...event.details, transcript } };
+        } else {
+          // Create new timeline event for this message
+          timeline.push({
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            event: isSuggestion ? "Staff Suggestion" : "Patient Conversation Update",
+            type: isSuggestion ? "info" : "update",
+            detailType: "ai-assessment",
+            details: {
+              transcript: [{ 
+                speaker, 
+                text, 
+                isSuggestion, 
+                suggestedBy: isSuggestion ? currentUser?.name : undefined 
+              }]
+            }
+          });
+        }
+
+        return { ...p, timeline };
+      }),
+    }));
+  },
+
   acknowledgeAlert: (patientId, note) => {
     const { currentUser } = get();
     const userName = currentUser?.name || "Clinic Staff";
@@ -538,6 +653,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           toUser: userName,
           toUserRole: currentUser?.role || "Nurse",
           toActorType: currentUser?.role === "Doctor" ? "PROVIDER" : "NURSE",
+          activeOwner: "NURSE",
           timeline: [...(p.timeline || []), newTimelineEvent],
         };
       }),
