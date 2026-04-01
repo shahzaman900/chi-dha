@@ -34,7 +34,8 @@ export function ResolveSheet({ patient, open, onClose, onConfirm }: ResolveSheet
   const [scheduleFollowUp, setScheduleFollowUp] = useState(false)
   const [adjustBaselines, setAdjustBaselines] = useState(false)
 
-  if (!patient) return null
+  // Ensure hooks are called before this guard to comply with Rule of Hooks
+  if (!patient) return null;
 
   const handleClose = () => {
     onClose();

@@ -60,7 +60,7 @@ export function AcknowledgeSheet({ patient, open, onClose, onConfirm }: Acknowle
               <p className="text-sm text-slate-600 bg-orange-50/50 p-3 rounded-md border border-orange-100 flex items-start gap-2">
                 <Siren className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
                 <span>
-                  {patient.status === "Emergency Protocol" || patient.ewsScore >= 9
+                  {patient.status === "EMERGENCY_PROTOCOL" || patient.ewsScore >= 9
                     ? `Critical EWS triggered (${patient.ewsScore}). AI detecting physiological distress.`
                     : `${patient.trend} trend detected. AI monitoring initiated for ${patient.name}.`}
                 </span>

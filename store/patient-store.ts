@@ -1,5 +1,8 @@
 import { create } from "zustand";
 import { toast } from "sonner";
+import axios from "axios";
+
+const API_URL = "http://localhost:3001/patients";
 export interface EncounterRecord {
   id: string;
   date: string;
@@ -19,14 +22,29 @@ export interface Clinician {
 }
 
 export type PatientStatus =
-  | "Stable / Monitoring"
-  | "AI Outreach"
-  | "Nurse Alerted"
-  | "Urgent Triage"
-  | "Refer to Doctor"
-  | "Timeout Escalation"
-  | "Emergency Protocol"
-  | "Resolved";
+  | "STABLE_MONITORING"
+  | "AI_OUTREACH"
+  | "NURSE_ALERTED"
+  | "URGENT_TRIAGE"
+  | "REFER_TO_DOCTOR"
+  | "TIMEOUT_ESCALATION"
+  | "EMERGENCY_PROTOCOL"
+  | "RESOLVED";
+
+export const formatStatus = (status: PatientStatus | string) => {
+  if (!status) return "Unknown";
+  switch (status) {
+    case "STABLE_MONITORING": return "Stable / Monitoring";
+    case "AI_OUTREACH": return "AI Outreach";
+    case "NURSE_ALERTED": return "Nurse Alerted";
+    case "URGENT_TRIAGE": return "Urgent Triage";
+    case "REFER_TO_DOCTOR": return "Refer to Doctor";
+    case "TIMEOUT_ESCALATION": return "Timeout Escalation";
+    case "EMERGENCY_PROTOCOL": return "Emergency Protocol";
+    case "RESOLVED": return "Resolved";
+    default: return status;
+  }
+};
 
 export type PatientAiEngagement =
   | "Call - In Progress"
@@ -286,6 +304,14 @@ interface PatientStore {
   setCurrentMainTab: (tab: "nurse" | "doctor" | "ews" | "encounters" | "rpm-dashboard") => void;
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
+  counts: {
+    all: number;
+    require_action: number;
+    ai: number;
+    in_progress: number;
+    stable: number;
+  };
+  setPatientsData: (data: { data: Patient[]; counts: any }) => void;
   getFilteredPatients: () => Patient[];
 }
 
@@ -303,6 +329,8 @@ const initializePatients = (): Patient[] => {
 
 export const usePatientStore = create<PatientStore>((set, get) => ({
   patients: initializePatients(),
+  counts: { all: 0, require_action: 0, ai: 0, in_progress: 0, stable: 0 },
+  setPatientsData: ({ data, counts }) => set({ patients: data, counts }),
   setPatients: (patients) => set({ patients }),
   selectedPatientId: null,
   setSelectedPatientId: (id) => set({ selectedPatientId: id }),
@@ -387,7 +415,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }));
   },
 
-  takeOwnership: (patientId) => {
+  takeOwnership: async (patientId) => {
     const { currentUser } = get();
     if (currentUser?.role !== "Nurse") {
       toast.error("Ownership Transfer Failed", {
@@ -396,28 +424,43 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       return;
     }
 
-    set((state) => ({
-      patients: state.patients.map((p) => {
-        if (p.id !== patientId) return p;
+    try {
+      const newTimelineEvent: TimelineEvent = {
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        event: `Ownership transferred to ${currentUser.name}. (Clinical Responsibility Accepted)`,
+        type: "system",
+      };
 
-        const newTimelineEvent: TimelineEvent = {
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          event: `Ownership transferred to ${currentUser.name}. (Clinical Responsibility Accepted)`,
-          type: "system",
-        };
+      const updateData = {
+        activeOwner: "NURSE" as "AI" | "NURSE",
+        toUser: currentUser.name,
+        toUserRole: "Nurse",
+      };
 
-        return {
-          ...p,
-          activeOwner: "NURSE",
-          toUser: currentUser.name,
-          toUserRole: "Nurse",
-          timeline: [...(p.timeline || []), newTimelineEvent],
-        };
-      }),
-    }));
-    toast.success("Ownership Accepted", {
-      description: `You are now the active owner for this patient.`,
-    });
+      // Optimistic update
+      set((state) => ({
+        patients: state.patients.map((p) => {
+          if (p.id !== patientId) return p;
+          return {
+            ...p,
+            ...updateData,
+            timeline: [...(p.timeline || []), newTimelineEvent],
+          };
+        }),
+      }));
+
+      await axios.patch(`${API_URL}/${patientId}`, {
+        ...updateData,
+        timeline: [...(get().patients.find(p => p.id === patientId)?.timeline || [])]
+      });
+
+      toast.success("Ownership Accepted", {
+        description: `You are now the active owner for this patient.`,
+      });
+    } catch (error) {
+      console.error("Failed to take ownership:", error);
+      toast.error("Action Failed", { description: "Could not save ownership status to database." });
+    }
   },
 
   handoverToAi: (patientId, note) => {
@@ -489,44 +532,58 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }));
   },
 
-  acknowledgeAlert: (patientId, note) => {
+  acknowledgeAlert: async (patientId, note) => {
     const { currentUser } = get();
     const userName = currentUser?.name || "Clinic Staff";
     const patientName =
       get().patients.find((p) => p.id === patientId)?.name || "Patient";
     
-    set((state) => ({
-      patients: state.patients.map((p) => {
-        if (p.id !== patientId) return p;
+    try {
+      const newTimelineEvent: TimelineEvent = {
+        time: new Date().toLocaleString("en-US", {
+          month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
+        }),
+        event: note
+          ? `Alert acknowledged by ${userName}. Note: "${note}"`
+          : `Alert acknowledged by ${userName}.`,
+        type: "system",
+      };
 
-        const newTimelineEvent: TimelineEvent = {
-          time: new Date().toLocaleString("en-US", {
-            month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true,
-          }),
-          event: note
-            ? `Alert acknowledged by ${userName}. Note: "${note}"`
-            : `Alert acknowledged by ${userName}.`,
-          type: "system",
-        };
+      const updateData = {
+        status: "NURSE_ALERTED" as PatientStatus,
+        isAwaitingAcknowledge: false,
+        toUser: userName,
+        toUserRole: currentUser?.role || "Nurse",
+        toActorType: (currentUser?.role === "Doctor" ? "PROVIDER" : "NURSE") as ActorType,
+        activeOwner: "NURSE" as "AI" | "NURSE",
+      };
 
-        return {
-          ...p,
-          status: "Nurse Alerted",
-          isAwaitingAcknowledge: false,
-          toUser: userName,
-          toUserRole: currentUser?.role || "Nurse",
-          toActorType: currentUser?.role === "Doctor" ? "PROVIDER" : "NURSE",
-          activeOwner: "NURSE",
-          timeline: [...(p.timeline || []), newTimelineEvent],
-        };
-      }),
-    }));
-    toast.success(`Alert Acknowledged — ${patientName}`, {
-      description:
-        `${userName} has taken ownership of this alert.`,
-    });
-    // Auto-open encounter
-    get().openPhrTab(patientId, patientName, "encounter");
+      // Optimistic update
+      set((state) => ({
+        patients: state.patients.map((p) => {
+          if (p.id !== patientId) return p;
+          return {
+            ...p,
+            ...updateData,
+            timeline: [...(p.timeline || []), newTimelineEvent],
+          };
+        }),
+      }));
+
+      await axios.patch(`${API_URL}/${patientId}`, {
+        ...updateData,
+        timeline: [...(get().patients.find(p => p.id === patientId)?.timeline || [])]
+      });
+
+      toast.success(`Alert Acknowledged — ${patientName}`, {
+        description: `${userName} has taken ownership of this alert.`,
+      });
+      // Auto-open encounter
+      get().openPhrTab(patientId, patientName, "encounter");
+    } catch (error) {
+      console.error("Failed to acknowledge alert:", error);
+      toast.error("Action Failed", { description: "Could not save acknowledgment to database." });
+    }
   },
 
   triggerEmergency: (patientId, dispatchRrt, dispatchPhysician) => {
@@ -596,7 +653,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
 
         return {
           ...p,
-          status: "Emergency Protocol",
+          status: "EMERGENCY_PROTOCOL" as PatientStatus,
           timeline: [...(p.timeline || []), newTimelineEvent],
         };
       }),
@@ -637,7 +694,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
 
         return {
           ...p,
-          status: "Refer to Doctor",
+          status: "REFER_TO_DOCTOR" as PatientStatus,
           escalatedBy: "Triage Nurse",
           timeline: [...(p.timeline || []), newTimelineEvent],
         };
@@ -940,7 +997,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
 
         return {
           ...p,
-          status: "Resolved",
+          status: "RESOLVED" as PatientStatus,
           escalationStatus: "Stable",
           aiEngagement: null,
           timeline: [...(p.timeline || []), newTimelineEvent],
@@ -955,9 +1012,9 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   transferPatient: (patientId, targetTab) => {
     const patientName = get().patients.find(p => p.id === patientId)?.name || "Patient";
     const statusMap = {
-      needs_action: "Urgent Triage",
-      in_progress: "Nurse Alerted",
-      resolved: "Resolved"
+      needs_action: "URGENT_TRIAGE" as PatientStatus,
+      in_progress: "NURSE_ALERTED" as PatientStatus,
+      resolved: "RESOLVED" as PatientStatus
     };
     
     set((state) => ({
@@ -1109,72 +1166,10 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   activeFilter: "all",
   setActiveFilter: (filter) => set({ activeFilter: filter }),
   getFilteredPatients: () => {
-    const { patients, activeFilter, currentMainTab, currentUser } = get();
-    const loggedInUser = currentUser?.name || "Nurse Sarah";
-    const isSupervisor = loggedInUser === "Nurse Sarah";
+    const { patients } = get();
     
-    let filtered = [...patients];
-
-    // 1. Primary Filter: Regular Clinicians ONLY see what is explicitly assigned to them
-    // Supervisor sees EVERYTHING for triage and oversight
-    if (!isSupervisor) {
-      filtered = filtered.filter(p => p.toUser === loggedInUser);
-    }
-
-    // 2. Tab-Specific & Action Filtering
-    if (activeFilter === "all") {
-      // If not supervisor, already filtered to user. 
-      // If supervisor, shows everything (global oversight)
-    } else if (currentMainTab === "nurse") {
-      if (activeFilter === "require_action") {
-        if (isSupervisor) {
-          // Supervisor see everything requiring routing
-          filtered = filtered.filter(p => (!p.toUser || p.toUser === "Nurse Sarah") && (!p.toActorType || p.toActorType === "NURSE" || p.toActorType === "PROVIDER"));
-        } else {
-          // Individual nurse seeing what they need to acknowledge
-          filtered = filtered.filter(p => (p.status === "Nurse Alerted" || p.status === "Urgent Triage"));
-        }
-      } else if (activeFilter === "ai") {
-        // PERSONALIZED: Show AI patients assigned to the specific user
-        filtered = filtered.filter(p => p.toActorType === "AI" && p.toUser === loggedInUser);
-      } else if (activeFilter === "in_progress") {
-        // PERSONALIZED: Show In Progress patients assigned to the specific user
-        // EXCLUDE: Anything that belongs in AI, Stable, or Action Required buckets
-        filtered = filtered.filter(p => 
-          p.toUser === loggedInUser && 
-          p.toActorType !== "AI" && 
-          p.toActorType !== "SYSTEM" && 
-          !["Urgent Triage", "Nurse Alerted", "Refer to Doctor", "AI Outreach", "Resolved", "Stable / Monitoring"].includes(p.status)
-        );
-      } else if (activeFilter === "stable") {
-        // PERSONALIZED: Show Stable patients assigned to the specific user
-        filtered = filtered.filter(p => p.toActorType === "SYSTEM" && p.toUser === loggedInUser);
-      }
-    } else if (currentMainTab === "doctor") {
-      if (activeFilter === "require_action") {
-        if (isSupervisor) {
-          filtered = filtered.filter(p => (!p.toUser || p.toUser === "Nurse Sarah") && (!p.toActorType || p.toActorType === "PROVIDER"));
-        } else {
-          // Doctors see what's in their queue
-          filtered = filtered.filter(p => p.status === "Refer to Doctor" || p.status === "Urgent Triage");
-        }
-      } else if (activeFilter === "ai") {
-        filtered = filtered.filter(p => p.toActorType === "AI" && p.toUser === loggedInUser);
-      } else if (activeFilter === "nurse") {
-        filtered = filtered.filter(p => p.toActorType === "NURSE" && (isSupervisor || p.toUser === loggedInUser));
-      } else if (activeFilter === "in_progress") {
-        filtered = filtered.filter(p => 
-          p.toUser === loggedInUser && 
-          p.toActorType !== "AI" && 
-          p.toActorType !== "SYSTEM" &&
-          !["Urgent Triage", "Nurse Alerted", "Refer to Doctor", "AI Outreach", "Resolved", "Stable / Monitoring"].includes(p.status)
-        );
-      } else if (activeFilter === "stable") {
-        filtered = filtered.filter(p => p.toActorType === "SYSTEM" && p.toUser === loggedInUser);
-      }
-    }
-
-    // Sort by actor priority: SYSTEM -> AI -> NURSE -> PROVIDER
+    // The backend already filters the list based on activeFilter.
+    // We just need to handle the visual sorting for the table.
     const actorPriority: Record<string, number> = {
       "SYSTEM": 0,
       "AI": 1,
@@ -1182,7 +1177,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       "PROVIDER": 3
     };
 
-    return filtered.sort((a, b) => {
+    return [...patients].sort((a, b) => {
       const prioA = actorPriority[a.toActorType || "SYSTEM"];
       const prioB = actorPriority[b.toActorType || "SYSTEM"];
       if (prioA !== prioB) return prioA - prioB;

@@ -63,6 +63,8 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
   const [showVitalsGraph, setShowVitalsGraph] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
 
+  // Note: All hooks MUST be called above this point to satisfy the Rule of Hooks.
+  // By placing this guard here, we ensure all hooks run while also narrowing the type of 'patient' for the JSX below.
   if (!patient) {
     return (
       <div className="flex bg-card text-foreground items-center justify-center p-8 h-full">

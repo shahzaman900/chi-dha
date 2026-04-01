@@ -4,55 +4,18 @@ import { usePatientStore, getAiTriageStatus } from "@/store/patient-store";
 import { Activity } from "lucide-react";
 
 export function FilterTabs() {
-  const { activeFilter, setActiveFilter, patients, currentMainTab, currentUser } = usePatientStore();
-  const loggedInUser = currentUser?.name || "Nurse Sarah";
+  const { activeFilter, setActiveFilter, counts, currentMainTab } = usePatientStore();
 
   const getCount = (filter: string) => {
-    const isSupervisor = loggedInUser === "Nurse Sarah";
-    let patientsToCount = [...patients];
-
-    // Primary filter (sync with getFilteredPatients)
-    if (!isSupervisor) {
-      patientsToCount = patientsToCount.filter(p => p.toUser === loggedInUser);
+    switch (filter) {
+      case "all": return counts.all;
+      case "require_action": return counts.require_action;
+      case "ai": return counts.ai;
+      case "in_progress": return counts.in_progress;
+      case "stable": return counts.stable;
+      case "nurse": return counts.in_progress; // Doctor view mapping
+      default: return 0;
     }
-
-    if (filter === "all") return patientsToCount.length;
-
-    if (currentMainTab === "nurse") {
-      if (filter === "require_action") {
-        if (isSupervisor) {
-          return patientsToCount.filter(p => (!p.toUser || p.toUser === "Nurse Sarah") && (!p.toActorType || p.toActorType === "NURSE" || p.toActorType === "PROVIDER")).length;
-        } else {
-          return patientsToCount.filter(p => (p.status === "Nurse Alerted" || p.status === "Urgent Triage")).length;
-        }
-      }
-      if (filter === "ai") return patientsToCount.filter(p => p.toActorType === "AI" && p.toUser === loggedInUser).length;
-      if (filter === "in_progress") return patientsToCount.filter(p => 
-        p.toUser === loggedInUser && 
-        p.toActorType !== "AI" && 
-        p.toActorType !== "SYSTEM" && 
-        !["Urgent Triage", "Nurse Alerted", "Refer to Doctor", "AI Outreach", "Resolved", "Stable / Monitoring"].includes(p.status)
-      ).length;
-      if (filter === "stable") return patientsToCount.filter(p => p.toActorType === "SYSTEM" && p.toUser === loggedInUser).length;
-    } else if (currentMainTab === "doctor") {
-      if (filter === "require_action") {
-        if (isSupervisor) {
-          return patientsToCount.filter(p => (!p.toUser || p.toUser === "Nurse Sarah") && (!p.toActorType || p.toActorType === "PROVIDER")).length;
-        } else {
-          return patientsToCount.filter(p => p.status === "Refer to Doctor" || p.status === "Urgent Triage").length;
-        }
-      }
-      if (filter === "ai") return patientsToCount.filter(p => p.toActorType === "AI" && p.toUser === loggedInUser).length;
-      if (filter === "nurse") return patientsToCount.filter(p => p.toActorType === "NURSE").length;
-      if (filter === "in_progress") return patientsToCount.filter(p => 
-        p.toUser === loggedInUser && 
-        p.toActorType !== "AI" && 
-        p.toActorType !== "SYSTEM" &&
-        !["Urgent Triage", "Nurse Alerted", "Refer to Doctor", "AI Outreach", "Resolved", "Stable / Monitoring"].includes(p.status)
-      ).length;
-      if (filter === "stable") return patientsToCount.filter(p => p.toActorType === "SYSTEM" && p.toUser === loggedInUser).length;
-    }
-    return 0;
   };
 
   const renderFilterButton = (id: string, label: string, color: string) => {

@@ -12,20 +12,21 @@ import { LiveAiCopilotDashboard } from "@/components/live-ai-call-modal"
 import { usePatientStore } from "@/store/patient-store"
 import { FilterTabs } from "@/components/filter-tabs"
 import { RPMDashboard } from "@/components/rpm-dashboard"
+import { Patient } from "@/store/patient-store"
 
 import { usePatients } from "@/hooks/use-patients"
 import { useEffect } from "react"
 
 export default function Home() {
-  const { openTabs, activeTabId, currentMainTab, setPatients } = usePatientStore()
-  const { data: livePatients } = usePatients()
+  const { openTabs, activeTabId, currentMainTab, activeFilter, setPatientsData } = usePatientStore()
+  const { data: response } = usePatients(activeFilter)
 
   // Sync React Query data to Zustand store
   useEffect(() => {
-    if (livePatients) {
-      setPatients(livePatients)
+    if (response) {
+      setPatientsData(response)
     }
-  }, [livePatients, setPatients])
+  }, [response, setPatientsData])
 
   // Find the active tab's patientId
   const activeTab = openTabs.find((t) => t.id === activeTabId)

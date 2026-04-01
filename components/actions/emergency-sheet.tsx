@@ -65,6 +65,7 @@ export function EmergencySheet({
     "Prepare for possible intubation",
   ]);
 
+  // Ensure hooks are called before this guard to comply with Rule of Hooks
   if (!patient) return null;
 
   const handleClose = () => {

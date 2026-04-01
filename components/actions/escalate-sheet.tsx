@@ -47,60 +47,88 @@ interface EscalateSheetProps {
 type TabType = "subjective" | "objective" | "assessment" | "plan" | "info" | "investigate";
 
 export function EscalateSheet({ patient, open, onClose, onConfirm }: EscalateSheetProps) {
-  const [selectedDoctor, setSelectedDoctor] = useState("")
-  const [activeTab, setActiveTab] = useState<TabType>("subjective")
-  
-  if (!patient) return null;
+  const [selectedDoctor, setSelectedDoctor] = useState("");
+  const [activeTab, setActiveTab] = useState<TabType>("subjective");
 
-  // SOAP State
-  const [soapData, setSoapData] = useState<SoapNote>(patient.draftSoapNote || {
-    subjective: {
-      chiefComplaint: "",
-      hpi: {
-        onset: "", location: "", duration: "", character: "", aggravating: "",
-        relieving: "", timing: "", severity: "", radiation: "", 
-        associatedSymptoms: "", pastEpisodes: "", details: ""
+  // SOAP State - Always initialize, use optional chaining for patient access
+  const [soapData, setSoapData] = useState<SoapNote>(
+    patient?.draftSoapNote || {
+      subjective: {
+        chiefComplaint: "",
+        hpi: {
+          onset: "",
+          location: "",
+          duration: "",
+          character: "",
+          aggravating: "",
+          relieving: "",
+          timing: "",
+          severity: "",
+          radiation: "",
+          associatedSymptoms: "",
+          pastEpisodes: "",
+          details: "",
+        },
+        pastMedicalHistory: [],
+        surgicalHistory: [],
+        medications: [],
+        allergies: { nkda: false, list: [] },
+        vaccinations: [],
+        familyHistory: [],
+        socialHistory: [],
+        ros: {},
       },
-      pastMedicalHistory: [],
-      surgicalHistory: [],
-      medications: [],
-      allergies: { nkda: false, list: [] },
-      vaccinations: [],
-      familyHistory: [],
-      socialHistory: [],
-      ros: {}
+      objective: {
+        physicalExam: { generalAppearance: "", examDetails: "", systems: {} },
+        vitals: {
+          temp: "",
+          hr: "",
+          rr: "",
+          spo2: "",
+          bpSystolic: "",
+          bpDiastolic: "",
+          height: "",
+          weight: "",
+          bmi: "",
+        },
+        labs: { results: "", imaging: "", other: "" },
+      },
+      assessment: {
+        differentialDiagnosis: [],
+        problemList: [],
+        preventive: [],
+      },
+      plan: {
+        immediateActions: "",
+        medications: [],
+        labOrders: [],
+        imagingOrders: [],
+        procedureOrders: [],
+        referrals: { list: [] },
+        education: "",
+        followUp: "",
+      },
     },
-    objective: {
-      physicalExam: { generalAppearance: "", examDetails: "", systems: {} },
-      vitals: { temp: "", hr: "", rr: "", spo2: "", bpSystolic: "", bpDiastolic: "", height: "", weight: "", bmi: "" },
-      labs: { results: "", imaging: "", other: "" }
-    },
-    assessment: {
-      differentialDiagnosis: [],
-      problemList: [],
-      preventive: []
-    },
-    plan: {
-      immediateActions: "",
-      medications: [],
-      labOrders: [],
-      imagingOrders: [],
-      procedureOrders: [],
-      referrals: { list: [] },
-      education: "",
-      followUp: ""
-    }
-  })
+  );
 
   // Auto-fill vitals when sheet opens if not already present
   useEffect(() => {
     if (open && patient && !patient.draftSoapNote) {
-      const lastHR = patient.vitalsTrend?.hr?.[patient.vitalsTrend.hr.length - 1]?.toString() || "";
-      const lastSpO2 = patient.vitalsTrend?.spo2?.[patient.vitalsTrend.spo2.length - 1]?.toString() || "";
-      const lastRR = patient.vitalsTrend?.rr?.[patient.vitalsTrend.rr.length - 1]?.toString() || "";
-      const lastBP = patient.vitalsTrend?.bp?.[patient.vitalsTrend.bp.length - 1]?.toString() || "";
-      
-      setSoapData(prev => ({
+      const lastHR =
+        patient.vitalsTrend?.hr?.[patient.vitalsTrend.hr.length - 1]?.toString() ||
+        "";
+      const lastSpO2 =
+        patient.vitalsTrend?.spo2?.[
+          patient.vitalsTrend.spo2.length - 1
+        ]?.toString() || "";
+      const lastRR =
+        patient.vitalsTrend?.rr?.[patient.vitalsTrend.rr.length - 1]?.toString() ||
+        "";
+      const lastBP =
+        patient.vitalsTrend?.bp?.[patient.vitalsTrend.bp.length - 1]?.toString() ||
+        "";
+
+      setSoapData((prev) => ({
         ...prev,
         objective: {
           ...prev.objective,
@@ -111,17 +139,18 @@ export function EscalateSheet({ patient, open, onClose, onConfirm }: EscalateShe
             rr: lastRR,
             bpSystolic: lastBP.split("/")[0] || "",
             bpDiastolic: lastBP.split("/")[1] || "",
-          }
+          },
         },
         subjective: {
           ...prev.subjective,
-          chiefComplaint: `Patient presenting with elevated risk (EWS ${patient.ewsScore}). Trend is ${patient.trend}.`
-        }
-      }))
+          chiefComplaint: `Patient presenting with elevated risk (EWS ${patient.ewsScore}). Trend is ${patient.trend}.`,
+        },
+      }));
     }
-  }, [open, patient])
+  }, [open, patient]);
 
-  if (!patient) return null
+  // Hook sequence is now stable. Safe to return early if no patient.
+  if (!patient) return null;
 
   const handleClose = () => {
     onClose();

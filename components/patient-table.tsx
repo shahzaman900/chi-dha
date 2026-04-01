@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePatientStore, Patient, getAiTriageStatus, getEwsColorStyles } from "@/store/patient-store";
+import { usePatientStore, Patient, getAiTriageStatus, getEwsColorStyles, formatStatus } from "@/store/patient-store";
 import { Button } from "./ui/button";
 import {
   ChevronLeft,
@@ -45,6 +45,7 @@ import { TransferModal } from "@/components/actions/transfer-modal";
 import { ConditionModal } from "@/components/actions/condition-modal";
 import { AssignmentModal } from "@/components/actions/assignment-modal";
 import { SparkLine } from "@/components/ui/sparkline";
+import { VitalsHistoryModal } from "@/components/vitals-history-modal";
 
 const formatRelativeTime = (timestamp?: string) => {
   if (!timestamp) return "";
@@ -106,6 +107,7 @@ export function PatientTable() {
   const [assignmentModalPatientId, setAssignmentModalPatientId] = useState<
     string | null
   >(null);
+  const [vitalsModalPatientId, setVitalsModalPatientId] = useState<string | null>(null);
 
 
 
@@ -135,17 +137,17 @@ export function PatientTable() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "Emergency Protocol":
-      case "Timeout Escalation":
+      case "EMERGENCY_PROTOCOL":
+      case "TIMEOUT_ESCALATION":
         return <Siren className="h-4 w-4 text-red-500 mr-2" />;
-      case "Urgent Triage":
-      case "Nurse Alerted":
-      case "Refer to Doctor":
+      case "URGENT_TRIAGE":
+      case "NURSE_ALERTED":
+      case "REFER_TO_DOCTOR":
         return <AlertTriangle className="h-4 w-4 text-orange-500 mr-2" />;
-      case "AI Outreach":
+      case "AI_OUTREACH":
         return <Activity className="h-4 w-4 text-blue-500 mr-2" />;
-      case "Stable / Monitoring":
-      case "Resolved":
+      case "STABLE_MONITORING":
+      case "RESOLVED":
         return <Check className="h-4 w-4 text-emerald-500 mr-2" />;
       default:
         return <Check className="h-4 w-4 text-slate-400 mr-2" />;
@@ -197,8 +199,8 @@ export function PatientTable() {
           (p) =>
             p.aiTriageScore &&
             p.aiTriageScore >= 9 &&
-            p.status !== "Nurse Alerted" &&
-            p.status !== "Refer to Doctor",
+            p.status !== "NURSE_ALERTED" &&
+            p.status !== "REFER_TO_DOCTOR",
         );
         if (criticalPatients.length === 0) return null;
         return (
@@ -462,20 +464,20 @@ export function PatientTable() {
                   patient.initiatedBy === "Nurse" ||
                   patient.initiatedBy === "Caregiver / Family";
                 const isAlreadyHandled = [
-                  "Nurse Alerted",
-                  "Refer to Doctor",
-                  "Resolved",
-                  "Stable / Monitoring",
+                  "NURSE_ALERTED",
+                  "REFER_TO_DOCTOR",
+                  "RESOLVED",
+                  "STABLE_MONITORING",
                 ].includes(patient.status);
                 const canAcknowledge =
                   !isAlreadyHandled &&
                   (!isHumanInitiated ||
-                    patient.status === "Emergency Protocol" ||
-                    patient.status === "Timeout Escalation");
+                    patient.status === "EMERGENCY_PROTOCOL" ||
+                    patient.status === "TIMEOUT_ESCALATION");
 
                 return (
                   <>
-                    {(canAcknowledge || patient.status === "AI Outreach") && (
+                    {(canAcknowledge || patient.status === "AI_OUTREACH") && (
                       <div className="pb-1 mb-1 border-b border-slate-100">
                         {canAcknowledge && (
                           <div
@@ -491,7 +493,7 @@ export function PatientTable() {
                             </div>
                           </div>
                         )}
-                        {patient.status === "AI Outreach" && (
+                        {patient.status === "AI_OUTREACH" && (
                           <div
                             className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
                             onClick={() => {
@@ -529,11 +531,14 @@ export function PatientTable() {
                       </div>
                       <div
                         className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
-                        onClick={() => setContextMenuOpenId(null)}
+                        onClick={() => {
+                          setVitalsModalPatientId(patient.id);
+                          setContextMenuOpenId(null);
+                        }}
                       >
                         <div className="flex items-center gap-2.5">
                           <Activity className="h-4 w-4 text-slate-500" />
-                          <span>View Vitals</span>
+                          <span>View Vitals History</span>
                         </div>
                         <span className="text-[10px] text-slate-400 font-medium px-1 underline underline-offset-2">
                           V
@@ -657,6 +662,11 @@ export function PatientTable() {
         onClose={() => setAssignmentModalPatientId(null)}
         onConfirm={assignToActor}
         clinicians={availableClinicians}
+      />
+      <VitalsHistoryModal
+        patient={patients.find((p) => p.id === vitalsModalPatientId) || null}
+        isOpen={!!vitalsModalPatientId}
+        onClose={() => setVitalsModalPatientId(null)}
       />
       <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-slate-200 text-sm text-slate-500 w-full shrink-0">
         <div className="flex items-center gap-3">
