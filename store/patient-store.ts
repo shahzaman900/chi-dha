@@ -293,6 +293,7 @@ interface PatientStore {
   takeOwnership: (patientId: string) => void;
   handoverToAi: (patientId: string, note: string) => void;
   addMessage: (patientId: string, text: string, speaker: string, isSuggestion?: boolean) => void;
+  updateSoapNote: (patientId: string, soapNote: Partial<SoapNote>) => void;
 
   // Clinician Registry
   currentUser: Clinician | null;
@@ -313,8 +314,10 @@ interface PatientStore {
   };
   vitalsHistory: Record<string, any[]>;
   diagnoses: Record<string, any[]>;
+  timeline: Record<string, any[]>;
   fetchVitalsHistory: (patientId: string) => Promise<void>;
   fetchDiagnoses: (patientId: string) => Promise<void>;
+  fetchTimeline: (patientId: string, range?: "today" | "week" | "month") => Promise<void>;
   setPatientsData: (data: { data: Patient[]; counts: any }) => void;
   getFilteredPatients: () => Patient[];
 }
@@ -336,6 +339,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
   counts: { all: 0, require_action: 0, ai: 0, in_progress: 0, stable: 0 },
   vitalsHistory: {},
   diagnoses: {},
+  timeline: {},
   fetchVitalsHistory: async (patientId) => {
     try {
       const response = await axios.get(`${API_URL}/${patientId}/vitals-history`);
@@ -360,6 +364,22 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
       }));
     } catch (error) {
       console.error(`Failed to fetch diagnoses for patient ${patientId}:`, error);
+    }
+  },
+  fetchTimeline: async (patientId, range) => {
+    try {
+      const url = range 
+        ? `${API_URL}/${patientId}/timeline?range=${range}`
+        : `${API_URL}/${patientId}/timeline`;
+      const response = await axios.get(url);
+      set((state) => ({
+        timeline: {
+          ...state.timeline,
+          [patientId]: response.data
+        }
+      }));
+    } catch (error) {
+      console.error(`Failed to fetch timeline for patient ${patientId}:`, error);
     }
   },
   setPatientsData: ({ data, counts }) => set({ patients: data, counts }),
@@ -560,6 +580,34 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
         }
 
         return { ...p, timeline };
+      }),
+    }));
+  },
+
+  updateSoapNote: (patientId, soapNote) => {
+    const { currentUser } = get();
+    set((state) => ({
+      patients: state.patients.map((p) => {
+        if (p.id !== patientId) return p;
+
+        const updatedSoapNote = {
+          ...(p.draftSoapNote || {}),
+          ...soapNote,
+        };
+
+        const newTimelineEvent: TimelineEvent = {
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          event: `SOAP Note updated by ${currentUser?.name || "Staff"}.`,
+          type: "update",
+          detailType: "ai-assessment",
+          details: { soapNote: updatedSoapNote }
+        };
+
+        return {
+          ...p,
+          draftSoapNote: updatedSoapNote,
+          timeline: [...(p.timeline || []), newTimelineEvent],
+        };
       }),
     }));
   },
