@@ -1,12 +1,34 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bot, CheckCircle2, Activity, AlertTriangle, Siren, Check, Maximize2, X } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
-import { useState } from "react"
-
-import { PhrData } from "@/store/phr-store"
+import { useState, useEffect } from "react"
+import { usePhrStore, PhrData } from "@/store/phr-store"
+import { usePatientStore } from "@/store/patient-store"
 
 export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrData, view?: 'assessment' | 'treatment' | 'default' }) {
     const [showDiagnosisDetails, setShowDiagnosisDetails] = useState(false);
+    const { vitalsHistory, diagnoses, fetchDiagnoses } = usePatientStore();
+
+    useEffect(() => {
+        if (patient?.patientId) {
+            fetchDiagnoses(patient.patientId);
+        }
+    }, [patient?.patientId, fetchDiagnoses]);
+    
+    const history = vitalsHistory[patient.patientId] || [];
+    const currentDiagnoses = diagnoses[patient.patientId] || [];
+    const initialDiagnoses = currentDiagnoses.filter(d => d.isInitial);
+    const updatedDiagnoses = currentDiagnoses; // Sort order already handled by service
+    const hasDiagnosisDetails = currentDiagnoses.length > 0;
+    const latestVital = history[history.length - 1];
+    
+    const displayVitals = {
+        hr: latestVital ? `${latestVital.heartRate} BPM` : "124 BPM",
+        rr: latestVital ? `${latestVital.respiratoryRate}/min` : "28/min",
+        spo2: latestVital ? `${latestVital.spO2}%` : "88%",
+        bp: latestVital ? `${latestVital.systolic}/${latestVital.diastolic}` : "150/95",
+        temp: "101.4 F"
+    };
     
     // Maria Garcia - Critical Scenario
     if (patient.patientId === '4' && view !== 'assessment') {
@@ -98,19 +120,19 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                 <div className="grid grid-cols-2 gap-2 mb-4">
                                     <div className="bg-muted p-2 rounded border border-border">
                                         <div className="text-muted-foreground text-[10px]">HR</div>
-                                        <div className="font-mono font-bold text-red-400">124 BPM</div>
+                                        <div className="font-mono font-bold text-red-400">{displayVitals.hr}</div>
                                     </div>
                                     <div className="bg-muted p-2 rounded border border-border">
                                         <div className="text-muted-foreground text-[10px]">RR</div>
-                                        <div className="font-mono font-bold text-red-400">28/min</div>
+                                        <div className="font-mono font-bold text-red-400">{displayVitals.rr}</div>
                                     </div>
                                     <div className="bg-muted p-2 rounded border border-border">
                                         <div className="text-muted-foreground text-[10px]">SPO2</div>
-                                        <div className="font-mono font-bold text-red-400">88%</div>
+                                        <div className="font-mono font-bold text-red-400">{displayVitals.spo2}</div>
                                     </div>
                                     <div className="bg-muted p-2 rounded border border-border">
                                         <div className="text-muted-foreground text-[10px]">BP</div>
-                                        <div className="font-mono font-bold text-red-400">150/95</div>
+                                        <div className="font-mono font-bold text-red-400">{displayVitals.bp}</div>
                                     </div>
                                 </div>
                             </div>
@@ -168,7 +190,7 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                 <p className="text-xs text-muted-foreground font-medium">AI Analysis: Pre-Q&A</p>
                             </CardHeader>
                             <CardContent className="pt-4 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
-                                {patient.initialDiagnosis?.map((d, i) => (
+                                {initialDiagnoses.map((d, i) => (
                                     <DiagnosisBar key={i} name={d.name} percentage={d.probability} color={d.color} description="" />
                                 ))}
                             </CardContent>
@@ -224,7 +246,7 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                 </div>
                             </CardHeader>
                             <CardContent className="pt-4 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
-                                {patient.diagnosis.map((d: any, i: number) => (
+                                {updatedDiagnoses.map((d: any, i: number) => (
                                     <DiagnosisBar key={i} name={d.name} percentage={d.probability} color={d.color} description="" />
                                 ))}
                             </CardContent>
@@ -290,11 +312,11 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                         <div className="grid grid-cols-2 gap-2 mb-4">
                                             <div className="bg-muted p-2 rounded border border-border">
                                                 <div className="text-muted-foreground text-[10px]">TEMP</div>
-                                                <div className="text-red-400 font-mono font-bold">102.3 F</div>
+                                                <div className="text-red-400 font-mono font-bold">{displayVitals.temp}</div>
                                             </div>
                                             <div className="bg-muted p-2 rounded border border-border">
                                                 <div className="text-muted-foreground text-[10px]">HR</div>
-                                                <div className="text-orange-400 font-mono font-bold">115 BPM</div>
+                                                <div className="text-orange-400 font-mono font-bold">{displayVitals.hr}</div>
                                             </div>
                                         </div>
                                         <Separator className="bg-muted mb-4" />
@@ -359,7 +381,7 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                 )}
 
             
-            {showDiagnosisDetails && patient.diagnosisDetails && (
+            {showDiagnosisDetails && hasDiagnosisDetails && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
                     <div className="bg-muted w-full max-w-4xl max-h-[90vh] rounded-xl overflow-hidden shadow-2xl flex flex-col">
                         <div className="flex items-center justify-between p-4 border-b border-border bg-card">
@@ -379,7 +401,7 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                         </div>
                         
                         <div className="flex-1 overflow-y-auto p-6 bg-muted space-y-4">
-                            {patient.diagnosisDetails.map((detail, idx) => (
+                            {currentDiagnoses.filter(d => d.description).map((detail, idx) => (
                                 <div key={idx} className="bg-[#FFFBEB] border-l-4 border-l-yellow-400 rounded-r-lg shadow-sm p-4 relative overflow-hidden">
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="text-lg font-bold text-yellow-700">{detail.name}</h3>
@@ -396,12 +418,12 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
                                     </p>
                                     
                                     <div className="flex flex-wrap gap-2 mb-2">
-                                        {detail.positiveFactors.map((factor, i) => (
+                                        {detail.positiveFactors?.map((factor: string, i: number) => (
                                             <span key={i} className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md border border-green-200">
                                                 {factor}
                                             </span>
                                         ))}
-                                        {detail.negativeFactors.map((factor, i) => (
+                                        {detail.negativeFactors?.map((factor: string, i: number) => (
                                             <span key={i} className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-md border border-red-200">
                                                 {factor}
                                             </span>
@@ -435,30 +457,18 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
             <p className="text-xs text-muted-foreground font-medium">AI Analysis: Pre-Q&A</p>
         </CardHeader>
         <CardContent className="space-y-6 pt-4 flex-1 overflow-y-auto custom-scrollbar">
-          <DiagnosisBar 
-            name="Acute Heart Failure Exacerbation" 
-            percentage={45} 
-            color="red"
-            description="Weight gain, edema, vital instability"
-          />
-          <DiagnosisBar 
-            name="Hypertensive Crisis" 
-            percentage={25} 
-            color="orange"
-            description="Elevated BP with tachycardia"
-          />
-          <DiagnosisBar 
-            name="Infection/Sepsis" 
-            percentage={20} 
-            color="orange-light"
-            description="Fever + vital instability (less likely)"
-          />
-          <DiagnosisBar 
-            name="Medication Non-compliance" 
-            percentage={10} 
-            color="yellow" 
-            description="Sudden change in pattern"
-          />
+          {initialDiagnoses.map((d, i) => (
+            <DiagnosisBar 
+              key={i}
+              name={d.name} 
+              percentage={d.probability} 
+              color={d.color}
+              description={d.description || ""}
+            />
+          ))}
+          {initialDiagnoses.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center pt-10">No initial analysis available.</p>
+          )}
         </CardContent>
       </Card>
 
@@ -514,30 +524,18 @@ export function PhrModalDetails({ patient, view = 'default' }: { patient: PhrDat
             <p className="text-xs text-muted-foreground font-medium">Post-Q&A Analysis</p>
         </CardHeader>
         <CardContent className="space-y-6 pt-4 flex-1 overflow-y-auto custom-scrollbar">
-          <DiagnosisBar 
-            name="Acute Heart Failure Exacerbation" 
-            percentage={68} 
-            color="red"
-            description="Weight gain (+2.5 lbs) + ankle edema + SOB on exertion + sleeping propped up (orthopnea) + salty food intake"
-          />
-          <DiagnosisBar 
-            name="Hypertensive Crisis" 
-            percentage={18} 
-            color="orange"
-            description="Medication compliance confirmed, so less likely."
-          />
-          <DiagnosisBar 
-            name="Infection/Sepsis" 
-            percentage={8} 
-            color="orange-light"
-            description="No fever or signs of infection."
-          />
-          <DiagnosisBar 
-            name="Medication Non-compliance" 
-            percentage={6} 
-            color="yellow"
-            description="Patient confirmed compliance."
-          />
+          {updatedDiagnoses.map((d, i) => (
+            <DiagnosisBar 
+              key={i}
+              name={d.name} 
+              percentage={d.probability} 
+              color={d.color}
+              description={d.description || ""}
+            />
+          ))}
+          {updatedDiagnoses.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center pt-10">No post-Q&A analysis available.</p>
+          )}
         </CardContent>
       </Card>
     </div>

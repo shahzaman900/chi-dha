@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { usePatientStore, TimelineEvent } from "@/store/patient-store";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Maximize2, LineChart } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { PhrModalDetails } from "./phr-modal-details";
@@ -43,7 +43,37 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
     triggerEmergency,
     escalateToDoctor,
     markAsResolved,
+    fetchVitalsHistory,
+    vitalsHistory,
+    diagnoses,
+    fetchDiagnoses,
   } = usePatientStore();
+  
+  useEffect(() => {
+    if (patientId) {
+      fetchVitalsHistory(patientId);
+      fetchDiagnoses(patientId);
+    }
+  }, [patientId, fetchVitalsHistory, fetchDiagnoses]);
+
+  const history = vitalsHistory[patientId] || [];
+  const currentDiagnoses = diagnoses[patientId] || [];
+  const hasDiagnosisDetails = currentDiagnoses.length > 0;
+  const latestVital = history[history.length - 1];
+  const previousVital = history[history.length - 2];
+
+  const getTrend = (current: number, previous: number) => {
+    if (!previous) return "";
+    const diff = current - previous;
+    return diff > 0 ? `+${diff}` : `${diff}`;
+  };
+
+  const dynamicMetrics = latestVital ? {
+    hr: { value: latestVital.heartRate, change: getTrend(latestVital.heartRate, previousVital?.heartRate) },
+    rr: { value: latestVital.respiratoryRate, change: getTrend(latestVital.respiratoryRate, previousVital?.respiratoryRate) },
+    spo2: { value: latestVital.spO2, change: getTrend(latestVital.spO2, previousVital?.spO2) },
+    bp: { value: `${latestVital.systolic}/${latestVital.diastolic}`, change: "" }
+  } : (patient?.metrics || {});
 
   // Find patient from the main store for demographics + timeline
   const storePatient = patients.find((p) => p.id === patientId);
@@ -281,7 +311,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-              {Object.entries(patient.metrics).map(
+              {Object.entries(dynamicMetrics).map(
                 ([key, data]: [string, any]) => (
                   <div
                     key={key}
@@ -342,7 +372,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
               </div>
             </CardHeader>
             <CardContent className="space-y-6 pt-4 flex-1 overflow-y-auto max-h-[500px] custom-scrollbar">
-              {patient.diagnosis.map((d: any, i: number) => (
+              {currentDiagnoses.map((d: any, i: number) => (
                 <div key={i}>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-foreground font-medium">
@@ -515,7 +545,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
         </DialogContent>
       </Dialog>
 
-      {showDetailedDiagnosis && patient.diagnosisDetails && (
+      {showDetailedDiagnosis && hasDiagnosisDetails && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200 backdrop-blur-sm">
           <div className="bg-muted w-full max-w-4xl max-h-[90vh] rounded-xl overflow-hidden shadow-2xl flex flex-col border border-border">
             <div className="flex items-center justify-between p-4 border-b border-border bg-card/50">
@@ -540,7 +570,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 bg-muted space-y-4 custom-scrollbar">
-              {patient.diagnosisDetails.map((detail, idx) => (
+              {currentDiagnoses.filter(d => d.description).map((detail, idx) => (
                 <div
                   key={idx}
                   className="bg-card/50 border-l-4 border-l-yellow-500 rounded-r-lg shadow-sm p-5 relative overflow-hidden border-y border-r border-border"
@@ -577,7 +607,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                   </p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {detail.positiveFactors.map((factor, i) => (
+                    {detail.positiveFactors?.map((factor: string, i: number) => (
                       <span
                         key={i}
                         className="px-2.5 py-1 bg-green-500/10 text-green-400 text-xs font-bold rounded-md border border-green-500/20 flex items-center gap-1.5"
@@ -586,7 +616,7 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                         {factor}
                       </span>
                     ))}
-                    {detail.negativeFactors.map((factor, i) => (
+                    {detail.negativeFactors?.map((factor: string, i: number) => (
                       <span
                         key={i}
                         className="px-2.5 py-1 bg-red-500/10 text-red-400 text-xs font-bold rounded-md border border-red-500/20 flex items-center gap-1.5"
@@ -828,7 +858,14 @@ export function PhrDisplay({ patientId }: { patientId: string }) {
                   },
                 ] as const
               ).map(({ key, label, unit, color, icon }) => {
-                const data = storePatient?.vitalsTrend?.[key] || [];
+                const data = history.map((v: any) => {
+                  if (key === "hr") return v.heartRate;
+                  if (key === "rr") return v.respiratoryRate;
+                  if (key === "spo2") return v.spO2;
+                  if (key === "bp") return v.systolic;
+                  return 0;
+                }).filter(v => v !== null && v !== undefined);
+                
                 if (data.length === 0) return null;
                 const min = Math.min(...data);
                 const max = Math.max(...data);

@@ -515,6 +515,21 @@ export function PatientTable() {
 
                     <div className="pb-1 mb-1 border-b border-slate-100">
                       <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-brand-50 focus:bg-brand-50 text-[13px] text-brand-700 transition-colors rounded-md font-medium"
+                        onClick={() => {
+                          handleViewPhr(patient.id, patient.name, "encounter");
+                          setContextMenuOpenId(null);
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Stethoscope className="h-4 w-4" />
+                          <span>Show Patient Details</span>
+                        </div>
+                        <span className="text-[10px] text-brand-400 font-medium px-1 underline underline-offset-2">
+                          D
+                        </span>
+                      </div>
+                      <div
                         className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-slate-50 focus:bg-slate-50 text-[13px] text-slate-700 transition-colors rounded-md"
                         onClick={() => {
                           handleViewPhr(patient.id, patient.name, "phr");

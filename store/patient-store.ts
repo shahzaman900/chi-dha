@@ -311,6 +311,10 @@ interface PatientStore {
     in_progress: number;
     stable: number;
   };
+  vitalsHistory: Record<string, any[]>;
+  diagnoses: Record<string, any[]>;
+  fetchVitalsHistory: (patientId: string) => Promise<void>;
+  fetchDiagnoses: (patientId: string) => Promise<void>;
   setPatientsData: (data: { data: Patient[]; counts: any }) => void;
   getFilteredPatients: () => Patient[];
 }
@@ -330,6 +334,34 @@ const initializePatients = (): Patient[] => {
 export const usePatientStore = create<PatientStore>((set, get) => ({
   patients: initializePatients(),
   counts: { all: 0, require_action: 0, ai: 0, in_progress: 0, stable: 0 },
+  vitalsHistory: {},
+  diagnoses: {},
+  fetchVitalsHistory: async (patientId) => {
+    try {
+      const response = await axios.get(`${API_URL}/${patientId}/vitals-history`);
+      set((state) => ({
+        vitalsHistory: {
+          ...state.vitalsHistory,
+          [patientId]: response.data
+        }
+      }));
+    } catch (error) {
+      console.error(`Failed to fetch vitals for patient ${patientId}:`, error);
+    }
+  },
+  fetchDiagnoses: async (patientId) => {
+    try {
+      const response = await axios.get(`${API_URL}/${patientId}/diagnoses`);
+      set((state) => ({
+        diagnoses: {
+          ...state.diagnoses,
+          [patientId]: response.data
+        }
+      }));
+    } catch (error) {
+      console.error(`Failed to fetch diagnoses for patient ${patientId}:`, error);
+    }
+  },
   setPatientsData: ({ data, counts }) => set({ patients: data, counts }),
   setPatients: (patients) => set({ patients }),
   selectedPatientId: null,
