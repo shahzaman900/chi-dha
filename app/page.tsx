@@ -13,8 +13,19 @@ import { usePatientStore } from "@/store/patient-store"
 import { FilterTabs } from "@/components/filter-tabs"
 import { RPMDashboard } from "@/components/rpm-dashboard"
 
+import { usePatients } from "@/hooks/use-patients"
+import { useEffect } from "react"
+
 export default function Home() {
-  const { openTabs, activeTabId, currentMainTab } = usePatientStore()
+  const { openTabs, activeTabId, currentMainTab, setPatients } = usePatientStore()
+  const { data: livePatients } = usePatients()
+
+  // Sync React Query data to Zustand store
+  useEffect(() => {
+    if (livePatients) {
+      setPatients(livePatients)
+    }
+  }, [livePatients, setPatients])
 
   // Find the active tab's patientId
   const activeTab = openTabs.find((t) => t.id === activeTabId)

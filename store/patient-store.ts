@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import patientsData from "@/data/patients.json";
 import { toast } from "sonner";
 export interface EncounterRecord {
   id: string;
@@ -298,148 +297,12 @@ const mockClinicians: Clinician[] = [
   { id: "doctor-2", name: "Dr. Sarah", role: "Doctor", workload: 0, status: "Available" },
 ];
 
-const initializePatients = (data: any[]): Patient[] => {
-  const seededPatients: Patient[] = [
-    // 2 Patients in AI (Medium and Low Risk)
-    {
-      id: "demo-ai-1",
-      name: "Marcus Aurelius",
-      age: 65,
-      status: "AI Outreach" as PatientStatus,
-      aiTriageScore: 5,
-      toActorType: "AI" as ActorType,
-      toUser: null,
-      ewsScore: 4,
-      trend: "Stable",
-      timeline: []
-    },
-    {
-      id: "demo-ai-2",
-      name: "Elena Gilbert",
-      age: 24,
-      status: "AI Outreach" as PatientStatus,
-      aiTriageScore: 3,
-      toActorType: "AI" as ActorType,
-      toUser: null,
-      ewsScore: 2,
-      trend: "Improving",
-      timeline: []
-    },
-    // 4 Patients in Action Required (Critical, High, Medium, Low)
-    {
-      id: "demo-act-1",
-      name: "Arthur Morgan",
-      age: 42,
-      status: "Urgent Triage" as PatientStatus,
-      aiTriageScore: 9,
-      toActorType: "PROVIDER" as ActorType,
-      toUser: null,
-      ewsScore: 8,
-      trend: "Declining",
-      timeline: []
-    },
-    {
-      id: "demo-act-2",
-      name: "Sadie Adler",
-      age: 35,
-      status: "Nurse Alerted" as PatientStatus,
-      aiTriageScore: 7,
-      toActorType: "PROVIDER" as ActorType,
-      toUser: null,
-      ewsScore: 6,
-      trend: "Declining",
-      timeline: []
-    },
-    {
-      id: "demo-act-3",
-      name: "John Marston",
-      age: 38,
-      status: "Stable / Monitoring" as PatientStatus,
-      aiTriageScore: 5,
-      toActorType: "NURSE" as ActorType,
-      toUser: null,
-      ewsScore: 4,
-      trend: "Stable",
-      timeline: []
-    },
-    {
-      id: "demo-act-4",
-      name: "Charles Smith",
-      age: 30,
-      status: "AI Outreach" as PatientStatus,
-      aiTriageScore: 3,
-      toActorType: "NURSE" as ActorType,
-      toUser: null,
-      ewsScore: 2,
-      trend: "Stable",
-      timeline: []
-    },
-    // 2 Patients in Stable Filter
-    {
-      id: "demo-stable-1",
-      name: "Abigail Marston",
-      age: 32,
-      status: "Resolved" as PatientStatus,
-      aiTriageScore: 0,
-      toActorType: "SYSTEM" as ActorType,
-      toUser: null,
-      ewsScore: 0,
-      trend: "Stable",
-      timeline: []
-    },
-    {
-      id: "demo-stable-2",
-      name: "Jack Marston",
-      age: 12,
-      status: "Stable / Monitoring" as PatientStatus,
-      aiTriageScore: 0,
-      toActorType: "SYSTEM" as ActorType,
-      toUser: null,
-      ewsScore: 1,
-      trend: "Improving",
-      timeline: []
-    }
-  ].map(p => ({
-    ...p,
-    peakAiTriageScore: p.aiTriageScore,
-    isAwaitingAcknowledge: p.aiTriageScore >= 7,
-    ewsLastUpdated: new Date().toISOString(),
-    triageLastUpdated: new Date().toISOString(),
-    triageTriggeredBy: "AI" as const,
-    peakTriageLastUpdated: new Date().toISOString(),
-    peakTriageTriggeredBy: "AI" as const,
-    conditionChangedBy: "Dr. Ahmed",
-    conditionChangedAt: new Date().toISOString(),
-    conditionChangedByRole: "Doctor" as const,
-    toUser: "Nurse Sarah",
-    toUserRole: "Nurse",
-    activeOwner: "AI"
-  }));
-
-  const remainingPatients = data.slice(0, 10).map((p, idx) => ({
-    ...p,
-    id: `p-rand-${idx}`,
-    peakAiTriageScore: p.peakAiTriageScore || p.aiTriageScore || 0,
-    isAwaitingAcknowledge: p.isAwaitingAcknowledge ?? (p.aiTriageScore >= 7 && !["Nurse Alerted", "Refer to Doctor", "Resolved"].includes(p.status)),
-    toActorType: p.toActorType || (p.aiTriageScore >= 9 ? "AI" : "NURSE"),
-    toUser: "Nurse Sarah",
-    toUserRole: "Nurse",
-    ewsLastUpdated: new Date(Date.now() - Math.floor(Math.random() * 7200000)).toISOString(),
-    triageLastUpdated: new Date(Date.now() - Math.floor(Math.random() * 3600000)).toISOString(),
-    triageTriggeredBy: (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
-    peakTriageLastUpdated: new Date(Date.now() - Math.floor(Math.random() * 86400000)).toISOString(),
-    peakTriageTriggeredBy: (["AI", "Vitals", "Nurse", "Provider"][Math.floor(Math.random() * 4)] as any),
-    conditionChangedBy: (Math.random() > 0.5 ? "Dr. Ahmed" : "Nurse Sarah"),
-    conditionChangedAt: new Date(Date.now() - Math.floor(Math.random() * 43200000)).toISOString(),
-    conditionChangedByRole: (Math.random() > 0.5 ? "Doctor" : "Nurse"),
-    activeOwner: "AI"
-  }));
-
-  return [...seededPatients, ...remainingPatients];
+const initializePatients = (): Patient[] => {
+  return []; // Initialize as empty, let React Query populate this
 };
 
 export const usePatientStore = create<PatientStore>((set, get) => ({
-  patients: initializePatients(patientsData),
+  patients: initializePatients(),
   setPatients: (patients) => set({ patients }),
   selectedPatientId: null,
   setSelectedPatientId: (id) => set({ selectedPatientId: id }),
