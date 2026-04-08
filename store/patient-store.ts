@@ -274,8 +274,16 @@ interface PatientStore {
   acknowledgeAlert: (patientId: string, note?: string) => void;
   triggerEmergency: (
     patientId: string,
-    dispatchRrt: boolean,
-    dispatchPhysician: boolean,
+    dispatchData: {
+      dispatchRrt: boolean;
+      dispatchPhysician: boolean;
+      transportActions: string[];
+      standingOrders: string[];
+      instructions: string[];
+      hospitalName: string;
+      protocol: string;
+      eta: string;
+    }
   ) => void;
   escalateToDoctor: (
     patientId: string,
@@ -666,12 +674,27 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
     }
   },
 
-  triggerEmergency: (patientId, dispatchRrt, dispatchPhysician) => {
+  triggerEmergency: async (patientId, dispatchData) => {
     const patientName =
       get().patients.find((p) => p.id === patientId)?.name || "Patient";
     const dispatches: string[] = [];
-    if (dispatchRrt) dispatches.push("RRT");
-    if (dispatchPhysician) dispatches.push("Attending");
+    if (dispatchData.dispatchRrt) dispatches.push("RRT");
+    if (dispatchData.dispatchPhysician) dispatches.push("Attending");
+
+    try {
+      await axios.post(`${API_URL}/${patientId}/emergency-protocol`, {
+        protocol: "CODE_BLUE_CARDIAC_ALERT", // from Enum
+        deployRapidResponceTeam: dispatchData.dispatchRrt,
+        AlertOnCall: dispatchData.dispatchPhysician,
+        standingOrders: dispatchData.standingOrders,
+        instructions: dispatchData.instructions,
+        actionsTaken: dispatchData.transportActions,
+        eta: dispatchData.eta ? parseInt(dispatchData.eta) : 8
+      });
+    } catch (error) {
+      console.error("Failed to save emergency protocol details:", error);
+    }
+
     set((state) => ({
       patients: state.patients.map((p) => {
         if (p.id !== patientId) return p;
@@ -696,23 +719,13 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
           details: {
             transport: {
               status: "Dispatched",
-              eta: "8 minutes",
-              actions: [
-                "Ambulance Unit 7 en route",
-                "Paramedic team alerted",
-                ...(dispatchRrt ? ["Rapid Response Team mobilized"] : []),
-                ...(dispatchPhysician ? ["Attending physician paged"] : []),
-              ],
+              eta: dispatchData.eta,
+              actions: dispatchData.transportActions,
             },
             erNotification: {
-              hospital: "Dubai General Hospital — ER Bay 3",
-              protocol: "Code Blue — Cardiac Alert",
-              orders: [
-                "12-lead ECG on arrival",
-                "Troponin + BNP stat",
-                "Crash cart standby",
-                "IV access x2 large bore",
-              ],
+              hospital: dispatchData.hospitalName,
+              protocol: dispatchData.protocol,
+              orders: dispatchData.standingOrders,
             },
             handoff: {
               vitals: {
@@ -721,12 +734,7 @@ export const usePatientStore = create<PatientStore>((set, get) => ({
                 BP: "Pending",
                 EWS: `${p.ewsScore}`,
               },
-              instructions: [
-                "Continuous telemetry monitoring",
-                "O2 titrate to SpO2 > 94%",
-                "NPO status",
-                "Prepare for possible intubation",
-              ],
+              instructions: dispatchData.instructions,
             },
           },
         };

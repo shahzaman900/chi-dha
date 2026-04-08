@@ -20,7 +20,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface EmergencySheetProps {
@@ -29,8 +29,16 @@ interface EmergencySheetProps {
   onClose: () => void;
   onConfirm: (
     patientId: string,
-    dispatchRrt: boolean,
-    dispatchPhysician: boolean,
+    dispatchData: {
+      dispatchRrt: boolean;
+      dispatchPhysician: boolean;
+      transportActions: string[];
+      standingOrders: string[];
+      instructions: string[];
+      hospitalName: string;
+      protocol: string;
+      eta: string;
+    }
   ) => void;
 }
 
@@ -65,6 +73,41 @@ export function EmergencySheet({
     "Prepare for possible intubation",
   ]);
 
+  const [patientInfo, setPatientInfo] = useState<any>(null);
+  const [recentVitals, setRecentVitals] = useState<any>(null);
+
+  useEffect(() => {
+    if (open && patient?.id) {
+      fetch(`http://localhost:3001/patients/${patient.id}/emergency-protocol-data`)
+        .then((res) => res.json())
+        .then((data) => {
+          setPatientInfo(data.patient);
+          setRecentVitals(data.recentVitals);
+          if (data.currentProtocol) {
+            if (data.currentProtocol.instructions) setInstructions(data.currentProtocol.instructions);
+            if (data.currentProtocol.standingOrders) setStandingOrders(data.currentProtocol.standingOrders);
+            if (data.currentProtocol.actionsTaken) setTransportActions(data.currentProtocol.actionsTaken);
+            if (data.currentProtocol.protocol) setProtocol(data.currentProtocol.protocol);
+            if (data.currentProtocol.eta) setEta(data.currentProtocol.eta.toString());
+          }
+        })
+        .catch(console.error);
+    }
+  }, [open, patient?.id]);
+
+  const [location, setLocation] = useState("G 7 Islamabad");
+  const [room, setRoom] = useState("Room 402B");
+  const [doctor, setDoctor] = useState("Dr. Smith");
+  const [eta, setEta] = useState("8");
+  const [protocol, setProtocol] = useState("CODE_BLUE_CARDIAC_ALERT");
+
+  // Sync hospital once loaded
+  useEffect(() => {
+    if (patientInfo?.hospitalName) {
+       setLocation(patientInfo.hospitalName);
+    }
+  }, [patientInfo?.hospitalName]);
+
   // Ensure hooks are called before this guard to comply with Rule of Hooks
   if (!patient) return null;
 
@@ -78,7 +121,16 @@ export function EmergencySheet({
   };
 
   const handleDispatch = () => {
-    onConfirm(patient.id, dispatchRrt, dispatchPhysician);
+    onConfirm(patient.id, {
+      dispatchRrt,
+      dispatchPhysician,
+      transportActions,
+      standingOrders,
+      instructions,
+      hospitalName: location,
+      protocol: protocol,
+      eta: eta
+    });
     handleClose();
   };
 
@@ -136,9 +188,11 @@ export function EmergencySheet({
               <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
                 Location
               </p>
-              <p className="text-base font-black text-slate-900">
-                G 7 Islamabad
-              </p>
+              <Input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="h-6 text-base font-black text-slate-900 border-none px-0 text-center bg-transparent w-full shadow-none focus-visible:ring-0 placeholder:text-slate-400"
+              />
             </div>
           </div>
 
@@ -161,8 +215,8 @@ export function EmergencySheet({
                   <p className="font-semibold text-slate-900 text-sm">
                     Deploy Rapid Response Team
                   </p>
-                  <p className="text-xs text-slate-500">
-                    Critical care team to Room 402B
+                  <p className="text-xs text-slate-500 flex items-center gap-1">
+                    Critical care team to <Input value={room} onChange={e => setRoom(e.target.value)} className="h-4 p-0 m-0 w-20 text-xs border-b border-t-0 border-x-0 border-dashed border-slate-300 rounded-none bg-transparent shadow-none focus-visible:ring-0 text-slate-500" />
                   </p>
                 </div>
               </label>
@@ -176,8 +230,8 @@ export function EmergencySheet({
                   <p className="font-semibold text-slate-900 text-sm">
                     Alert On-Call Attending
                   </p>
-                  <p className="text-xs text-slate-500">
-                    Priority SMS to Dr. Smith
+                  <p className="text-xs text-slate-500 flex items-center gap-1">
+                    Priority SMS to <Input value={doctor} onChange={e => setDoctor(e.target.value)} className="h-4 p-0 m-0 w-20 text-xs border-b border-t-0 border-x-0 border-dashed border-slate-300 rounded-none bg-transparent shadow-none focus-visible:ring-0 text-slate-500" />
                   </p>
                 </div>
               </label>
@@ -194,8 +248,8 @@ export function EmergencySheet({
                 <Badge className="bg-red-100 text-red-700 border-red-200 text-[10px]">
                   Dispatched
                 </Badge>
-                <span className="text-sm font-bold text-red-600">
-                  ETA 8 min
+                <span className="text-sm font-bold text-red-600 flex items-center gap-1">
+                  ETA <Input value={eta} onChange={e => setEta(e.target.value)} className="h-5 p-0 m-0 w-6 text-sm font-bold border-b border-t-0 border-x-0 border-red-300 rounded-none bg-transparent shadow-none focus-visible:ring-0 text-red-600 text-center" /> min
                 </span>
               </div>
             </div>
@@ -229,16 +283,24 @@ export function EmergencySheet({
                     Hospital
                   </span>
                   <p className="text-sm text-slate-800 font-semibold">
-                    Dubai General Hospital — ER Bay 3
+                    {patientInfo?.hospitalName || "Dubai General Hospital — ER Bay 3"}
                   </p>
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-slate-500 uppercase">
                     Protocol
                   </span>
-                  <p className="text-sm text-red-700 font-bold">
-                    Code Blue — Cardiac Alert
-                  </p>
+                  <select 
+                    value={protocol} 
+                    onChange={e => setProtocol(e.target.value)}
+                    className="text-sm font-bold bg-transparent border-none text-red-700 outline-none cursor-pointer pl-0 focus:ring-0"
+                  >
+                    <option value="CODE_BLUE_CARDIAC_ALERT">Code Blue — Cardiac Alert</option>
+                    <option value="RAPID_RESPONSE">Rapid Response</option>
+                    <option value="STROKE_ALERT">Stroke Alert</option>
+                    <option value="TRAUMA_ACTIVATION">Trauma Activation</option>
+                    <option value="SEPSIS_ALERT">Sepsis Alert</option>
+                  </select>
                 </div>
               </div>
               <EditableList
@@ -270,7 +332,7 @@ export function EmergencySheet({
                     HR
                   </span>
                   <p className="text-sm font-bold text-slate-800">
-                    {patient.vitalsTrend?.hr?.slice(-1)[0] || "—"}{" "}
+                    {recentVitals?.heartRate || patient.vitalsTrend?.hr?.slice(-1)[0] || "—"}{" "}
                     <span className="text-[10px] font-normal text-slate-500">
                       bpm
                     </span>
@@ -281,7 +343,7 @@ export function EmergencySheet({
                     SpO2
                   </span>
                   <p className="text-sm font-bold text-slate-800">
-                    {patient.vitalsTrend?.spo2?.slice(-1)[0] || "—"}
+                    {recentVitals?.spO2 || patient.vitalsTrend?.spo2?.slice(-1)[0] || "—"}
                     <span className="text-[10px] font-normal text-slate-500">
                       %
                     </span>
@@ -292,7 +354,7 @@ export function EmergencySheet({
                     BP
                   </span>
                   <p className="text-sm font-bold text-slate-800">
-                    {patient.vitalsTrend?.bp?.slice(-1)[0] || "—"}
+                    {recentVitals ? `${recentVitals.systolic}/${recentVitals.diastolic}` : (patient.vitalsTrend?.bp?.slice(-1)[0] || "—")}
                   </p>
                 </div>
                 <div className="bg-slate-50 rounded-lg border p-2 text-center">
