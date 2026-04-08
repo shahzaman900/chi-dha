@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { AiRpmTable } from "@/components/ai-rpm-table"
 
 export default function AiRpmPage() {
   const [activeTab, setActiveTab] = useState("nurse")
@@ -15,6 +16,7 @@ export default function AiRpmPage() {
     <div className="flex h-screen flex-col bg-[#fcfcfc] text-foreground">
       <div className="flex flex-col flex-1 overflow-hidden bg-[#fafafa]">
         <div className="flex flex-col flex-1 overflow-hidden p-6 pt-8 max-w-[1700px] mx-auto w-full">
+          
           <div className="flex items-center gap-1 mb-6">
             <div className="h-10 flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
               {tabs.map((tab) => (
@@ -32,10 +34,11 @@ export default function AiRpmPage() {
               ))}
             </div>
           </div>
-          <div className="flex-1 overflow-hidden bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col relative w-full p-6">
-            {activeTab === "nurse" && <div>Nurse Dashboard Content</div>}
-            {activeTab === "doctor" && <div>Doctor Dashboard Content</div>}
-            {activeTab === "emergency" && <div>Emergency View Content</div>}
+
+          <div className="flex-1 overflow-hidden bg-white rounded-lg shadow-sm flex flex-col relative w-full">
+            {activeTab === "nurse" && <AiRpmTable />}
+            {activeTab === "doctor" && <AiRpmTable />}
+            {activeTab === "emergency" && <AiRpmTable />}
           </div>
         </div>
       </div>
