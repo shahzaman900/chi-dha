@@ -47,12 +47,21 @@ export function AiRpmTable({ role, api }: { role: string, api: any }) {
     if (activeFilter === 'active' && stageName !== 'active') return null;
     if (activeFilter === 'refer' && stageName !== 'referral') return null;
 
-    const isMyRow = stageData.actor === role;
+    const isApprover = stageData.approval === role;
+    const isActor = stageData.actor === role;
+    
+    // Core Role-Based Visibility: Only show if role is approver or actor
+    if (!isApprover && !isActor) return null;
+
     const isDone = stageData.status === 'done';
-    const isPendingAndMine = isMyRow && !isDone;
+    
+    // "Nurse is approver by default, but if actor is doctor, doctor can pick from his list"
+    const canApproveBacklog = !isDone && stageName === 'backlog' && (isApprover || (isActor && role === 'doctor'));
+    const isPendingAndMine = !isDone && isActor;
+
     const isActiveStageNow = patient.rpmCurrentStage === stageName && !isDone;
 
-    const rowOpacity = isMyRow || (role === 'nurse' && stageName === 'backlog') ? "opacity-100" : "opacity-45";
+    const rowOpacity = isDone ? "opacity-60" : "opacity-100";
     const bgClass = isDone ? "bg-slate-50" : (isActiveStageNow ? "bg-blue-50/30" : "bg-white")
 
     return (
@@ -76,44 +85,49 @@ export function AiRpmTable({ role, api }: { role: string, api: any }) {
         <TableCell className="capitalize">{stageData.approval || "—"}</TableCell>
         <TableCell className="capitalize font-semibold text-slate-800">{stageData.actor || "—"}</TableCell>
         <TableCell>
-          {isPendingAndMine ? (
-            <div className="flex flex-col gap-1">
-              {stageName === 'backlog' && (
-                <button onClick={() => api.approveBacklog(patient.id)} className="bg-[#375623] text-white px-2 py-1 flex items-center justify-center rounded text-[10px] hover:bg-[#284119]">
-                  Approve ({stageData.action})
+          <div className="flex flex-col gap-1">
+            {canApproveBacklog && (
+              <button 
+                onClick={() => api.approveBacklog(patient.id)} 
+                className={`${role === 'doctor' ? 'bg-[#0C447C] hover:bg-[#08305c]' : 'bg-[#375623] hover:bg-[#284119]'} text-white px-2 py-1 flex items-center justify-center rounded text-[10px]`}
+              >
+                {role === 'doctor' ? 'Pick Patient' : `Approve (${stageData.action})`}
+              </button>
+            )}
+            
+            {isPendingAndMine && stageName === 'active' && (role === 'nurse' || role === 'doctor') && (
+              <>
+                <button onClick={() => api.completeActive(patient.id)} className={`${role === 'doctor' ? 'bg-[#0C447C] hover:bg-[#08305c]' : 'bg-[#0C447C] hover:bg-[#08305c]'} text-white px-2 py-1 rounded text-[10px]`}>
+                  Complete ({stageData.action})
                 </button>
-              )}
-              {stageName === 'active' && (role === 'nurse' || role === 'doctor') && (
-                <>
-                  <button onClick={() => api.completeActive(patient.id)} className="bg-[#0C447C] text-white px-2 py-1 rounded text-[10px] hover:bg-[#08305c]">
-                    Complete ({stageData.action})
+                {role === 'nurse' && patient.rpmCondition === 'Medium Risk' && (
+                  <button onClick={() => api.referToDoctor(patient.id)} className="bg-amber-600 text-white px-2 py-1 rounded text-[10px] hover:bg-amber-700">
+                    Refer to Doctor
                   </button>
-                  {role === 'nurse' && patient.rpmCondition === 'Medium Risk' && (
-                    <button onClick={() => api.referToDoctor(patient.id)} className="bg-amber-600 text-white px-2 py-1 rounded text-[10px] hover:bg-amber-700">
-                      Refer to Doctor
-                    </button>
-                  )}
-                  {role === 'doctor' && (patient.rpmCondition === 'High Risk' || patient.rpmCondition === 'Critical') && (
-                    <button onClick={() => api.referToEmergency(patient.id)} className="bg-[#7B0026] text-white px-2 py-1 rounded text-[10px] hover:bg-[#5a001c]">
-                      Refer Emergency
-                    </button>
-                  )}
-                </>
-              )}
-              {(stageName === 'active' || stageName === 'referral') && role === 'emergency' && (
-                 <button onClick={() => api.acceptEmergency(patient.id)} className="bg-[#7B0026] text-white px-2 py-1 rounded text-[10px] hover:bg-[#5a001c]">
-                   Accept & Treat
-                 </button>
-              )}
-              {stageName === 'referral' && role === 'doctor' && (
-                 <button onClick={() => api.acceptEmergency(patient.id)} className="bg-[#0C447C] text-white px-2 py-1 rounded text-[10px] hover:bg-[#08305c]">
-                   Consult Complete
-                 </button>
-              )}
-            </div>
-          ) : (
-            <span className="text-slate-400 capitalize">{stageData.action || "—"}</span>
-          )}
+                )}
+                {role === 'doctor' && (patient.rpmCondition === 'High Risk' || patient.rpmCondition === 'Critical') && (
+                  <button onClick={() => api.referToEmergency(patient.id)} className="bg-[#7B0026] text-white px-2 py-1 rounded text-[10px] hover:bg-[#5a001c]">
+                    Refer Emergency
+                  </button>
+                )}
+              </>
+            )}
+            
+            {isPendingAndMine && (stageName === 'active' || stageName === 'referral') && role === 'emergency' && (
+                <button onClick={() => api.acceptEmergency(patient.id)} className="bg-[#7B0026] text-white px-2 py-1 rounded text-[10px] hover:bg-[#5a001c]">
+                  Accept & Treat
+                </button>
+            )}
+            {isPendingAndMine && stageName === 'referral' && role === 'doctor' && (
+                <button onClick={() => api.acceptEmergency(patient.id)} className="bg-[#0C447C] text-white px-2 py-1 rounded text-[10px] hover:bg-[#08305c]">
+                  Consult Complete
+                </button>
+            )}
+            
+            {(!canApproveBacklog && (!isPendingAndMine || (stageName !== 'active' && stageName !== 'referral'))) && (
+              <span className="text-slate-400 capitalize">{stageData.action || "—"}</span>
+            )}
+          </div>
         </TableCell>
       </TableRow>
     )

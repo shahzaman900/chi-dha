@@ -83,6 +83,12 @@ export function useAiRpm() {
     await fetchLogs();
   };
 
+  const clearData = async () => {
+    await fetch(`${API_BASE}/clear`, { method: 'POST' });
+    await fetchPatients();
+    await fetchLogs();
+  };
+
   return {
     patients,
     logs,
@@ -95,6 +101,7 @@ export function useAiRpm() {
     completeActive,
     referToDoctor,
     referToEmergency,
-    acceptEmergency
+    acceptEmergency,
+    clearData
   };
 }

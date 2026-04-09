@@ -52,6 +52,12 @@ export default function AiRpmPage() {
     setRetriageScore(0)
   }
 
+  const handleClearData = async () => {
+    if (confirm("Are you sure you want to clear all patient data?")) {
+      await api.clearData()
+    }
+  }
+
   // Derived stats
   const totalCount = api.patients.length
   // My patients logic: if they have a stage where actor === activeTab
@@ -61,14 +67,22 @@ export default function AiRpmPage() {
   api.patients.forEach(p => {
     let belongsToMe = false
     let needsMyAction = false
-    const checkStage = (s: any) => {
+    const checkStage = (stageName: string, s: any) => {
       if (!s) return
-      if (s.actor === activeTab) belongsToMe = true
-      if (s.actor === activeTab && s.status === 'pending') needsMyAction = true
+      if (s.actor === activeTab || s.approval === activeTab) belongsToMe = true
+      
+      const isApprover = s.approval === activeTab;
+      const isActor = s.actor === activeTab;
+      const isDone = s.status === 'done';
+      
+      const canApproveBacklog = !isDone && stageName === 'backlog' && (isApprover || (isActor && activeTab === 'doctor'));
+      const isPendingAndMine = !isDone && isActor;
+      
+      if (canApproveBacklog || isPendingAndMine) needsMyAction = true
     }
-    checkStage(p.rpmBacklog)
-    checkStage(p.rpmActive)
-    checkStage(p.rpmReferral)
+    checkStage('backlog', p.rpmBacklog)
+    checkStage('active', p.rpmActive)
+    checkStage('referral', p.rpmReferral)
 
     if (belongsToMe) myPatientsCount++
     if (needsMyAction) actionNeededCount++
@@ -108,6 +122,12 @@ export default function AiRpmPage() {
                 </button>
               ))}
             </div>
+            <button 
+              onClick={handleClearData} 
+              className="ml-auto bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:text-red-700 px-4 py-1.5 text-sm font-semibold rounded-md flex items-center gap-2 transition-all shadow-sm"
+            >
+              Clear All Data
+            </button>
           </div>
 
           {/* Forms */}
