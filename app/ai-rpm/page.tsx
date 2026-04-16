@@ -96,76 +96,8 @@ export default function AiRpmPage() {
       <div className={`flex flex-col flex-1 overflow-hidden bg-[#fafafa]`}>
         <div className="flex flex-col flex-1 overflow-hidden p-6 pt-4 max-w-[1700px] mx-auto w-full">
           
-          {/* Header Stats */}
-          <div className={`flex items-center gap-6 p-4 rounded-md mb-6 ${activeTabDetails.bg} ${activeTabDetails.text}`}>
-            <h1 className="text-xl font-bold flex-1">RPM Dashboard - {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} View</h1>
-            <div className="flex gap-4 font-semibold text-sm">
-              <span className="bg-white/50 px-3 py-1 rounded">Total: {totalCount}</span>
-              <span className="bg-white/50 px-3 py-1 rounded">My Cases: {myPatientsCount}</span>
-              <span className="bg-white/50 px-3 py-1 rounded">Action Needed: {actionNeededCount}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 mb-4">
-            <div className="h-10 flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-4 py-1.5 text-sm font-semibold rounded-md flex items-center gap-2 transition-all ${
-                    activeTab === tab.id
-                      ? "bg-slate-800 text-white shadow-sm"
-                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-            <button 
-              onClick={handleClearData} 
-              className="ml-auto bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:text-red-700 px-4 py-1.5 text-sm font-semibold rounded-md flex items-center gap-2 transition-all shadow-sm"
-            >
-              Clear All Data
-            </button>
-          </div>
-
-          {/* Forms */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <form onSubmit={handleAddPatient} className="bg-white p-4 rounded border flex flex-col gap-2 shadow-sm">
-               <h3 className="font-bold text-sm">Add New Patient</h3>
-               <div className="flex gap-2">
-                 <input className="border px-2 py-1 flex-1 text-sm rounded" placeholder="Patient Name" value={newPatientName} onChange={e => setNewPatientName(e.target.value)} />
-                 <input className="border w-24 px-2 py-1 text-sm rounded" type="number" min="1" max="10" placeholder="Score 1-10" value={newPatientScore || ''} onChange={e => setNewPatientScore(parseInt(e.target.value))} />
-                 <button className="bg-slate-800 text-white px-3 py-1 rounded text-sm shrink-0 hover:bg-slate-700">Add Patient</button>
-               </div>
-            </form>
-
-            <form onSubmit={handleRetriage} className="bg-white p-4 rounded border flex flex-col gap-2 shadow-sm">
-               <h3 className="font-bold text-sm">Retriage Mid-flow</h3>
-               <div className="flex gap-2">
-                 <input className="border px-2 py-1 flex-1 text-sm rounded uppercase" placeholder="Patient ID (ex: P-001)" value={retriageId} onChange={e => setRetriageId(e.target.value)} />
-                 <input className="border w-24 px-2 py-1 text-sm rounded" type="number" min="1" max="10" placeholder="Score 1-10" value={retriageScore || ''} onChange={e => setRetriageScore(parseInt(e.target.value))} />
-                 <button className="bg-amber-600 text-white px-3 py-1 rounded text-sm shrink-0 hover:bg-amber-700">Retriage</button>
-               </div>
-            </form>
-          </div>
-
           <div className="flex-1 overflow-hidden bg-white flex flex-col relative w-full mb-4">
-            <AiRpmTable role={activeTab} api={api} />
-          </div>
-
-          {/* Activity Log */}
-          <div className="h-32 bg-slate-50 border rounded p-4 overflow-y-auto shadow-inner text-sm space-y-1">
-             <h4 className="font-bold border-b pb-1 mb-2">System Activity Log</h4>
-             {api.logs.map((log: any) => (
-                <div key={log.id} className="flex gap-4">
-                  <span className="text-slate-400 w-20 shrink-0">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                  <span className={`w-16 shrink-0 font-bold ${log.role === 'nurse' ? 'text-[#375623]' : log.role === 'doctor' ? 'text-[#0C447C]' : 'text-[#7B0026]'}`}>[{log.role.toUpperCase()}]</span>
-                  <span className="text-slate-700">{log.message}</span>
-                </div>
-             ))}
-             {api.logs.length === 0 && <div className="text-slate-400">No recent activity</div>}
+            <AiRpmTable role="nurse" api={api} />
           </div>
 
         </div>

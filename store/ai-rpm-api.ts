@@ -59,6 +59,16 @@ export function useAiRpm() {
     await fetchLogs();
   };
 
+  const pickBacklog = async (id: string, nurseName: string) => {
+    await fetch(`${API_BASE}/patients/${id}/pick-backlog`, { 
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nurseName })
+    });
+    await fetchPatients();
+    await fetchLogs();
+  };
+
   const completeActive = async (id: string) => {
     await fetch(`${API_BASE}/patients/${id}/complete-active`, { method: 'PATCH' });
     await fetchPatients();
@@ -98,6 +108,7 @@ export function useAiRpm() {
     createPatient,
     retriage,
     approveBacklog,
+    pickBacklog,
     completeActive,
     referToDoctor,
     referToEmergency,
