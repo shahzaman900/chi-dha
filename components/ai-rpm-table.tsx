@@ -10,13 +10,41 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import * as Dialog from "@radix-ui/react-dialog"
-import { ChevronRight, ChevronDown, Activity, Clock, FileText, BrainCircuit, MoreVertical, X, Eye, UserPlus, CheckCircle } from "lucide-react"
+import { 
+  Plus, 
+  Search, 
+  ArrowUpRight, 
+  MoreVertical, 
+  CheckCircle, 
+  Activity, 
+  UserPlus, 
+  Clock, 
+  BrainCircuit, 
+  Eye, 
+  ChevronRight,
+  UserCog,
+  ChevronDown,
+  X,
+  FileText
+} from "lucide-react"
 
-export function AiRpmTable({ role, api }: { role: string, api: any }) {
-  const [activeFilter, setActiveFilter] = useState("all") // all, my_active
+export function AiRpmTable({ role, api }: { role: string; api: any }) {
+  const [activeFilter, setActiveFilter] = useState("all")
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number, y: number } | null>(null)
-  const [selectedPatientForDetail, setSelectedPatientForDetail] = useState<any>(null)
+  const [selectedPatientForDetail, setSelectedPatientForDetail] = useState<any | null>(null)
+  
+  // Reassignment State
+  const [isReassignModalOpen, setIsReassignModalOpen] = useState(false)
+  const [selectedStaff, setSelectedStaff] = useState("")
+  const [reassignPatientId, setReassignPatientId] = useState<string | null>(null)
+
+  const currentUser = "Nurse Sara"; 
+  
+  useEffect(() => {
+    if (api.fetchStaff) api.fetchStaff();
+  }, [api]);
+
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Close menu when clicking outside
@@ -210,14 +238,22 @@ export function AiRpmTable({ role, api }: { role: string, api: any }) {
                   </button>
                 )}
 
-                {canApproveBacklog && stageName === 'backlog' && (
+                {/* Reassignment Logic */}
+                {patient.assignedTo !== 'Unassigned' && patient.assignedTo !== currentUser && (
                   <button 
-                    onClick={() => { api.approveBacklog(patient.id); setActiveMenuId(null); setMenuPosition(null); }}
-                    className="w-full text-left px-4 py-2 text-xs font-bold text-[#375623] hover:bg-green-50 flex items-center gap-2 transition-colors"
+                    onClick={() => { api.reassignPatient(patient.id, currentUser, currentUser); setActiveMenuId(null); setMenuPosition(null); }}
+                    className="w-full text-left px-4 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2 transition-colors border-b border-slate-50"
                   >
-                    <CheckCircle size={14} /> Approve ({stageData.action})
+                    <UserPlus size={14} /> Reassign to Me
                   </button>
                 )}
+
+                <button 
+                  onClick={() => { setReassignPatientId(patient.id); setIsReassignModalOpen(true); setActiveMenuId(null); setMenuPosition(null); }}
+                  className="w-full text-left px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-colors border-b border-slate-50"
+                >
+                  <UserCog size={14} /> Reassign
+                </button>
 
                 {isPendingAndMine && stageName === 'active' && (
                   <>
@@ -337,8 +373,12 @@ export function AiRpmTable({ role, api }: { role: string, api: any }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-200">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 leading-none mb-1">{selectedPatientForDetail.name}</h3>
-                    <p className="text-xs text-slate-500 font-medium">Patient ID: {selectedPatientForDetail.id}</p>
+                    <Dialog.Title className="text-lg font-bold text-slate-900 leading-none mb-1">
+                      {selectedPatientForDetail.name}
+                    </Dialog.Title>
+                    <Dialog.Description className="text-xs text-slate-500 font-medium">
+                      Patient ID: {selectedPatientForDetail.id}
+                    </Dialog.Description>
                   </div>
                   <Dialog.Close className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
                     <X size={20} />
@@ -398,6 +438,83 @@ export function AiRpmTable({ role, api }: { role: string, api: any }) {
                 </div>
               </div>
             )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Reassign Modal */}
+      <Dialog.Root open={isReassignModalOpen} onOpenChange={setIsReassignModalOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[10000]" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-xl shadow-2xl z-[10001] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                  <UserCog size={20} />
+                </div>
+                <div>
+                  <Dialog.Title className="text-lg font-bold text-slate-900">Reassign Patient</Dialog.Title>
+                  <Dialog.Description className="text-xs text-slate-500">
+                    Transfer clinical ownership to another staff member.
+                  </Dialog.Description>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 block">Select New Assignee</label>
+                  <div className="relative">
+                    <select 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm font-medium text-slate-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                      value={selectedStaff}
+                      onChange={(e) => setSelectedStaff(e.target.value)}
+                    >
+                      <option value="" disabled>Choose a nurse or doctor...</option>
+                      <optgroup label="Nurses">
+                        {(api.staff?.nurses || []).map((s: any) => (
+                          <option key={s.name} value={s.name}>{s.name}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Doctors">
+                        {(api.staff?.doctors || []).map((s: any) => (
+                          <option key={s.name} value={s.name}>{s.name}</option>
+                        ))}
+                      </optgroup>
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 flex gap-3 text-amber-800">
+                  <Activity size={16} className="shrink-0 mt-0.5" />
+                  <p className="text-xs leading-relaxed">
+                    <strong>Note:</strong> Reassigning will update the patient's record and add an automatic entry to the audit log.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+              <button 
+                onClick={() => setIsReassignModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={async () => {
+                   if (reassignPatientId && selectedStaff) {
+                     await api.reassignPatient(reassignPatientId, selectedStaff, currentUser);
+                     setIsReassignModalOpen(false);
+                     setSelectedStaff("");
+                   }
+                }}
+                disabled={!selectedStaff}
+                className="px-6 py-2 bg-blue-600 text-white rounded-md text-xs font-bold hover:bg-blue-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Confirm Reassignment
+              </button>
+            </div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

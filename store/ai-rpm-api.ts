@@ -5,6 +5,7 @@ const API_BASE = 'http://localhost:3001/ai-rpm'; // Assuming backend is on 3001.
 export function useAiRpm() {
   const [patients, setPatients] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
+  const [staff, setStaff] = useState<{nurses: any[], doctors: any[]}>({nurses: [], doctors: []});
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchPatients = useCallback(async () => {
@@ -19,6 +20,17 @@ export function useAiRpm() {
       console.error("Failed to fetch AiRpm patients", e);
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const fetchStaff = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/staff`);
+      if (res.ok) {
+        setStaff(await res.json());
+      }
+    } catch (e) {
+      console.error("Failed to fetch staff", e);
     }
   }, []);
 
@@ -93,6 +105,16 @@ export function useAiRpm() {
     await fetchLogs();
   };
 
+  const reassignPatient = async (id: string, newAssignee: string, requesterName: string) => {
+    await fetch(`${API_BASE}/patients/${id}/reassign`, { 
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newAssignee, requesterName })
+    });
+    await fetchPatients();
+    await fetchLogs();
+  };
+
   const clearData = async () => {
     await fetch(`${API_BASE}/clear`, { method: 'POST' });
     await fetchPatients();
@@ -102,9 +124,11 @@ export function useAiRpm() {
   return {
     patients,
     logs,
+    staff,
     isLoading,
     fetchPatients,
     fetchLogs,
+    fetchStaff,
     createPatient,
     retriage,
     approveBacklog,
@@ -113,6 +137,7 @@ export function useAiRpm() {
     referToDoctor,
     referToEmergency,
     acceptEmergency,
+    reassignPatient,
     clearData
   };
 }
