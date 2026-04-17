@@ -35,7 +35,6 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
   const [activeFilter, setActiveFilter] = useState("all")
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<{ x: number, y: number } | null>(null)
-  const [selectedPatientForDetail, setSelectedPatientForDetail] = useState<any | null>(null)
   
   // Reassignment & Clinical Update State
   const [isReassignModalOpen, setIsReassignModalOpen] = useState(false)
@@ -214,6 +213,21 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
               </span>
             </div>
           </TableCell>
+          <TableCell className="py-4 px-4 whitespace-nowrap align-top w-[120px] text-center">
+            {isDone ? (
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-sm">
+                Closed
+              </span>
+            ) : patient.assignedTo !== 'Unassigned' ? (
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-blue-50 text-blue-700 border border-blue-100 shadow-sm">
+                Open
+              </span>
+            ) : (
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-slate-50 text-slate-400 border border-slate-200">
+                Pending
+              </span>
+            )}
+          </TableCell>
           <TableCell className="py-4 px-4 align-top w-[120px] text-center">
             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getConditionColor(patient.rpmCondition)} shadow-sm border`}>
               {patient.rpmCondition}
@@ -234,14 +248,7 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
                   onClick={() => { setActiveActionId(patient.id); setIsTimelineModalOpen(true); setActiveMenuId(null); setMenuPosition(null); }}
                   className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition-colors border-b border-slate-50 mb-1"
                 >
-                  <FileText size={14} /> View Escalation Timeline
-                </button>
-
-                <button 
-                  onClick={() => { setSelectedPatientForDetail(patient); setActiveMenuId(null); setMenuPosition(null); }}
-                  className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 flex items-center gap-2 transition-colors border-b border-slate-50"
-                >
-                  <Eye size={14} /> View Basic Details
+                  <FileText size={14} /> View Timeline & Details
                 </button>
                 
                 {/* Contextual Actions */}
@@ -367,6 +374,7 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
               <TableHead style={{ width: '350px' }} className="text-slate-900 font-bold text-[13px] uppercase tracking-wider py-4 px-4">comment</TableHead>
               <TableHead style={{ width: '160px' }} className="text-slate-900 font-bold text-[13px] uppercase tracking-wider py-4 px-4">Started At</TableHead>
               <TableHead style={{ width: '160px' }} className="text-slate-900 font-bold text-[13px] uppercase tracking-wider py-4 px-4">Assign To</TableHead>
+              <TableHead style={{ width: '120px' }} className="text-slate-900 font-bold text-[13px] uppercase tracking-wider py-4 px-4 text-center">Status</TableHead>
               <TableHead style={{ width: '120px' }} className="text-slate-900 font-bold text-[13px] uppercase tracking-wider py-4 px-4 text-center">Urgency</TableHead>
             </TableRow>
           </TableHeader>
@@ -393,84 +401,6 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
           </TableBody>
         </Table>
       </div>
-      {/* Triage History Modal */}
-      <Dialog.Root open={!!selectedPatientForDetail} onOpenChange={(open) => !open && setSelectedPatientForDetail(null)}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[100] animate-in fade-in duration-300" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-xl shadow-2xl z-[101] overflow-hidden animate-in fade-in zoom-in duration-300">
-            {selectedPatientForDetail && (
-              <div className="flex flex-col h-[70vh]">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-200">
-                  <div>
-                    <Dialog.Title className="text-lg font-bold text-slate-900 leading-none mb-1">
-                      {selectedPatientForDetail.name}
-                    </Dialog.Title>
-                    <Dialog.Description className="text-xs text-slate-500 font-medium">
-                      Patient ID: {selectedPatientForDetail.id}
-                    </Dialog.Description>
-                  </div>
-                  <Dialog.Close className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
-                    <X size={20} />
-                  </Dialog.Close>
-                </div>
-
-                {/* Body Content */}
-                <div className="flex-1 overflow-auto p-8">
-                  <div className="flex items-center gap-2 mb-6">
-                    <Clock size={16} className="text-blue-600" />
-                    <h4 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Triage Progression History</h4>
-                  </div>
-                  
-                  <div className="relative border-l-2 border-slate-100 ml-3 pl-6 space-y-8 py-2">
-                    {getDummyHistory(selectedPatientForDetail).map((h, i) => (
-                      <div key={i} className="relative">
-                        <div className={`absolute -left-[31px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm ${i === 0 ? 'bg-blue-500 ring-4 ring-blue-50' : 'bg-slate-300'}`} />
-                        
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs font-bold text-slate-500 tabular-nums">{h.date}</span>
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getConditionColor(h.condition)}`}>
-                              {h.condition} (Score: {h.score})
-                            </span>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-8 mt-1">
-                            <div className="flex items-start gap-2">
-                              <Activity size={14} className="text-slate-400 mt-0.5 shrink-0" />
-                              <div>
-                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Reason</p>
-                                <p className="text-xs text-slate-700 font-medium">{h.reason}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <FileText size={14} className="text-slate-400 mt-0.5 shrink-0" />
-                              <div>
-                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">AI Clinical Insight</p>
-                                <p className="text-xs text-slate-600 italic leading-relaxed">{h.comment}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Footer */}
-                <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
-                   <Dialog.Close className="px-4 py-2 bg-white border border-slate-200 rounded-md text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-                     Close
-                   </Dialog.Close>
-                   <button className="px-4 py-2 bg-blue-600 rounded-md text-xs font-bold text-white hover:bg-blue-700 shadow-sm transition-all">
-                     Download Report
-                   </button>
-                </div>
-              </div>
-            )}
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
 
       {/* Reassign Modal */}
       <Dialog.Root open={isReassignModalOpen} onOpenChange={setIsReassignModalOpen}>
@@ -549,98 +479,128 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
         </Dialog.Portal>
       </Dialog.Root>
 
-      {/* Timeline Modal */}
+      {/* Unified Timeline & Detail Modal */}
       <Dialog.Root open={isTimelineModalOpen} onOpenChange={setIsTimelineModalOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[10000]" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl z-[10001] overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-8 text-white relative">
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-3xl shadow-2xl z-[10001] overflow-hidden animate-in fade-in zoom-in duration-300 pointer-events-auto">
+            
+            {/* Premium Header with Patient Bio */}
+            <div className="bg-gradient-to-br from-indigo-700 via-blue-800 to-slate-900 px-8 py-10 text-white relative">
               <button 
                 onClick={() => setIsTimelineModalOpen(false)}
-                className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="absolute top-6 right-6 p-2.5 hover:bg-white/10 rounded-full transition-colors"
               >
-                <X size={20} />
+                <X size={22} />
               </button>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-                  <Activity size={28} className="text-white" />
+              
+              <div className="flex items-start gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl overflow-hidden">
+                  <div className="text-2xl font-black">{api.patients.find((p:any) => p.id === activeActionId)?.name?.split(' ').map((n:any)=>n[0]).join('') || 'PT'}</div>
                 </div>
-                <div>
-                  <Dialog.Title className="text-2xl font-black tracking-tight">Escalation Timeline</Dialog.Title>
-                  <Dialog.Description className="text-blue-100 text-sm font-medium opacity-90">
-                    Clinical Activity Log • {activeActionId || 'P-8821'}
-                  </Dialog.Description>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <Dialog.Title className="text-3xl font-black tracking-tight leading-none">
+                      {api.patients.find((p:any) => p.id === activeActionId)?.name || 'Patient Details'}
+                    </Dialog.Title>
+                    <span className="px-2 py-1 rounded bg-blue-500/20 border border-white/10 text-[10px] font-black uppercase tracking-widest backdrop-blur-sm">
+                      ID: {activeActionId}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-blue-100/80 text-sm font-bold">
+                    <div className="flex items-center gap-1.5"><Clock size={14} /> Age: {api.patients.find((p:any) => p.id === activeActionId)?.age || '??'}</div>
+                    <div className="w-1 h-1 rounded-full bg-white/20" />
+                    <div className="flex items-center gap-1.5"><UserPlus size={14} /> Assigned: <span className="text-white underline decoration-blue-400 decoration-2 underline-offset-4">{api.patients.find((p:any) => p.id === activeActionId)?.assignedTo || 'Unassigned'}</span></div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-8 max-h-[60vh] overflow-y-auto bg-slate-50/50">
-              <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-blue-200 before:via-indigo-100 before:to-transparent">
+            {/* Scrollable Timeline Content */}
+            <div className="px-8 py-10 max-h-[50vh] overflow-y-auto bg-slate-50/50">
+              <div className="relative space-y-12 before:absolute before:inset-0 before:ml-6 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-200 before:via-blue-100 before:to-transparent">
                 
-                {/* Timeline Entry 1 */}
-                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-blue-600 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-blue-200 transition-transform group-hover:scale-110 duration-200">
-                    <ShieldCheck size={18} />
+                {/* Event 1: Initial Triage (Condition + Urgency) */}
+                <div className="relative flex items-center group">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-2xl border-4 border-white bg-indigo-600 text-white shadow-xl shrink-0 z-10 transition-all group-hover:scale-110 shadow-indigo-100 group-hover:rotate-6">
+                    <ShieldCheck size={22} />
                   </div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-100 bg-white shadow-sm ml-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <time className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Today, 11:45 AM</time>
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase">Critical Level</span>
+                  <div className="ml-6 flex-1">
+                    <div className="p-5 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-sm font-black text-slate-800 tracking-tight">System Triage Performed</div>
+                        <time className="text-[10px] font-bold text-slate-400 tabular-nums">10:45 AM • TODAY</time>
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="px-3 py-1 rounded-lg bg-red-50 text-red-700 text-[10px] font-black uppercase border border-red-100 flex items-center gap-1.5">
+                          <Activity size={12} /> Condition: {api.patients.find((p:any) => p.id === activeActionId)?.rpmCondition || 'Critical'}
+                        </div>
+                        <div className="px-3 py-1 rounded-lg bg-orange-50 text-orange-700 text-[10px] font-black uppercase border border-orange-100 flex items-center gap-1.5">
+                          <Zap size={12} /> Urgency: 5
+                        </div>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-3 leading-relaxed">
+                        Automated AI triage detected significant deviations. Escalation triggered for critical review.
+                      </div>
                     </div>
-                    <div className="text-sm font-bold text-slate-800">Condition Escalated</div>
-                    <div className="text-xs text-slate-500 mt-1">Nurse Sara updated patient risk category to <span className="text-emerald-600 font-bold">Critical</span> due to elevated BP.</div>
                   </div>
                 </div>
 
-                {/* Timeline Entry 2 */}
-                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-orange-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-orange-100 transition-transform group-hover:scale-110 duration-200">
-                    <UserCog size={18} />
+                {/* Event 2: Nurse Pick */}
+                <div className="relative flex items-center group">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-2xl border-4 border-white bg-slate-800 text-white shadow-xl shrink-0 z-10 transition-all group-hover:scale-110 shadow-slate-200">
+                    <UserPlus size={22} />
                   </div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-100 bg-white shadow-sm ml-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <time className="text-[10px] font-bold uppercase tracking-wider text-orange-600">Today, 10:30 AM</time>
+                  <div className="ml-6 flex-1">
+                    <div className="p-5 rounded-2xl border border-slate-100 bg-white shadow-sm">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="text-sm font-black text-slate-800">Clinic Case Pickup</div>
+                        <time className="text-[10px] font-bold text-slate-400">08:30 AM • AUTHORIZED</time>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        <span className="font-bold text-slate-900">{api.patients.find((p:any) => p.id === activeActionId)?.assignedTo || 'Nurse Sara'}</span> started working on this escalation.
+                      </div>
                     </div>
-                    <div className="text-sm font-bold text-slate-800">Case Reassigned</div>
-                    <div className="text-xs text-slate-500 mt-1">Ownership transferred from <span className="font-semibold text-slate-700">Sarah Miller</span> to <span className="font-semibold text-slate-700">Dr. Khalid</span>.</div>
                   </div>
                 </div>
 
-                {/* Timeline Entry 3 */}
-                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-indigo-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-indigo-100 transition-transform group-hover:scale-110 duration-200">
-                    <Zap size={18} />
+                {/* Event 3: Reassignment */}
+                <div className="relative flex items-center group">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-2xl border-4 border-white bg-orange-600 text-white shadow-xl shrink-0 z-10 transition-all group-hover:scale-110 shadow-orange-100 group-hover:rotate-12">
+                    <UserCog size={22} />
                   </div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-100 bg-white shadow-sm ml-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <time className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Yesterday, 04:20 PM</time>
+                  <div className="ml-6 flex-1">
+                    <div className="p-5 rounded-2xl border border-slate-100 bg-white shadow-sm ring-2 ring-orange-50 ring-offset-2">
+                      <div className="text-sm font-black text-slate-800 mb-1">Ownership Transfer</div>
+                      <div className="text-xs text-slate-500">
+                        Case successfully reassigned to <span className="font-bold text-orange-700 underline underline-offset-2">Dr. Faisal</span> for specialist consultation.
+                      </div>
                     </div>
-                    <div className="text-sm font-bold text-slate-800">Urgency Level Updated</div>
-                    <div className="text-xs text-slate-500 mt-1">Nurse John adjusted urgency to <span className="font-black text-slate-700 underline decoration-indigo-200">Level 4</span>.</div>
                   </div>
                 </div>
 
-                {/* Timeline Entry 4 */}
-                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-400 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-slate-100 transition-transform group-hover:scale-110 duration-200">
-                    <CheckCircle size={18} />
+                {/* Event 4: Resolution */}
+                <div className="relative flex items-center group">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-2xl border-4 border-white bg-emerald-600 text-white shadow-xl shrink-0 z-10 transition-all group-hover:scale-110 shadow-emerald-100">
+                    <CheckCircle size={22} />
                   </div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-100 bg-white shadow-sm ml-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <time className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Apr 15, 09:00 AM</time>
+                  <div className="ml-6 flex-1">
+                    <div className="p-5 rounded-2xl border border-slate-100 bg-emerald-50/30 shadow-sm border-dashed">
+                      <div className="text-sm font-black text-emerald-800 mb-1">Escalation Resolved</div>
+                      <div className="text-xs text-emerald-600/80 font-medium">
+                        Patient safety confirmed. Case moved to completed history.
+                      </div>
                     </div>
-                    <div className="text-sm font-bold text-slate-800">Initial Triage Completed</div>
-                    <div className="text-xs text-slate-500 mt-1">Patient admitted to <span className="italic">Backlog Triage</span> queue.</div>
                   </div>
                 </div>
 
               </div>
             </div>
 
-            <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-center">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <ShieldCheck size={12} /> End of verifiable clinical history
-              </p>
+            <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-center">
+              <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
+                <ShieldCheck size={14} className="text-slate-300" /> Authorized Clinical Audit Log
+              </div>
             </div>
           </Dialog.Content>
         </Dialog.Portal>
