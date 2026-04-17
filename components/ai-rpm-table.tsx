@@ -25,7 +25,10 @@ import {
   UserCog,
   ChevronDown,
   X,
-  FileText
+  FileText,
+  ShieldCheck,
+  Zap,
+  AlertTriangle
 } from "lucide-react"
 
 export function AiRpmTable({ role, api }: { role: string; api: any }) {
@@ -34,10 +37,16 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
   const [menuPosition, setMenuPosition] = useState<{ x: number, y: number } | null>(null)
   const [selectedPatientForDetail, setSelectedPatientForDetail] = useState<any | null>(null)
   
-  // Reassignment State
+  // Reassignment & Clinical Update State
   const [isReassignModalOpen, setIsReassignModalOpen] = useState(false)
+  const [isConditionModalOpen, setIsConditionModalOpen] = useState(false)
+  const [isUrgencyModalOpen, setIsUrgencyModalOpen] = useState(false)
+  const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(false)
+  
   const [selectedStaff, setSelectedStaff] = useState("")
-  const [reassignPatientId, setReassignPatientId] = useState<string | null>(null)
+  const [selectedCondition, setSelectedCondition] = useState("")
+  const [selectedUrgency, setSelectedUrgency] = useState<number | null>(null)
+  const [activeActionId, setActiveActionId] = useState<string | null>(null)
 
   const currentUser = "Nurse Sara"; 
   
@@ -222,10 +231,17 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
                 onClick={(e) => e.stopPropagation()}
               >
                 <button 
-                  onClick={() => { setSelectedPatientForDetail(patient); setActiveMenuId(null); setMenuPosition(null); }}
+                  onClick={() => { setActiveActionId(patient.id); setIsTimelineModalOpen(true); setActiveMenuId(null); setMenuPosition(null); }}
                   className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition-colors border-b border-slate-50 mb-1"
                 >
-                  <Eye size={14} /> View Details
+                  <FileText size={14} /> View Escalation Timeline
+                </button>
+
+                <button 
+                  onClick={() => { setSelectedPatientForDetail(patient); setActiveMenuId(null); setMenuPosition(null); }}
+                  className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 flex items-center gap-2 transition-colors border-b border-slate-50"
+                >
+                  <Eye size={14} /> View Basic Details
                 </button>
                 
                 {/* Contextual Actions */}
@@ -241,7 +257,7 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
                 {/* Reassignment Logic */}
                 {patient.assignedTo !== 'Unassigned' && patient.assignedTo !== currentUser && (
                   <button 
-                    onClick={() => { api.reassignPatient(patient.id, currentUser, currentUser); setActiveMenuId(null); setMenuPosition(null); }}
+                    onClick={() => { api.reassignPatient(patient.id, { newAssignee: currentUser, requesterName: currentUser }); setActiveMenuId(null); setMenuPosition(null); }}
                     className="w-full text-left px-4 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2 transition-colors border-b border-slate-50"
                   >
                     <UserPlus size={14} /> Reassign to Me
@@ -249,7 +265,21 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
                 )}
 
                 <button 
-                  onClick={() => { setReassignPatientId(patient.id); setIsReassignModalOpen(true); setActiveMenuId(null); setMenuPosition(null); }}
+                  onClick={() => { setActiveActionId(patient.id); setIsConditionModalOpen(true); setActiveMenuId(null); setMenuPosition(null); }}
+                  className="w-full text-left px-4 py-2 text-xs font-bold text-emerald-600 hover:bg-emerald-50 flex items-center gap-2 transition-colors border-b border-slate-50"
+                >
+                  <ShieldCheck size={14} /> Update Condition
+                </button>
+
+                <button 
+                  onClick={() => { setActiveActionId(patient.id); setIsUrgencyModalOpen(true); setActiveMenuId(null); setMenuPosition(null); }}
+                  className="w-full text-left px-4 py-2 text-xs font-bold text-orange-600 hover:bg-orange-50 flex items-center gap-2 transition-colors border-b border-slate-50"
+                >
+                  <Zap size={14} /> Update Urgency
+                </button>
+
+                <button 
+                  onClick={() => { setActiveActionId(patient.id); setIsReassignModalOpen(true); setActiveMenuId(null); setMenuPosition(null); }}
                   className="w-full text-left px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-colors border-b border-slate-50"
                 >
                   <UserCog size={14} /> Reassign
@@ -503,8 +533,8 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
               </button>
               <button 
                 onClick={async () => {
-                   if (reassignPatientId && selectedStaff) {
-                     await api.reassignPatient(reassignPatientId, selectedStaff, currentUser);
+                   if (activeActionId && selectedStaff) {
+                     await api.reassignPatient(activeActionId, { newAssignee: selectedStaff, requesterName: currentUser });
                      setIsReassignModalOpen(false);
                      setSelectedStaff("");
                    }
@@ -513,6 +543,208 @@ export function AiRpmTable({ role, api }: { role: string; api: any }) {
                 className="px-6 py-2 bg-blue-600 text-white rounded-md text-xs font-bold hover:bg-blue-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Confirm Reassignment
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Timeline Modal */}
+      <Dialog.Root open={isTimelineModalOpen} onOpenChange={setIsTimelineModalOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[10000]" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl z-[10001] overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-8 text-white relative">
+              <button 
+                onClick={() => setIsTimelineModalOpen(false)}
+                className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+                  <Activity size={28} className="text-white" />
+                </div>
+                <div>
+                  <Dialog.Title className="text-2xl font-black tracking-tight">Escalation Timeline</Dialog.Title>
+                  <Dialog.Description className="text-blue-100 text-sm font-medium opacity-90">
+                    Clinical Activity Log • {activeActionId || 'P-8821'}
+                  </Dialog.Description>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-8 max-h-[60vh] overflow-y-auto bg-slate-50/50">
+              <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-blue-200 before:via-indigo-100 before:to-transparent">
+                
+                {/* Timeline Entry 1 */}
+                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-blue-600 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-blue-200 transition-transform group-hover:scale-110 duration-200">
+                    <ShieldCheck size={18} />
+                  </div>
+                  <div className="w-[calc(100%-4rem)] md:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-100 bg-white shadow-sm ml-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <time className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Today, 11:45 AM</time>
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase">Critical Level</span>
+                    </div>
+                    <div className="text-sm font-bold text-slate-800">Condition Escalated</div>
+                    <div className="text-xs text-slate-500 mt-1">Nurse Sara updated patient risk category to <span className="text-emerald-600 font-bold">Critical</span> due to elevated BP.</div>
+                  </div>
+                </div>
+
+                {/* Timeline Entry 2 */}
+                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-orange-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-orange-100 transition-transform group-hover:scale-110 duration-200">
+                    <UserCog size={18} />
+                  </div>
+                  <div className="w-[calc(100%-4rem)] md:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-100 bg-white shadow-sm ml-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <time className="text-[10px] font-bold uppercase tracking-wider text-orange-600">Today, 10:30 AM</time>
+                    </div>
+                    <div className="text-sm font-bold text-slate-800">Case Reassigned</div>
+                    <div className="text-xs text-slate-500 mt-1">Ownership transferred from <span className="font-semibold text-slate-700">Sarah Miller</span> to <span className="font-semibold text-slate-700">Dr. Khalid</span>.</div>
+                  </div>
+                </div>
+
+                {/* Timeline Entry 3 */}
+                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-indigo-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-indigo-100 transition-transform group-hover:scale-110 duration-200">
+                    <Zap size={18} />
+                  </div>
+                  <div className="w-[calc(100%-4rem)] md:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-100 bg-white shadow-sm ml-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <time className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Yesterday, 04:20 PM</time>
+                    </div>
+                    <div className="text-sm font-bold text-slate-800">Urgency Level Updated</div>
+                    <div className="text-xs text-slate-500 mt-1">Nurse John adjusted urgency to <span className="font-black text-slate-700 underline decoration-indigo-200">Level 4</span>.</div>
+                  </div>
+                </div>
+
+                {/* Timeline Entry 4 */}
+                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-400 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-slate-100 transition-transform group-hover:scale-110 duration-200">
+                    <CheckCircle size={18} />
+                  </div>
+                  <div className="w-[calc(100%-4rem)] md:w-[calc(100%-4rem)] p-4 rounded-xl border border-slate-100 bg-white shadow-sm ml-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <time className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Apr 15, 09:00 AM</time>
+                    </div>
+                    <div className="text-sm font-bold text-slate-800">Initial Triage Completed</div>
+                    <div className="text-xs text-slate-500 mt-1">Patient admitted to <span className="italic">Backlog Triage</span> queue.</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-center">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <ShieldCheck size={12} /> End of verifiable clinical history
+              </p>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Update Condition Modal */}
+      <Dialog.Root open={isConditionModalOpen} onOpenChange={setIsConditionModalOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[10000]" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-2xl z-[10001] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <Dialog.Title className="text-lg font-bold text-slate-900">Update Condition</Dialog.Title>
+                  <Dialog.Description className="text-xs text-slate-500">Select the current clinical risk status.</Dialog.Description>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                {['Low Risk', 'Medium Risk', 'High Risk', 'Critical'].map((cond) => (
+                  <button
+                    key={cond}
+                    onClick={() => setSelectedCondition(cond)}
+                    className={`flex items-center justify-between px-4 py-3 rounded-lg border text-sm font-bold transition-all ${
+                      selectedCondition === cond 
+                        ? "bg-emerald-50 border-emerald-500 text-emerald-700 ring-4 ring-emerald-50" 
+                        : "bg-white border-slate-200 text-slate-600 hover:border-emerald-200 hover:bg-slate-50"
+                    }`}
+                  >
+                    {cond}
+                    {selectedCondition === cond && <CheckCircle size={16} />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+              <button onClick={() => setIsConditionModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+              <button 
+                onClick={async () => {
+                   if (activeActionId && selectedCondition) {
+                     await api.reassignPatient(activeActionId, { condition: selectedCondition, requesterName: currentUser });
+                     setIsConditionModalOpen(false);
+                     setSelectedCondition("");
+                   }
+                }}
+                disabled={!selectedCondition}
+                className="px-6 py-2 bg-emerald-600 text-white rounded-md text-xs font-bold hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Update Condition
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Update Urgency Modal */}
+      <Dialog.Root open={isUrgencyModalOpen} onOpenChange={setIsUrgencyModalOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[10000]" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-2xl z-[10001] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 mx-auto mb-4">
+                <Zap size={24} />
+              </div>
+              <Dialog.Title className="text-xl font-bold text-slate-900 mb-1">Set Urgency Level</Dialog.Title>
+              <Dialog.Description className="text-sm text-slate-500 mb-8">Choose a level from 1 (Low) to 5 (Critical).</Dialog.Description>
+
+              <div className="flex justify-center gap-3">
+                {[1, 2, 3, 4, 5].map((u) => (
+                  <button
+                    key={u}
+                    onClick={() => setSelectedUrgency(u)}
+                    className={`w-12 h-12 rounded-full font-black text-lg transition-all border-2 ${
+                      selectedUrgency === u 
+                        ? "bg-orange-600 border-orange-600 text-white shadow-lg transform scale-110 shadow-orange-200" 
+                        : "bg-white border-slate-200 text-slate-400 hover:border-orange-200 hover:text-orange-500"
+                    }`}
+                  >
+                    {u}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 mt-4">
+              <button onClick={() => setIsUrgencyModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+              <button 
+                onClick={async () => {
+                   if (activeActionId && selectedUrgency) {
+                     // Mapping 1-5 to scores
+                     const scoreMap: Record<number, number> = { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10 };
+                     await api.reassignPatient(activeActionId, { urgencyScore: scoreMap[selectedUrgency], requesterName: currentUser });
+                     setIsUrgencyModalOpen(false);
+                     setSelectedUrgency(null);
+                   }
+                }}
+                disabled={!selectedUrgency}
+                className="px-6 py-2 bg-orange-600 text-white rounded-md text-xs font-bold hover:bg-orange-700 disabled:opacity-50"
+              >
+                Update Urgency
               </button>
             </div>
           </Dialog.Content>

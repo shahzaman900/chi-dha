@@ -105,11 +105,11 @@ export function useAiRpm() {
     await fetchLogs();
   };
 
-  const reassignPatient = async (id: string, newAssignee: string, requesterName: string) => {
+  const updateClinicalPatient = async (id: string, data: { newAssignee?: string; requesterName: string; condition?: string; urgencyScore?: number }) => {
     await fetch(`${API_BASE}/patients/${id}/reassign`, { 
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ newAssignee, requesterName })
+      body: JSON.stringify(data)
     });
     await fetchPatients();
     await fetchLogs();
@@ -137,7 +137,7 @@ export function useAiRpm() {
     referToDoctor,
     referToEmergency,
     acceptEmergency,
-    reassignPatient,
+    reassignPatient: updateClinicalPatient,
     clearData
   };
 }
